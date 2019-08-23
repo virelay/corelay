@@ -3,6 +3,49 @@
 """
 
 from importlib import import_module
+from typing import Iterable as IterableBase
+
+
+class IterableMeta(type):
+    """Meta class to implement member instance checking for Iterables"""
+    def __instancecheck__(self, instance):
+        """Is instance if iterable and all members are of provided types"""
+        return isinstance(instance, IterableBase) and all(isinstance(obj, self.__membertype__) for obj in instance)
+
+
+class Iterable(metaclass=IterableMeta):
+    """Iterables with strict member type checking"""
+    __membertype__ = object
+
+    def __class_getitem__(cls, params):
+        """Dynamically creates a subclass with the provided member types"""
+        if not isinstance(params, tuple):
+            params = (params,)
+        if not params:
+            raise TypeError("At least one member type must be specified!")
+        if not all(isinstance(obj, type) for obj in params):
+            raise TypeError("Member types must be types!")
+        return type('{}[{}]'.format(cls.__name__, params), (cls,), {'__membertype__': params})
+
+
+def zip_equal(*args):
+    iters = [iter(obj) for obj in args]
+    stop = False
+    while not stop:
+        more = False
+        result = []
+        for it in iters:
+            try:
+                value = next(it)
+            except StopIteration:
+                stop = True
+            else:
+                more = True
+                result.append(value)
+            if stop and more:
+                raise TypeError("Unequal length!")
+        if not stop:
+            yield tuple(result)
 
 
 def dummy_from_module_import(name):
