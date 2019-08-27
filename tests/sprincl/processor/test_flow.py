@@ -1,7 +1,7 @@
 """Test module for sprincl/processor/flow.py"""
 import pytest
 
-from sprincl.processor.flow import Shaper, Parallel
+from sprincl.processor.flow import Shaper, Parallel, Sequential
 from sprincl.processor.base import FunctionProcessor
 
 
@@ -62,3 +62,8 @@ class TestParallel:
 
 class TestSequential:
     """Test class for Sequential"""
+    @staticmethod
+    def test_sequential():
+        """Input should be passed sequentially along all child processors"""
+        sequential = Sequential(children=[FunctionProcessor(function=lambda x, c=c: c + x) for c in 'bcde'])
+        assert sequential('a') == 'edcba'
