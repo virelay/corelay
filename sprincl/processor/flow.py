@@ -39,10 +39,10 @@ class Shaper(Processor):
             If an invalid index was accessed for data.
 
         """
-        def extract_indices(iterable, shape):
+        def extract_indices(iterable, indices):
             """Recursively extract indices"""
             result = []
-            for index in shape:
+            for index in indices:
                 if isinstance(index, Iterable):
                     obj = extract_indices(iterable, index)
                 else:
@@ -51,12 +51,12 @@ class Shaper(Processor):
                     except KeyError as err:
                         raise TypeError("'{}' is not a valid index for '{}'".format(index, data)) from err
                 result.append(obj)
-            return result
+            return tuple(result)
 
         if not isinstance(data, Iterable):
             data = (data,)
-        result = extract_indices(data, self.shape)
-        return tuple(result)
+        result = extract_indices(data, self.indices)
+        return result
 
 
 class GroupProcessor(Processor):

@@ -8,7 +8,7 @@ class TestShaper:
     def test_extract():
         """Extracting a single element should succeed"""
         shaper = Shaper(indices=(1,))
-        assert shaper([1, 2, 3]) == 2
+        assert shaper([1, 2, 3]) == (2,)
 
     @staticmethod
     def test_extract_multi():
