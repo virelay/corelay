@@ -31,7 +31,7 @@ class Processor(Plugboard):
     is_checkpoint = Param(bool, False)
     io = Param(DataStorageBase, NoStorage())
 
-    def __init__(self, **kwargs):
+    def __init__(self, *args, **kwargs):
         """Initialize all :obj:`Param` defined parameters to either there default value or, if supplied as keyword
         argument, to the value supplied.
 
@@ -42,11 +42,20 @@ class Processor(Plugboard):
         is_output : bool
             Whether checkpointed pipeline computations should start at this point, if there exists a previously computed
             checkpoint value.
+        *args : list
+            Params that have been flagged as positional, in their order of declaration.
         **kwargs : dict
             Other potential parameters defined in sub classes.
 
         """
-        super().__init__(**kwargs)
+        positions = dict(zip((name for name, param in self.collect(Param).items() if param.is_positional), args))
+        if len(positions) < len(args):
+            raise TypeError('Expected at most {} positional arguments, got {}'.format(len(positions), len(args)))
+        for name in positions:
+            if name in kwargs:
+                raise TypeError("Argument was specified as both positional and keyword: '{}'".format(name))
+        positions.update(kwargs)
+        super().__init__(**positions)
         self.checkpoint_data = None
 
     @abstractmethod
@@ -152,7 +161,7 @@ class FunctionProcessor(Processor):
         Will bind `function` to this class, enabling it to access `self`.
 
     """
-    function = Param((MethodType, FunctionType), (lambda self, data: data))
+    function = Param((MethodType, FunctionType), (lambda self, data: data), positional=True)
     bind_method = Param(bool, False)
 
     def __call__(self, data):
