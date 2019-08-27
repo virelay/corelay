@@ -8,9 +8,9 @@ from typing import Iterable as IterableBase
 
 class IterableMeta(type):
     """Meta class to implement member instance checking for Iterables"""
-    def __instancecheck__(self, instance):
+    def __instancecheck__(cls, instance):
         """Is instance if iterable and all members are of provided types"""
-        return isinstance(instance, IterableBase) and all(isinstance(obj, self.__membertype__) for obj in instance)
+        return isinstance(instance, IterableBase) and all(isinstance(obj, cls.__membertype__) for obj in instance)
 
 
 class Iterable(metaclass=IterableMeta):
@@ -25,6 +25,7 @@ class Iterable(metaclass=IterableMeta):
             raise TypeError("At least one member type must be specified!")
         if not all(isinstance(obj, type) for obj in params):
             raise TypeError("Member types must be types!")
+        # pylint: disable=no-member
         return type('{}[{}]'.format(cls.__name__, params), (cls,), {'__membertype__': params})
 
 
@@ -47,14 +48,14 @@ def zip_equal(*args):
         If positional arguments are no Iterables, or have different length.
 
     """
-    iters = [iter(obj) for obj in args]
+    iterator_list = [iter(obj) for obj in args]
     stop = False
     while not stop:
         more = False
         result = []
-        for it in iters:
+        for iterator in iterator_list:
             try:
-                value = next(it)
+                value = next(iterator)
             except StopIteration:
                 stop = True
             else:
