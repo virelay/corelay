@@ -19,7 +19,7 @@ class Shaper(Processor):
     ('a', 'b', ('a', 'b', 'c'))
 
     """
-    indices = Param(Iterable[int, Iterable[int]])
+    indices = Param(Iterable[int, Iterable[int]], positional=True)
 
     def function(self, data):
         """Extracts and/ or copies indices of data.
@@ -69,7 +69,7 @@ class GroupProcessor(Processor):
         Child Processors for this group.
 
     """
-    children = Param(Iterable[Processor])
+    children = Param(Iterable[Processor], positional=True)
 
 
 class Parallel(GroupProcessor):
