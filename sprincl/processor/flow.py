@@ -1,3 +1,4 @@
+"""Basic flow operation Processors, such as Shaper, Sequential and Parallel"""
 from ..base import Param
 from .base import Processor
 from ..utils import zip_equal, Iterable
@@ -109,6 +110,7 @@ class Parallel(GroupProcessor):
                 pass
 
         if not isinstance(data, Iterable):
+            # pylint: disable=not-an-iterable
             data = (data for _ in self.children)
 
         result = []
@@ -136,6 +138,7 @@ class Sequential(GroupProcessor):
                 Input data to pass to the first child.
 
         """
+        # pylint: disable=not-an-iterable
         for child in self.children:
             data = child(data)
         return data
