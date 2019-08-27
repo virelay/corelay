@@ -5,7 +5,7 @@ from ..utils import zip_equal, Iterable
 
 
 class Shaper(Processor):
-    """Extracts and/ or copies indices.
+    """Extracts and/ or copies by indices.
 
     Attributes
     ----------
@@ -83,7 +83,6 @@ class Parallel(GroupProcessor):
     [2, 4, 8, 16]
 
     """
-
     def function(self, data):
         """Sequentially get one element from data per child, call all children with this element as input in parallel,
         and accumulate the outputs.
@@ -123,21 +122,22 @@ class Parallel(GroupProcessor):
 
 
 class Sequential(GroupProcessor):
-    """Processor group calling its children in Parallel.
+    """Processor group calling its children in Sequence, feeding the input the first child, and then each output to the
+    next child.
 
     Examples
     --------
-    >>> Parallel(children=[FunctionProcessor(function=lambda x: c + x) for c in 'abcd'])('=')
+    >>> Sequential(children=[FunctionProcessor(function=lambda x: c + x) for c in 'abcd'])('=')
     'dcba='
 
     """
     def function(self, data):
         """Feed data forward sequentially, passing each child's output to the next child.
 
-            Parameters
-            ----------
-            data : object
-                Input data to pass to the first child.
+        Parameters
+        ----------
+        data : object
+            Input data to pass to the first child.
 
         """
         # pylint: disable=not-an-iterable
