@@ -1,7 +1,8 @@
 """Test module for sprincl/processor/flow.py"""
 import pytest
 
-from sprincl.processor.flow import Shaper
+from sprincl.processor.flow import Shaper, Parallel
+from sprincl.processor.base import FunctionProcessor
 
 
 class TestShaper:
@@ -39,6 +40,24 @@ class TestShaper:
 
 class TestParallel:
     """Test class for Parallel"""
+    @staticmethod
+    def test_non_iterable():
+        """Non-iterables should simply be copied as many times as there are children"""
+        parallel = Parallel(children=[FunctionProcessor(function=(lambda x, n=n: x + n)) for n in range(5)])
+        assert parallel(1) == (1, 2, 3, 4, 5)
+
+    @staticmethod
+    def test_iterable():
+        """Iterables are valid if they have the same length as there are children"""
+        parallel = Parallel(children=[FunctionProcessor(function=(lambda x, n=n: x + n)) for n in range(5)])
+        assert parallel((4, 3, 2, 1, 0)) == (4, 4, 4, 4, 4)
+
+    @staticmethod
+    def test_iterable_length_mismatch():
+        """Iterables are invalid if they have a different length compared to the number of children"""
+        parallel = Parallel(children=[FunctionProcessor(function=(lambda x, n=n: x + n)) for n in range(5)])
+        with pytest.raises(TypeError):
+            parallel((4, 3, 2, 1))
 
 
 class TestSequential:
