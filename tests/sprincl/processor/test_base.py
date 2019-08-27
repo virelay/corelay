@@ -11,7 +11,7 @@ def processor_type():
     class MyProcessor(Processor):
         """Custom Processor"""
         param_1 = Param(str, mandatory=True)
-        param_2 = Param(int, -25)
+        param_2 = Param(int, -25, positional=True)
         param_3 = Param((str, int), 'default')
         value = 42
         text = 'apple'
@@ -80,6 +80,12 @@ class TestProcessor:
         """Default values should be properly assigned"""
         processor = processor_type(param_1="bacon")
         assert processor.param_2 == -25
+
+    @staticmethod
+    def test_instance_positional(processor_type):
+        """Positional values should be properly assigned"""
+        processor = processor_type(44)
+        assert processor.param_2 == 44
 
     @staticmethod
     def test_unknown_param(processor_type):
@@ -184,6 +190,12 @@ class TestFunctionProcessor:
     def test_instance_call(unbound_function):
         """Calling an instance should be the same result as calling the function"""
         processor = FunctionProcessor(function=unbound_function)
+        assert processor(0) == unbound_function(0)
+
+    @staticmethod
+    def test_instance_call_positional(unbound_function):
+        """Calling an instance should be the same result as calling the function when given function positionally"""
+        processor = FunctionProcessor(unbound_function)
         assert processor(0) == unbound_function(0)
 
     @staticmethod
