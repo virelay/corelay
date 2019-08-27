@@ -100,24 +100,26 @@ class Parallel(GroupProcessor):
             If the number of children and number of data elements mismatch.
 
         """
-        def wrap_err(iterator):
+        def wrap_err(iterable):
             """Wraps around iterator to raise correct error"""
-            try:
-                yield next(iterator)
-            except TypeError as err:
-                raise TypeError("Number of data elements and children does not match!") from err
-            except StopIteration:
-                pass
+            iterator = iter(iterable)
+            while True:
+                try:
+                    yield next(iterator)
+                except TypeError as err:
+                    raise TypeError("Number of data elements and children does not match!") from err
+                except StopIteration:
+                    break
 
         if not isinstance(data, Iterable):
             # pylint: disable=not-an-iterable
-            data = (data for _ in self.children)
+            data = tuple(data for _ in self.children)
 
         result = []
         for child, element in wrap_err(zip_equal(self.children, data)):
             out = child(element)
             result.append(out)
-        return result
+        return tuple(result)
 
 
 class Sequential(GroupProcessor):
