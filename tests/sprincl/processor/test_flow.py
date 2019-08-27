@@ -1,9 +1,11 @@
+"""Test module for sprincl/processor/flow.py"""
 import pytest
 
 from sprincl.processor.flow import Shaper
 
 
 class TestShaper:
+    """Test class for Shaper"""
     @staticmethod
     def test_extract():
         """Extracting a single element should succeed"""
@@ -36,8 +38,8 @@ class TestShaper:
 
 
 class TestParallel:
-    pass
+    """Test class for Parallel"""
 
 
 class TestSequential:
-    pass
+    """Test class for Sequential"""
