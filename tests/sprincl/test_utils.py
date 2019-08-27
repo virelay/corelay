@@ -4,7 +4,7 @@
 
 import pytest
 
-from sprincl.utils import import_or_stub, Iterable
+from sprincl.utils import import_or_stub, Iterable, zip_equal
 
 
 def test_conditional_import():
@@ -64,3 +64,22 @@ class TestIterable:
     def test_instance_check_multiple_member_type_negative():
         """Iterable with multiple member types and wrong input should fail"""
         assert not isinstance([1, 'a', 0.5], Iterable[int, float])
+
+
+class TestZipEqual:
+    """Test class for zip_equal"""
+    @staticmethod
+    def test_equal_length():
+        """Zipping 2 iterables of equal length should succeed"""
+        assert tuple(zip_equal(range(3), 'abc')) == ((0, 'a'), (1, 'b'), (2, 'c'))
+
+    @staticmethod
+    def test_many_equal_length():
+        """Zipping more than 2 iterables of equal length should succeed"""
+        assert tuple(zip_equal(*(range(3),) * 5)) == ((0,) * 5, (1,) * 5, (2,) * 5)
+
+    @staticmethod
+    def test_unequal_length():
+        """Zipping 2 iterables of unequal length should fail"""
+        with pytest.raises(TypeError):
+            tuple(zip_equal(range(3), 'abcd'))
