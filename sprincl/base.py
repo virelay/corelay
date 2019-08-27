@@ -11,9 +11,11 @@ class Param(Slot):
         Allowed type(s) of the parameter.
     default : :obj:`dtype`
         Default parameter value, should be an instance of (one of) :obj:`dtype`.
+    positional : bool
+        Optional, whether the Parameter can also be set as a positional Parameter.
 
     """
-    def __init__(self, dtype, default=None, mandatory=False):
+    def __init__(self, dtype, default=None, mandatory=False, positional=False):
         """Configure type and default value of parameter.
 
         Parameters
@@ -27,9 +29,14 @@ class Param(Slot):
         super().__init__(dtype, default)
         if mandatory:
             del self.default
+        self._positional = positional
 
         # allowed_dtypes = (type, FunctionType, BuiltinFunctionType)
         # if not all(isinstance(x, allowed_dtypes) for x in self.dtype):
         #     raise TypeError(
         #         "Following dtypes: {} are not in the allowed types {}.".format(self.dtype, allowed_dtypes)
         #     )
+
+    @property
+    def is_positional(self):
+        return self._positional
