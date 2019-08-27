@@ -39,4 +39,5 @@ class Param(Slot):
 
     @property
     def is_positional(self):
+        """Whether this param can be assigned as a positional argument to Processor.__init__"""
         return self._positional
