@@ -29,6 +29,24 @@ class Iterable(metaclass=IterableMeta):
 
 
 def zip_equal(*args):
+    """Zip positional arguments only if they are of equal length.
+
+    Parameters
+    ----------
+    *args : Iterable
+        Iterables of equal length to be zipped
+
+    Yields
+    ------
+    tuple
+        Zipped elements
+
+    Raises
+    ------
+    TypeError
+        If positional arguments are no Iterables, or have different length.
+
+    """
     iters = [iter(obj) for obj in args]
     stop = False
     while not stop:
