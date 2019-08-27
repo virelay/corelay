@@ -1,6 +1,6 @@
 from ..base import Param
 from .base import Processor
-from ..util import zip_equal, Iterable
+from ..utils import zip_equal, Iterable
 
 
 class Shaper(Processor):
