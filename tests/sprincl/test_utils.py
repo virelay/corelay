@@ -4,7 +4,7 @@
 
 import pytest
 
-from sprincl.utils import import_or_stub
+from sprincl.utils import import_or_stub, Iterable
 
 
 def test_conditional_import():
@@ -36,3 +36,31 @@ def test_conditional_import_of_multiple_functions():
 
     with pytest.raises(ImportError):
         _, _ = import_or_stub('re', ('findall', 'non_existing'))
+
+
+class TestIterable:
+    """Test class for Iterable"""
+    @staticmethod
+    def test_instance_check_all_member_type():
+        """Iterable without member type should be any Iterable"""
+        assert isinstance([1, 'a', 3.5], Iterable)
+
+    @staticmethod
+    def test_instance_check_single_member_type_positive():
+        """Iterable with single member type should succeed"""
+        assert isinstance([1, 2, 3], Iterable[int])
+
+    @staticmethod
+    def test_instance_check_single_member_type_negative():
+        """Iterable with single member type and wrong input should fail"""
+        assert not isinstance([1, 2, 'a'], Iterable[int])
+
+    @staticmethod
+    def test_instance_check_multiple_member_type_positive():
+        """Iterable with multiple member types should succeed"""
+        assert isinstance([1, 2, 0.5], Iterable[int, float])
+
+    @staticmethod
+    def test_instance_check_multiple_member_type_negative():
+        """Iterable with multiple member types and wrong input should fail"""
+        assert not isinstance([1, 'a', 0.5], Iterable[int, float])
