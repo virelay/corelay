@@ -53,6 +53,12 @@ class TestParallel:
         assert parallel((4, 3, 2, 1, 0)) == (4, 4, 4, 4, 4)
 
     @staticmethod
+    def test_iterable_positional():
+        """Iterables are valid if they have the same length as there are children with children given positionally"""
+        parallel = Parallel([FunctionProcessor(function=(lambda x, n=n: x + n)) for n in range(5)])
+        assert parallel((4, 3, 2, 1, 0)) == (4, 4, 4, 4, 4)
+
+    @staticmethod
     def test_iterable_length_mismatch():
         """Iterables are invalid if they have a different length compared to the number of children"""
         parallel = Parallel(children=[FunctionProcessor(function=(lambda x, n=n: x + n)) for n in range(5)])
@@ -66,4 +72,10 @@ class TestSequential:
     def test_sequential():
         """Input should be passed sequentially along all child processors"""
         sequential = Sequential(children=[FunctionProcessor(function=lambda x, c=c: c + x) for c in 'bcde'])
+        assert sequential('a') == 'edcba'
+
+    @staticmethod
+    def test_sequential_positional():
+        """Input should be passed sequentially along all child processors when given children positionally"""
+        sequential = Sequential([FunctionProcessor(function=lambda x, c=c: c + x) for c in 'bcde'])
         assert sequential('a') == 'edcba'
