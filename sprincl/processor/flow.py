@@ -83,6 +83,8 @@ class Parallel(GroupProcessor):
     [2, 4, 8, 16]
 
     """
+    broadcast = Param(bool, False)
+
     def function(self, data):
         """Sequentially get one element from data per child, call all children with this element as input in parallel,
         and accumulate the outputs.
@@ -110,7 +112,7 @@ class Parallel(GroupProcessor):
                 except StopIteration:
                     break
 
-        if not isinstance(data, Iterable):
+        if not isinstance(data, Iterable) or self.broadcast:
             # pylint: disable=not-an-iterable
             data = tuple(data for _ in self.children)
 
