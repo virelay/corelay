@@ -56,35 +56,41 @@ def make_group_example():
             g_prediction[key] = a_predictions.astype(np.float32)
 
     with h5py.File('grouped-attr_method-ana_topic.analysis.h5') as fd:
-        # one analysis group, we call this analysis 'my first analysis'
-        g_analysis = fd.require_group('my_first_analysis')
-
+        # we call this analysis 'My First Analysis'
+        fd['/my_first_analysis/name'] = 'My First Analysis'
         # the used indices of the analysis, here we use all 3 in the attribution file
-        g_analysis['index'] = np.array(a_indices, dtype=np.uint32)
+        fd['/my_first_analysis/index'] = np.array(a_indices, dtype=np.uint32)
 
-        # embedding group
-        g_embedding = g_analysis.require_group('embedding')
-        # spectral embedding (eigenvalue decomposition) with key 'spectral', 2 eigenvalues, here just random data
+        # for shorter references
+        g_emb = fd.require_group('/my_first_analysis/embedding')
+        g_clu = fd.require_group('/my_first_analysis/clustering')
+
         n_eigvals = 2
-        g_embedding['spectral'] = np.random.normal(size=(len(g_analysis['index']), n_eigvals)).astype(np.float32)
-        g_embedding['spectral'].attrs['eigenvalue'] = np.random.normal(size=n_eigvals).astype(np.float32)
+        # verbose name of the spectral embedding
+        g_emb['/spectral/name'] = 'Spectral Embedding'
+        # spectral embedding (eigenvalue decomposition) with key 'spectral', 2 eigenvalues, here just random data
+        g_emb['/spectral/root'] = np.random.normal(size=(len(g_analysis['index']), n_eigvals)).astype(np.float32)
+        # the corresponding eigenvalues, specific to spectral embedding
+        g_emb['/spectral/eigenvalue'] = np.random.normal(size=n_eigvals).astype(np.float32)
 
-        # T-SNE embedding with
-        g_embedding['tsne'] = np.random.normal(size=(len(g_analysis['index']), 2)).astype(np.float32)
+        # verbose name of T-SNE
+        g_emb['/tsne/name'] = 'T-SNE'
+        # T-SNE embedding payload
+        g_emb['/tsne/root'] = np.random.normal(size=(len(g_analysis['index']), 2)).astype(np.float32)
         # this T-SNE embedding is based on the spectral embedding
-        g_embedding['tsne'].attrs['embedding'] = 'spectral'
-        # both feature dimensions of the eigenvectors are used
-        g_embedding['tsne'].attrs['index'] = np.array([0, 1], dtype=np.uint32)
+        g_emb['/tsne/base'] = g_emb['/spectral']
+        # both feature dimensions of the eigenvectors are used, but for demonstration purpose, we give the regionref
+        g_emb['/tsne/region'] = g_emb['/spectral/root'].regionref[:, [0, 1]]
 
-        # cluster group, subkeys are clusterings
-        g_cluster = g_analysis.require_group('cluster')
+
         # we call our random clustering 'my_clustering'
-        g_cluster['my_clustering'] = np.random.randint(0, 2, size=len(g_analysis['index']))
+        g_clu['/my_clustering/name'] = 'My Random Clustering'
+        # clustering labels
+        g_clu['/my_clustering/root'] = np.random.randint(0, 2, size=len(g_analysis['index']))
         # we specify this clustering to be based on 'spectral'
-        g_cluster['my_clustering'].attrs['embedding'] = 'spectral'
+        g_clu['my_clustering/base'] = g_emb['/spectral']
         # we use both feature dimensions for the spectral clustering
-        g_cluster['my_clustering'].attrs['index'] = np.arange(g_embedding['spectral'].shape[1])
-
+        g_clu['/my_clustering/region'] = g_emb['/spectral/root'].regionref[:, [0, 1]]
 
 def make_dataset_example():
     # input file with datasets with identical sizes
@@ -117,34 +123,42 @@ def make_dataset_example():
 
     # using datasets in the input/attribution does not change the analysis file structure
     with h5py.File('dataset-attr_method-ana_topic.analysis.h5') as fd:
-        # one analysis group, we call this analysis 'my first analysis'
-        g_analysis = fd.require_group('my_first_analysis')
-
+        # we call this analysis 'My First Analysis'
+        fd['/my_first_analysis/name'] = 'My First Analysis'
         # the used indices of the analysis, here we use all 3 in the attribution file
-        g_analysis['index'] = np.array(a_indices, dtype=np.uint32)
+        fd['/my_first_analysis/index'] = np.array(a_indices, dtype=np.uint32)
 
-        # embedding group
-        g_embedding = g_analysis.require_group('embedding')
-        # spectral embedding (eigenvalue decomposition) with key 'spectral', 2 eigenvalues, here just random data
+        # for shorter references
+        g_emb = fd.require_group('/my_first_analysis/embedding')
+        g_clu = fd.require_group('/my_first_analysis/clustering')
+
         n_eigvals = 2
-        g_embedding['spectral'] = np.random.normal(size=(len(g_analysis['index']), n_eigvals)).astype(np.float32)
-        g_embedding['spectral'].attrs['eigenvalue'] = np.random.normal(size=n_eigvals).astype(np.float32)
+        # verbose name of the spectral embedding
+        g_emb['/spectral/name'] = 'Spectral Embedding'
+        # spectral embedding (eigenvalue decomposition) with key 'spectral', 2 eigenvalues, here just random data
+        g_emb['/spectral/root'] = np.random.normal(size=(len(g_analysis['index']), n_eigvals)).astype(np.float32)
+        # the corresponding eigenvalues, specific to spectral embedding
+        g_emb['/spectral/eigenvalue'] = np.random.normal(size=n_eigvals).astype(np.float32)
 
-        # T-SNE embedding with
-        g_embedding['tsne'] = np.random.normal(size=(len(g_analysis['index']), 2)).astype(np.float32)
+        # verbose name of T-SNE
+        g_emb['/tsne/name'] = 'T-SNE'
+        # T-SNE embedding payload
+        g_emb['/tsne/root'] = np.random.normal(size=(len(g_analysis['index']), 2)).astype(np.float32)
         # this T-SNE embedding is based on the spectral embedding
-        g_embedding['tsne'].attrs['embedding'] = 'spectral'
-        # both feature dimensions of the eigenvectors are used
-        g_embedding['tsne'].attrs['index'] = np.array([0, 1], dtype=np.uint32)
+        g_emb['/tsne/base'] = g_emb['/spectral']
+        # both feature dimensions of the eigenvectors are used, but for demonstration purpose, we give the regionref
+        g_emb['/tsne/region'] = g_emb['/spectral/root'].regionref[:, [0, 1]]
 
-        # cluster group, subkeys are clusterings
-        g_cluster = g_analysis.require_group('cluster')
+
         # we call our random clustering 'my_clustering'
-        g_cluster['my_clustering'] = np.random.randint(0, 2, size=len(g_analysis['index']))
+        g_clu['/my_clustering/name'] = 'My Random Clustering'
+        # clustering labels
+        g_clu['/my_clustering/root'] = np.random.randint(0, 2, size=len(g_analysis['index']))
         # we specify this clustering to be based on 'spectral'
-        g_cluster['my_clustering'].attrs['embedding'] = 'spectral'
+        g_clu['my_clustering/base'] = g_emb['/spectral']
         # we use both feature dimensions for the spectral clustering
-        g_cluster['my_clustering'].attrs['index'] = np.arange(g_embedding['spectral'].shape[1])
+        g_clu['/my_clustering/region'] = g_emb['/spectral/root'].regionref[:, [0, 1]]
+
 
 
 def main():
