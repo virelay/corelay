@@ -88,7 +88,7 @@ def make_group_example():
         # clustering labels
         g_clu['/my_clustering/root'] = np.random.randint(0, 2, size=len(g_analysis['index']))
         # we specify this clustering to be based on 'spectral'
-        g_clu['my_clustering/base'] = g_emb['/spectral']
+        g_clu['/my_clustering/base'] = g_emb['/spectral']
         # we use both feature dimensions for the spectral clustering
         g_clu['/my_clustering/region'] = g_emb['/spectral/root'].regionref[:, [0, 1]]
 
@@ -110,7 +110,7 @@ def make_dataset_example():
         fd['index'] = np.array(a_indices, dtype=np.uint32)
 
         # attribution we only use a subset of our data
-        fd['attriburion'] = np.random.normal(size=(len(a_indices), channels, shape, shape)).astype(np.float32)
+        fd['attribution'] = np.random.normal(size=(len(a_indices), channels, shape, shape)).astype(np.float32)
 
         # attribution labels are the assigned attribution in the output layer
         a_labels = np.array([[0, 1], [0, 1], [0, 1]])
@@ -155,7 +155,7 @@ def make_dataset_example():
         # clustering labels
         g_clu['/my_clustering/root'] = np.random.randint(0, 2, size=len(g_analysis['index']))
         # we specify this clustering to be based on 'spectral'
-        g_clu['my_clustering/base'] = g_emb['/spectral']
+        g_clu['/my_clustering/base'] = g_emb['/spectral']
         # we use both feature dimensions for the spectral clustering
         g_clu['/my_clustering/region'] = g_emb['/spectral/root'].regionref[:, [0, 1]]
 
