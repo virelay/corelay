@@ -10,15 +10,9 @@
 - HDF5 structure
   - `key`: **group**, or **dtype** if members have same shape and no identifiers
     - if **group**, `<subkey-variable>`: **dtype** variable subkey without type
-      - attributes:
-        - `attribute`: attribute valid for all subkeys of `key`
     - if **dtype**: *shape* same shape for all members
   - `other-key`: **group** `<clustering>` **dtype** *shape* definition for all group members
-    - attributes: (attributes are used to define parameters of the used algorithm)
-      - `other-attr`: **dtype** *shape* all members have this attribute
     - `specific-member`: properties for some specific member of group
-      - attributes
-        - `some-attr`: **dtype** *shape* only `specific-member` has this attribute
 
 ## General Data Specification
 
@@ -73,19 +67,28 @@
   - `<analysis-topic>` is an identifier for the analysis approach, e.g. different distance metrics, graph methods etc.
 - HDF5 structure
   - `<analysis-identifier>` **group** with name of the analysis as subkeys (not necessarily classes!, wordnet-id for class-wise ImageNet Analysis)
-    - `index`: **uint32** *samples* sample indices in the input attribution file, shared among embeddings
+    - `name`: **string** verbose name of analysis
+    - `index`: **uint32** *samples* sample indices in the input attribution file
     - `embedding`: **group** `<embedding-id>`
-      - `spectral`: **float32** *samples x eigenvalues* Eigenvectors of Eigen Decomposition
-        - attributes:
-          - `eigenvalue` **float32** *eigenvalues* Eigenvalues for the spectral embedding
-      - `tsne`: **float32** *samples x 2* t-SNE Embedding
-        - attributes:
-          - `embedding`: **string** 1 the embedding used for tsne, non-existent if T-SNE on data
-          - `index`: **uint** the feature indices (not sample dimension) of the used embedding, non-existent if T-SNE on data
-    - `cluster`: **group** `<clustering>` **uint32** *samples* labels for clustering on embedding
-      - attributes: (attributes are used to define parameters of the used algorithm)
-        - `embedding`: **string** 1 the embedding used for clustering
-        - `index`: **uint** the feature (not sample dimension) indices of the used embedding
-      - `kmeans-<k>`: label for clusters on the spectral embedding using k-means with k=`<k>`
-        - attributes
-          - `k`: **uint8** *1* k (number of clusters) for k-means
+      - `spectral`: **group**
+        - `name` **string**, verbose name of embedding
+        - `root`: **float32** *samples x eigenvalues* Eigenvectors of Eigen Decomposition
+        - `base`: **link**, if not model input, link to the embedding used
+        - `region`: **regionref**, if not model input or not full embedding, regionref to the features used as input
+        - `eigenvalue` **float32** *eigenvalues* Eigenvalues for the spectral embedding
+      - `tsne`: **group**
+        - `name` **string**, verbose name of embedding
+        - `root`: **float32** *samples x 2* t-SNE Embedding
+        - `base`: **link**, if not model input, link to the embedding used
+        - `region`: **regionref**, if not model input or not full embedding, regionref to the features used as input
+    - `clustering`: **group**
+      - `<clustering>`: **group** label for clusters on an embedding
+        - `name` **string**, verbose name of embedding
+        - `root`: **uint32** *samples* labels for clustering on embedding
+        - `base`: **link** link to the embedding used for clustering
+        - `region`: **regionref**, if not model input or not full embedding, regionref to the features used as input
+        - `#clusters`: **int**, optional if not applying, number of clusters for this clustering
+        - `prototype`: **group** multiple prototypes for each cluster
+          - `average`: **group** member average prototypes for all clusters
+            - `name` **string**, verbose name of prototype
+            - `root`: **float32** *<#clusters> x channel x height x width* prototype payload
