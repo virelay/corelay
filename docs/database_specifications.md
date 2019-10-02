@@ -71,24 +71,24 @@
     - `index`: **uint32** *samples* sample indices in the input attribution file
     - `embedding`: **group** `<embedding-id>`
       - `spectral`: **group**
-        - `name` **string**, verbose name of embedding
+        - `name`: **string**, verbose name of embedding
         - `root`: **float32** *samples x eigenvalues* Eigenvectors of Eigen Decomposition
         - `base`: **link**, if not model input, link to the embedding used
         - `region`: **regionref**, if not model input or not full embedding, regionref to the features used as input
         - `eigenvalue` **float32** *eigenvalues* Eigenvalues for the spectral embedding
       - `tsne`: **group**
-        - `name` **string**, verbose name of embedding
+        - `name`: **string**, verbose name of embedding
         - `root`: **float32** *samples x 2* t-SNE Embedding
         - `base`: **link**, if not model input, link to the embedding used
         - `region`: **regionref**, if not model input or not full embedding, regionref to the features used as input
     - `clustering`: **group**
       - `<clustering>`: **group** label for clusters on an embedding
-        - `name` **string**, verbose name of embedding
+        - `name`: **string**, verbose name of embedding
         - `root`: **uint32** *samples* labels for clustering on embedding
         - `base`: **link** link to the embedding used for clustering
         - `region`: **regionref**, if not model input or not full embedding, regionref to the features used as input
         - `#clusters`: **int**, optional if not applying, number of clusters for this clustering
         - `prototype`: **group** multiple prototypes for each cluster
           - `average`: **group** member average prototypes for all clusters
-            - `name` **string**, verbose name of prototype
+            - `name`: **string**, verbose name of prototype
             - `root`: **float32** *<#clusters> x channel x height x width* prototype payload
