@@ -4,6 +4,7 @@
 import inspect
 from types import FunctionType, MethodType, LambdaType
 from abc import abstractmethod
+from collections import OrderedDict
 
 from sprincl.io import DataStorageBase, NoStorage, NoDataSource, NoDataTarget
 from ..base import Param
@@ -89,12 +90,12 @@ class Processor(Plugboard):
         """
         try:
             # pylint: disable=no-member
-            out = self.io.read()
+            out = self.io.read(data, meta=self.identifiers())
         except NoDataSource:
             out = self.function(data)
             try:
                 # pylint: disable=no-member
-                self.io.write(out)
+                self.io.write(out, meta=self.identifiers())
             except NoDataTarget:
                 pass
         if self.is_checkpoint:
@@ -111,6 +112,11 @@ class Processor(Plugboard):
 
         """
         return self.collect_attr(Param)
+
+    def identifiers(self):
+        result = OrderedDict(name=type(self).__qualname__)
+        result.update((key, getattr(self, key)) for key, param in self.collect(Param).items() if param.is_identifier)
+        return result
 
     def copy(self):
         """Copy self, creating a new Processor instance with the same values for :obj:`Param` attribute defined
