@@ -14,6 +14,17 @@ from .base import Param
 from .plugboard import Plugboard
 
 
+class StorableMeta(type):
+    """Meta class to check for write/ read attributes via isinstance"""
+    def __instancecheck__(cls, instance):
+        """Is instance if iterable and all members are of provided types"""
+        return all(hasattr(instance, attr) for attr in ('write', 'read'))
+
+
+class Storable(metaclass=StorableMeta):
+    """Abstract class to check for write/ read attributes via isinstance"""
+
+
 class NoDataSource(Exception):
     """Raise when no data source available."""
     # Following is not useless, since message becomes optional

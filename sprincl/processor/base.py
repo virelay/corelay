@@ -6,7 +6,7 @@ from types import FunctionType, MethodType, LambdaType
 from abc import abstractmethod
 from collections import OrderedDict
 
-from sprincl.io import DataStorageBase, NoStorage, NoDataSource, NoDataTarget
+from sprincl.io import Storable, NoStorage, NoDataSource, NoDataTarget
 from ..base import Param
 from ..plugboard import Plugboard
 
@@ -30,7 +30,7 @@ class Processor(Plugboard):
     """
     is_output = Param(bool, False)
     is_checkpoint = Param(bool, False)
-    io = Param(DataStorageBase, NoStorage())
+    io = Param(Storable, NoStorage())
 
     def __init__(self, *args, **kwargs):
         """Initialize all :obj:`Param` defined parameters to either there default value or, if supplied as keyword
