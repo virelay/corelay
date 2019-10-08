@@ -10,8 +10,9 @@ from abc import abstractmethod
 import numpy as np
 import h5py
 
-from .base import Param
-from .plugboard import Plugboard
+from ..base import Param
+from ..plugboard import Plugboard
+from .hashing import ext_hash
 
 
 class StorableMeta(type):
@@ -23,6 +24,30 @@ class StorableMeta(type):
 
 class Storable(metaclass=StorableMeta):
     """Abstract class to check for write/ read attributes via isinstance"""
+
+
+class HashedHDF5:
+    """Hashed storage of Processor data in HDF5 files"""
+    def __init__(self, h5group):
+        self.base = h5group
+
+    def read(self, data_in, meta):
+        pass
+
+    def write(self, data_out, data_in, meta):
+        def _iterwrite(data, group, elem):
+            if isinstance(data, tuple):
+                g_new = group.require_group(elem)
+                for n, array in enumerate(data_out):
+                    _iterwrite(array, g_new, '{:03d}'.format(n))
+            elif isinstance(data, np.ndarray):
+                group[elem] = array
+            else:
+                raise TypeError('Unsupported output type!')
+
+        hashval = ext_hash((data_in, meta))
+        group = self.base.require_group(hashval)
+        _iterwrite(data_out, group, 'data')
 
 
 class NoDataSource(Exception):
