@@ -48,13 +48,13 @@ class DataStorageBase(Plugboard):
         self.io = None
 
     @abstractmethod
-    def read(self):
+    def read(self, data=None, meta=None):
         """Should implement read functionality.
 
         """
 
     @abstractmethod
-    def write(self, data):
+    def write(self, data, meta=None):
         """Should implement write functionality.
 
         """
@@ -116,10 +116,10 @@ class NoStorage(DataStorageBase):
     def __bool__(self):
         return False
 
-    def read(self):
+    def read(self, data=None, meta=None):
         raise NoDataSource()
 
-    def write(self, data):
+    def write(self, data, meta=None):
         raise NoDataTarget()
 
     def exists(self):
@@ -160,7 +160,7 @@ class PickleStorage(DataStorageBase):
         except EOFError:
             pass
 
-    def read(self):
+    def read(self, data=None, meta=None):
         """Return data for a given key. Need to load the complete pickle at first read. After the data is cached.
 
         Returns
@@ -172,7 +172,7 @@ class PickleStorage(DataStorageBase):
             raise NoDataSource("Key: '{}' does not exist.".format(self.data_key))
         return self.data[self.data_key]
 
-    def write(self, data):
+    def write(self, data, meta=None):
         """Write and pickle the data as: {"data": data, "key": key}
 
         Parameters
@@ -218,7 +218,7 @@ class HDF5Storage(DataStorageBase):
         super().__init__(**kwargs)
         self.io = h5py.File(path, mode=mode)
 
-    def read(self):
+    def read(self, data=None, meta=None):
         """
         Returns
         -------
@@ -233,7 +233,7 @@ class HDF5Storage(DataStorageBase):
             return OrderedDict(((int(k) if k.isdigit() else k, v[()]) for k, v in data.items()))
         return data[()]
 
-    def write(self, data):
+    def write(self, data, meta=None):
         """
         Parameters
         ----------
