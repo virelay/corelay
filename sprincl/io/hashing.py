@@ -9,7 +9,7 @@ import pickle
 
 import numpy as np
 from numpy import ndarray
-# pylint: disable=no-name-in=module
+# pylint: disable=no-name-in-module
 from metrohash import MetroHash128
 try:
     from torch import Tensor

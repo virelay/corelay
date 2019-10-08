@@ -4,6 +4,7 @@
 
 import copy
 import pickle
+import json
 from collections import OrderedDict
 from abc import abstractmethod
 
@@ -26,30 +27,6 @@ class Storable(metaclass=StorableMeta):
     """Abstract class to check for write/ read attributes via isinstance"""
 
 
-class HashedHDF5:
-    """Hashed storage of Processor data in HDF5 files"""
-    def __init__(self, h5group):
-        self.base = h5group
-
-    def read(self, data_in, meta):
-        pass
-
-    def write(self, data_out, data_in, meta):
-        def _iterwrite(data, group, elem):
-            if isinstance(data, tuple):
-                g_new = group.require_group(elem)
-                for n, array in enumerate(data_out):
-                    _iterwrite(array, g_new, '{:03d}'.format(n))
-            elif isinstance(data, np.ndarray):
-                group[elem] = array
-            else:
-                raise TypeError('Unsupported output type!')
-
-        hashval = ext_hash((data_in, meta))
-        group = self.base.require_group(hashval)
-        _iterwrite(data_out, group, 'data')
-
-
 class NoDataSource(Exception):
     """Raise when no data source available."""
     # Following is not useless, since message becomes optional
@@ -62,6 +39,48 @@ class NoDataTarget(Exception):
     """Raise when no target source available."""
     def __init__(self):
         super().__init__('No Data Target available.')
+
+
+class HashedHDF5:
+    """Hashed storage of Processor data in HDF5 files"""
+    def __init__(self, h5group):
+        self.base = h5group
+
+    def read(self, data_in, meta):
+        """Read output from a hashed h5 group, with hash of (data_in, meta)"""
+        def _iterread(base):
+            """Iteratively read from HDF5 Group into tuple hierachy of ndarrays"""
+            if isinstance(base, h5py.Group):
+                return tuple(_iterread(base[key]) for key in sorted(base))
+            if isinstance(base, h5py.Dataset):
+                return base[()]
+            raise TypeError('Unsupported output type!')
+        hashval = ext_hash((data_in, meta))
+        try:
+            group = self.base[hashval]
+        except KeyError as error:
+            raise NoDataSource() from error
+
+        return _iterread(group['data'])
+
+
+    def write(self, data_out, data_in, meta):
+        """Write output to a hashed h5 group, with hash of (data_in, meta)"""
+        def _iterwrite(data, group, elem):
+            """Iteratively write to a HDF5 Group from a tuple hierachy of ndarrays"""
+            if isinstance(data, tuple):
+                g_new = group.require_group(elem)
+                for n, array in enumerate(data_out):
+                    _iterwrite(array, g_new, '{:03d}'.format(n))
+            elif isinstance(data, np.ndarray):
+                group[elem] = array
+            else:
+                raise TypeError('Unsupported output type!')
+
+        hashval = ext_hash((data_in, meta))
+        group = self.base.require_group(hashval)
+        _iterwrite(data_out, group, 'data')
+        group['meta'] = json.dumps(meta)
 
 
 class DataStorageBase(Plugboard):
