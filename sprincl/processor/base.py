@@ -114,6 +114,14 @@ class Processor(Plugboard):
         return self.collect_attr(Param)
 
     def identifiers(self):
+        """Returns a dict containing the class qualifer name, as well all Parameters marked as identifiers with their
+        values
+
+        Returns
+        -------
+        :obj:`collections.OrderedDict`
+            OrderedDict, containing the qualifier class name and all Parameters marked as identifiers with their values
+        """
         result = OrderedDict(name=type(self).__qualname__)
         result.update((key, getattr(self, key)) for key, param in self.collect(Param).items() if param.is_identifier)
         return result
