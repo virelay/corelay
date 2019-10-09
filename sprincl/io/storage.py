@@ -73,7 +73,7 @@ class HashedHDF5:
                 for n, array in enumerate(data_out):
                     _iterwrite(array, g_new, '{:03d}'.format(n))
             elif isinstance(data, np.ndarray):
-                group[elem] = array
+                group[elem] = data
             else:
                 raise TypeError('Unsupported output type!')
 
@@ -92,13 +92,13 @@ class DataStorageBase(Plugboard):
         self.io = None
 
     @abstractmethod
-    def read(self, data=None, meta=None):
+    def read(self, data_in=None, meta=None):
         """Should implement read functionality.
 
         """
 
     @abstractmethod
-    def write(self, data, meta=None):
+    def write(self, data_out, data_in=None, meta=None):
         """Should implement write functionality.
 
         """
@@ -160,10 +160,10 @@ class NoStorage(DataStorageBase):
     def __bool__(self):
         return False
 
-    def read(self, data=None, meta=None):
+    def read(self, data_in=None, meta=None):
         raise NoDataSource()
 
-    def write(self, data, meta=None):
+    def write(self, data_out, data_in=None, meta=None):
         raise NoDataTarget()
 
     def exists(self):
@@ -204,7 +204,7 @@ class PickleStorage(DataStorageBase):
         except EOFError:
             pass
 
-    def read(self, data=None, meta=None):
+    def read(self, data_in=None, meta=None):
         """Return data for a given key. Need to load the complete pickle at first read. After the data is cached.
 
         Returns
@@ -262,7 +262,7 @@ class HDF5Storage(DataStorageBase):
         super().__init__(**kwargs)
         self.io = h5py.File(path, mode=mode)
 
-    def read(self, data=None, meta=None):
+    def read(self, data_in=None, meta=None):
         """
         Returns
         -------
@@ -277,25 +277,25 @@ class HDF5Storage(DataStorageBase):
             return OrderedDict(((int(k) if k.isdigit() else k, v[()]) for k, v in data.items()))
         return data[()]
 
-    def write(self, data, meta=None):
+    def write(self, data_out, data_in=None, meta=None):
         """
         Parameters
         ----------
-        data: np.ndarray, dict
+        data_out: np.ndarray, dict
             Data being stored. Dictionaries are pickled and stored as strings.
 
         """
-        if isinstance(data, dict):
-            for key, value in data.items():
+        if isinstance(data_out, dict):
+            for key, value in data_out.items():
                 shape, dtype = self._get_shape_dtype(value)
                 self.io.require_dataset(data=value, shape=shape, dtype=dtype, name='{}/{}'.format(self.data_key, key))
-        elif isinstance(data, tuple):
-            for key, value in enumerate(data):
+        elif isinstance(data_out, tuple):
+            for key, value in enumerate(data_out):
                 shape, dtype = self._get_shape_dtype(value)
                 self.io.require_dataset(data=value, shape=shape, dtype=dtype, name='{}/{}'.format(self.data_key, key))
         else:
-            shape, dtype = self._get_shape_dtype(data)
-            self.io.require_dataset(data=data, shape=shape, dtype=dtype, name=self.data_key)
+            shape, dtype = self._get_shape_dtype(data_out)
+            self.io.require_dataset(data=data_out, shape=shape, dtype=dtype, name=self.data_key)
 
     def exists(self):
         """Returns True if key exists in self.io.

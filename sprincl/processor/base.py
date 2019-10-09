@@ -90,12 +90,12 @@ class Processor(Plugboard):
         """
         try:
             # pylint: disable=no-member
-            out = self.io.read(data, meta=self.identifiers())
+            out = self.io.read(data_in=data, meta=self.identifiers())
         except NoDataSource:
             out = self.function(data)
             try:
                 # pylint: disable=no-member
-                self.io.write(out, meta=self.identifiers())
+                self.io.write(data_out=out, data_in=data, meta=self.identifiers())
             except NoDataTarget:
                 pass
         if self.is_checkpoint:
