@@ -483,7 +483,7 @@ class ServerApplication:
         )
         self.cluster_select = Select(
             value=self.data.selected.cluster,
-            options=[cluster for cluster in self.data.cluster],
+            options=list(self.data.cluster),
             width=200
         )
         alpha_slider = Slider(start=0.0, end=1.0, step=0.05, value=0.0, width=400, align='center')
