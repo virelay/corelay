@@ -23,7 +23,7 @@ class SciPyPDist(Distance):
     ----
     See scipy.spatial.distance.pdist for valid values of metric
     """
-    metric = Param(str, 'euclidean')
+    metric = Param(str, 'euclidean', identifier=True)
     m_args = Param(list, [])
     m_kwargs = Param(dict, {})
 

@@ -30,8 +30,8 @@ class SparseKNN(Affinity):
         If `True`, Affinity matrix is set to the mean of itself and itself transposed.
 
     """
-    n_neighbors = Param(int, 10)
-    symmetric = Param(bool, True)
+    n_neighbors = Param(int, 10, identifier=True)
+    symmetric = Param(bool, True, identifier=True)
 
     def function(self, data):
         """Compute Sparse K-Nearest-Neighbors affinity matrix.
@@ -76,7 +76,7 @@ class RadialBasisFunction(Affinity):
         RBF scale
 
     """
-    sigma = Param(float, 1.0)
+    sigma = Param(float, 1.0, identifier=True)
 
     def function(self, data):
         """Compute Radial Basis Function affinity matrix.

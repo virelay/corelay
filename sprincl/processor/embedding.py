@@ -22,9 +22,9 @@ class EigenDecomposition(Embedding):
     """Eigenvalue Decomposition
 
     """
-    n_eigval = Param(int, 32)
+    n_eigval = Param(int, 32, identifier=True)
     which = Param(str, 'LM')
-    normalize = Param(bool, True)
+    normalize = Param(bool, True, identifier=True)
 
     @property
     def _output_repr(self):
@@ -64,8 +64,8 @@ class TSNEEmbedding(Embedding):
     """TSNE Embedding
 
     """
-    n_components = Param(int, default=2)
-    metric = Param(str, default='euclidean')
+    n_components = Param(int, default=2, identifier=True)
+    metric = Param(str, default='euclidean', identifier=True)
 
     def function(self, data):
         # pylint: disable=not-a-mapping
@@ -78,8 +78,8 @@ class PCAEmbedding(Embedding):
     """PCA Embedding
 
     """
-    n_components = Param(int, default=2)
-    whiten = Param(bool, default=False)
+    n_components = Param(int, default=2, identifier=True)
+    whiten = Param(bool, default=False, identifier=True)
 
     def function(self, data):
         # pylint: disable=not-a-mapping
@@ -92,8 +92,8 @@ class LLEEmbedding(Embedding):
     """LocallyLinearEmbedding
 
     """
-    n_components = Param(int, default=2)
-    n_neighbors = Param(int, default=5)
+    n_components = Param(int, default=2, identifier=True)
+    n_neighbors = Param(int, default=5, identifier=True)
 
     def function(self, data):
         # pylint: disable=not-a-mapping
@@ -107,9 +107,9 @@ class UMAPEmbedding(Embedding):
     """UMAPEmbedding: https://umap-learn.readthedocs.io/en/latest/index.html
 
     """
-    n_neighbors = Param(int, default=15)
-    min_dist = Param(float, default=0.1)
-    metric = Param(str, default='correlation')
+    n_neighbors = Param(int, default=15, identifier=True)
+    min_dist = Param(float, default=0.1, identifier=True)
+    metric = Param(str, default='correlation', identifier=True)
 
     def function(self, data):
         umap = UMAP(n_neighbors=self.n_neighbors, min_dist=self.min_dist, metric=self.metric)

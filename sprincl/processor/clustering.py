@@ -40,7 +40,7 @@ class KMeans(Clustering):
     :obj:`sklearn.cluster.KMeans`
 
     """
-    n_clusters = Param(int, 2)
+    n_clusters = Param(int, 2, identifier=True)
     index = Param(tuple, (slice(None),))
 
     def function(self, data):
@@ -69,8 +69,8 @@ class HDBSCAN(Clustering):
     https://github.com/scikit-learn-contrib/hdbscan
 
     """
-    n_clusters = Param(int, 5)
-    metric = Param(str, 'euclidean')
+    n_clusters = Param(int, 5, identifier=True)
+    metric = Param(str, 'euclidean', identifier=True)
 
     def function(self, data):
         # pylint: disable=not-a-mapping
@@ -97,9 +97,9 @@ class DBSCAN(Clustering):
     :obj:`sklearn.cluster.DBSCAN`
 
     """
-    metric = Param(str, 'euclidean')
-    eps = Param(float, 0.5)
-    min_samples = Param(int, 5)
+    metric = Param(str, 'euclidean', identifier=True)
+    eps = Param(float, 0.5, identifier=True)
+    min_samples = Param(int, 5, identifier=True)
 
     def function(self, data):
         # pylint: disable=not-a-mapping
@@ -127,9 +127,9 @@ class AgglomerativeClustering(Clustering):
     :obj:`sklearn.cluster.AgglomerativeClustering`
 
     """
-    n_clusters = Param(int, 5)
-    metric = Param(str, 'euclidean')
-    linkage = Param(str, 'ward')
+    n_clusters = Param(int, 5, identifier=True)
+    metric = Param(str, 'euclidean', identifier=True)
+    linkage = Param(str, 'ward', identifier=True)
 
     def function(self, data):
         # pylint: disable=not-a-mapping
