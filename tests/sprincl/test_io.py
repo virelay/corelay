@@ -55,7 +55,7 @@ def test_data_storage(storage, tmp_path, data, param_values):
     # Test writing
     test_path = tmp_path / "test.file"
     data_storage = storage(test_path, mode='w')
-    data_storage.at(data_key='data').write(data=data)
+    data_storage.at(data_key='data').write(data)
     data_storage.close()
 
     # Test reading
