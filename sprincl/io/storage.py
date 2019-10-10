@@ -216,17 +216,17 @@ class PickleStorage(DataStorageBase):
             raise NoDataSource("Key: '{}' does not exist.".format(self.data_key))
         return self.data[self.data_key]
 
-    def write(self, data, meta=None):
+    def write(self, data_out, data_in=None, meta=None):
         """Write and pickle the data as: {"data": data, "key": key}
 
         Parameters
         ----------
-        data: np.ndarray, dict
+        data_out: np.ndarray, dict
             Data being stored.
 
         """
-        self.data[self.data_key] = data
-        pickle.dump({"data": data, "key": self.data_key}, self.io)
+        self.data[self.data_key] = data_out
+        pickle.dump({"data": data_out, "key": self.data_key}, self.io)
 
     def keys(self):
         """Return keys from self.data. Need to load the complete pickle at first read.
