@@ -1,26 +1,73 @@
 # Spectral Relevance Investigating Clusters (SPRINCL)
 
-There are two command-line interfaces:
+- sprincl is used for pipelined analysis (of attributions)
 
-## SPRINCL for Analysis
+```python
+import h5py
+import numpy as np
 
-```sh
-sprincl \
-        --modify \
-        --overwrite \
-        --exname n38194990 \
-        "/path/to/analysis/output.h5" \
-    embed \
-        --eigvals 32 \
-        --knn 8 \
-        --no-modify
-        --label-filter 382 \
-        "/path/to/attribution.h5" \
-    cluster \
-        --eigvals 8 \
-        --clusters 2,3,4,5,6,7,8,9,10,11,12 \
-    tsne \
-        --eigvals 8
+from sprincl.base import Param
+from sprincl.processor.base import Processor
+from sprincl.processor.flow import Sequential, Parallel
+from sprincl.pipeline.spectral import SpectralClustering
+from sprincl.processor.clustering import KMeans
+from sprincl.processor.embedding import TSNEEmbedding, EigenDecomposition
+from sprincl.io.storage import HashedHDF5
+
+
+# custom processors can be implemented by defining a function attribute
+class Flatten(Processor):
+    def function(self, data):
+        return data.reshape(data.shape[0], np.prod(data.shape[1:]))
+
+
+class SumChannel(Processor):
+    # parameters can be assigned by defining a class-owned Param instance
+    axis = Param(int, 1)
+    def function(self, data):
+        return data.sum(1)
+
+
+class Normalize(Processor):
+    def function(self, data):
+        data = data / data.sum((1,2), keepdims=True)
+        return data
+
+
+def main():
+    np.random.seed(0xDEADBEEF)
+    fpath = 'test.analysis.h5'
+    with h5py.File(fpath, 'a') as fd:
+        # HashedHDF5 is an io-object that stores outputs of Processors based on hashes in hdf5
+        iobj = HashedHDF5(fd.require_group('proc_data'))
+        data = np.random.normal(size=(64, 3, 32, 32))
+        n_clusters = range(2, 20)
+
+        # SpectralClustering is an Example for a pre-defined Pipeline
+        pipeline = SpectralClustering(
+            # processors, such as EigenDecomposition, can be assigned to pre-defined tasks
+            embedding=EigenDecomposition(n_eigval=8, io=iobj),
+            # flow-based Processors, such as Parallel, can combine multiple Processors
+            clustering=Parallel([
+                Parallel([
+                    KMeans(n_clusters=k, io=iobj) for k in n_clusters
+                ], broadcast=True),
+                # io-objects will be used during computation when supplied to Processors
+                TSNEEmbedding(io=iobj)
+            ], broadcast=True, is_output=True)
+        )
+        # Processors (also Params) can be updated by simply assigning corresponding attributes
+        pipeline.preprocessing = Sequential([
+            SumChannel(),
+            Normalize(),
+            Flatten()
+        ]),
+
+        # Processors flagged with "is_output=True" will be accumulated in the output
+        output = pipeline(data)
+
+if __name__ == '__main__':
+    main()
 ```
 
 ## VISPR for Visualization
