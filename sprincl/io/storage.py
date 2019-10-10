@@ -19,7 +19,7 @@ from .hashing import ext_hash
 class StorableMeta(type):
     """Meta class to check for write/ read attributes via isinstance"""
     def __instancecheck__(cls, instance):
-        """Is instance if iterable and all members are of provided types"""
+        """Is instance if object has attributes write and read"""
         return all(hasattr(instance, attr) for attr in ('write', 'read'))
 
 
