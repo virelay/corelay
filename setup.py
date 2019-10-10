@@ -18,7 +18,6 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'sprincl = sprincl.cli:main',
             'vispr = vispr.cli:main',
         ]
     },
