@@ -30,8 +30,9 @@ class Normalize(Processor):
 
 
 def main():
-    buf = BytesIO()
-    with h5py.File(buf, 'w') as fd:
+    np.random.seed(0xDEADBEEF)
+    fpath = 'test.analysis.h5'
+    with h5py.File(fpath, 'a') as fd:
         iobj = HashedHDF5(fd.require_group('proc_data'))
 
         data = np.random.normal(size=(64, 3, 32, 32))
