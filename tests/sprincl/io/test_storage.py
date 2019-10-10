@@ -1,11 +1,14 @@
 """Test io functionalities
 
 """
+from io import BytesIO
 
 import pytest
 import numpy as np
+import h5py
 
 from sprincl import io
+from sprincl.io.storage import HashedHDF5
 
 
 @pytest.fixture
@@ -23,6 +26,57 @@ def param_values():
     """
     return dict(param1=1, param2='string')
 
+class TestHashedHDF5:
+    """Test class for HashedHDF5"""
+    @staticmethod
+    def test_write_array():
+        """Writing a numpy array should raise no Exceptions"""
+        with BytesIO() as buf, h5py.File(buf, 'w') as fd:
+            group = fd.require_group('hashed')
+            data_out = np.random.normal(size=5)
+            iobj = HashedHDF5(group)
+            iobj.write(data_out=data_out, data_in=1, meta=1)
+
+    @staticmethod
+    def test_write_tuple():
+        """Writing a tuple of numpy arrays should raise no Exceptions"""
+        with BytesIO() as buf, h5py.File(buf, 'w') as fd:
+            group = fd.require_group('hashed')
+            data_out = (np.random.normal(size=5),) * 2
+            iobj = HashedHDF5(group)
+            iobj.write(data_out=data_out, data_in=1, meta=1)
+
+    @staticmethod
+    def test_write_unsupported():
+        """Writing an unsupported type should raise a TypeError"""
+        with BytesIO() as buf, h5py.File(buf, 'w') as fd:
+            group = fd.require_group('hashed')
+            data_out = 'adfg'
+            iobj = HashedHDF5(group)
+            with pytest.raises(TypeError):
+                iobj.write(data_out=data_out, data_in=1, meta=1)
+
+    @staticmethod
+    def test_read_array():
+        """Reading after writing should return the same data"""
+        with BytesIO() as buf, h5py.File(buf, 'w') as fd:
+            group = fd.require_group('hashed')
+            data_out = np.random.normal(size=5)
+            iobj = HashedHDF5(group)
+            iobj.write(data_out=data_out, data_in=1, meta=1)
+            loaded = iobj.read(data_in=1, meta=1)
+            assert (data_out == loaded).all()
+
+    @staticmethod
+    def test_read_tuple():
+        """Reading after writing should return the same data"""
+        with BytesIO() as buf, h5py.File(buf, 'w') as fd:
+            group = fd.require_group('hashed')
+            data_out = (np.random.normal(size=5),) * 2
+            iobj = HashedHDF5(group)
+            iobj.write(data_out=data_out, data_in=1, meta=1)
+            loaded = iobj.read(data_in=1, meta=1)
+            assert all((out == load).all() for out, load in zip(data_out, loaded))
 
 @pytest.mark.parametrize("storage", [io.HDF5Storage, io.PickleStorage])
 def test_data_storage_at_functionality(storage, tmp_path):
