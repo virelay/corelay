@@ -81,8 +81,7 @@ class HashedHDF5:
             """Iteratively hash from tuple hierachy into tuple hierachy of hashes"""
             if isinstance(base, tuple):
                 return tuple(_iterhash(obj) for obj in base)
-            else:
-                return ext_hash(base)
+            return ext_hash(base)
 
         hashval = ext_hash((data_in, meta))
         group = self.base.require_group(hashval)
