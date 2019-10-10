@@ -66,7 +66,7 @@ def test_data_storage(storage, tmp_path, data, param_values):
 
     # Test same with context manager
     with storage(test_path, mode='a') as data_storage:
-        data_storage.at(data_key='param_values').write(data=param_values)
+        data_storage.at(data_key='param_values').write(param_values)
 
     with storage(test_path, mode='r') as data_storage:
         assert 'param_values' in data_storage
@@ -83,7 +83,7 @@ def test_data_storage(storage, tmp_path, data, param_values):
     np.testing.assert_equal(ret_param_values_2, param_values)
 
     with storage(test_path, mode='a') as data_storage:
-        data_storage.at(data_key='new_entry/data').write(data=data)
+        data_storage.at(data_key='new_entry/data').write(data)
         assert data_storage.at(data_key='new_entry/data').exists()
         ret_data = data_storage.at(data_key='new_entry/data').read()
         np.testing.assert_equal(ret_data, data)
