@@ -77,10 +77,19 @@ class HashedHDF5:
             else:
                 raise TypeError('Unsupported output type!')
 
+        def _iterhash(base):
+            """Iteratively hash from tuple hierachy into tuple hierachy of hashes"""
+            if isinstance(base, tuple):
+                return tuple(_iterhash(obj) for obj in base)
+            else:
+                return ext_hash(base)
+
         hashval = ext_hash((data_in, meta))
         group = self.base.require_group(hashval)
         _iterwrite(data_out, group, 'data')
         group['meta'] = json.dumps(meta)
+        group['input'] = json.dumps(_iterhash(data_in))
+        group['output'] = json.dumps(_iterhash(data_out))
 
 
 class DataStorageBase(Plugboard):
