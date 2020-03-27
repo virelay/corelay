@@ -1,3 +1,5 @@
+# NOTE: FURTHER DEVELOPMENT ON https://gitlab.tubit.tu-berlin.de/sprincl/sprincl
+
 # Spectral Relevance Investigating Clusters (SPRINCL)
 
 - sprincl is used for pipelined analysis (of attributions)
