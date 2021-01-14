@@ -2,14 +2,14 @@ import os
 
 import click
 
-from sprincl import io
-from sprincl.pipeline.spectral import SpectralEmbedding
-from sprincl.processor.base import FunctionProcessor
-from sprincl.processor.affinity import SparseKNN
-from sprincl.processor.distance import SciPyPDist
-from sprincl.processor.embedding import EigenDecomposition, TSNEEmbedding
-from sprincl.processor.laplacian import SymmetricNormalLaplacian
-from sprincl.processor.clustering import KMeans
+from corelay import io
+from corelay.pipeline.spectral import SpectralEmbedding
+from corelay.processor.base import FunctionProcessor
+from corelay.processor.affinity import SparseKNN
+from corelay.processor.distance import SciPyPDist
+from corelay.processor.embedding import EigenDecomposition, TSNEEmbedding
+from corelay.processor.laplacian import SymmetricNormalLaplacian
+from corelay.processor.clustering import KMeans
 
 
 @click.command()

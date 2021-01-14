@@ -3,14 +3,14 @@ from io import BytesIO
 import h5py
 import numpy as np
 
-from sprincl.base import Param
-from sprincl.processor.base import Processor
-from sprincl.processor.flow import Sequential, Parallel
-from sprincl.pipeline.spectral import SpectralClustering
-from sprincl.processor.clustering import KMeans
-from sprincl.processor.embedding import TSNEEmbedding, EigenDecomposition
-from sprincl.processor.preprocessing import Histogram
-from sprincl.io.storage import HashedHDF5
+from corelay.base import Param
+from corelay.processor.base import Processor
+from corelay.processor.flow import Sequential, Parallel
+from corelay.pipeline.spectral import SpectralClustering
+from corelay.processor.clustering import KMeans
+from corelay.processor.embedding import TSNEEmbedding, EigenDecomposition
+from corelay.processor.preprocessing import Histogram
+from corelay.io.storage import HashedHDF5
 
 
 class Flatten(Processor):

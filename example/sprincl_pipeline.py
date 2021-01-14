@@ -1,9 +1,9 @@
 import numpy as np
 
-from sprincl.pipeline.base import Pipeline, Task
-from sprincl.processor.base import Processor, Param, FunctionProcessor
-from sprincl.processor.affinity import Affinity, RadialBasisFunction
-from sprincl.processor.distance import Distance, SciPyPDist
+from corelay.pipeline.base import Pipeline, Task
+from corelay.processor.base import Processor, Param, FunctionProcessor
+from corelay.processor.affinity import Affinity, RadialBasisFunction
+from corelay.processor.distance import Distance, SciPyPDist
 from types import FunctionType
 
 
@@ -14,7 +14,7 @@ class MyProcess(Processor):
     # value
     stuff = Param(dtype=int, default=2)
     # as class methods have to be bound explicitly, func here acts like a static function of MyProcess to bind it, see
-    # :obj:`sprincl.processor.base.FunctionProcessor`
+    # :obj:`corelay.processor.base.FunctionProcessor`
     func = Param(FunctionType, lambda x: x**2)
 
     # Parameters can be accessed as self.<parameter-name>
