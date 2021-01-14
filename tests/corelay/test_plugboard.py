@@ -1,7 +1,7 @@
-"""Tests for sprincl/plugboard.py"""
+"""Tests for corelay/plugboard.py"""
 import pytest
 
-from sprincl.plugboard import Slot, Plug, Plugboard
+from corelay.plugboard import Slot, Plug, Plugboard
 
 
 class TestSlot:

@@ -7,8 +7,8 @@ import pytest
 import numpy as np
 import h5py
 
-from sprincl import io
-from sprincl.io.storage import HashedHDF5
+from corelay import io
+from corelay.io.storage import HashedHDF5
 
 
 @pytest.fixture

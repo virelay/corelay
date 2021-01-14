@@ -4,7 +4,7 @@
 
 import pytest
 
-from sprincl.tracker import Tracker
+from corelay.tracker import Tracker
 
 
 @pytest.fixture(scope='module')

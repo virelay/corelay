@@ -6,7 +6,7 @@ from scipy.sparse.linalg import eigsh
 from sklearn.manifold import TSNE, LocallyLinearEmbedding
 from sklearn.decomposition import PCA
 
-from sprincl.utils import import_or_stub
+from corelay.utils import import_or_stub
 from .base import Processor, Param
 UMAP = import_or_stub('umap', 'UMAP')
 

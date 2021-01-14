@@ -1,11 +1,11 @@
-"""Test module for sprincl/pipeline/base.py"""
+"""Test module for corelay/pipeline/base.py"""
 from collections import OrderedDict
 from types import FunctionType
 
 import pytest
 
-from sprincl.processor.base import Processor, Param, FunctionProcessor
-from sprincl.pipeline.base import Pipeline, Task
+from corelay.processor.base import Processor, Param, FunctionProcessor
+from corelay.pipeline.base import Pipeline, Task
 
 
 @pytest.fixture(scope='module')

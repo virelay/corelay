@@ -1,8 +1,8 @@
-"""Test module for sprincl/processor/preprocessing.py"""
+"""Test module for corelay/processor/preprocessing.py"""
 import numpy as np
 import pytest
 
-from sprincl.processor.preprocessing import Rescale, Resize, Pooling
+from corelay.processor.preprocessing import Rescale, Resize, Pooling
 
 
 @pytest.fixture

@@ -1,8 +1,8 @@
-"""Test module for sprincl/processor/flow.py"""
+"""Test module for corelay/processor/flow.py"""
 import pytest
 
-from sprincl.processor.flow import Shaper, Parallel, Sequential
-from sprincl.processor.base import FunctionProcessor
+from corelay.processor.flow import Shaper, Parallel, Sequential
+from corelay.processor.base import FunctionProcessor
 
 
 class TestShaper:

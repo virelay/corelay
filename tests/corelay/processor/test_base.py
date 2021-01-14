@@ -1,8 +1,8 @@
-"""Test module for sprincl/processor/base.py"""
+"""Test module for corelay/processor/base.py"""
 import pytest
 
-from sprincl.io import NoStorage
-from sprincl.processor.base import Processor, Param, FunctionProcessor, ensure_processor
+from corelay.io import NoStorage
+from corelay.processor.base import Processor, Param, FunctionProcessor, ensure_processor
 
 
 @pytest.fixture(scope='module')

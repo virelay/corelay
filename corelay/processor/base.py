@@ -6,7 +6,7 @@ from types import FunctionType, MethodType, LambdaType
 from abc import abstractmethod
 from collections import OrderedDict
 
-from sprincl.io import Storable, NoStorage, NoDataSource, NoDataTarget
+from corelay.io import Storable, NoStorage, NoDataSource, NoDataTarget
 from ..base import Param
 from ..plugboard import Plugboard
 

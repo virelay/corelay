@@ -1,7 +1,7 @@
-"""Test module for sprincl/base.py"""
+"""Test module for corelay/base.py"""
 import pytest
 
-from sprincl.base import Param
+from corelay.base import Param
 
 
 class TestParam:

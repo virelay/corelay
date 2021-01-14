@@ -11,11 +11,11 @@ from numpy import pi
 
 import matplotlib.pyplot as plt
 
-from sprincl.pipeline.spectral import SpectralEmbedding, SpectralClustering
-from sprincl.processor.affinity import SparseKNN
-from sprincl.processor.laplacian import SymmetricNormalLaplacian
-from sprincl.processor.embedding import EigenDecomposition
-from sprincl.processor.clustering import KMeans
+from corelay.pipeline.spectral import SpectralEmbedding, SpectralClustering
+from corelay.processor.affinity import SparseKNN
+from corelay.processor.laplacian import SymmetricNormalLaplacian
+from corelay.processor.embedding import EigenDecomposition
+from corelay.processor.clustering import KMeans
 
 
 @pytest.fixture(scope='module')

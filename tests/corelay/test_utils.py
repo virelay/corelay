@@ -1,10 +1,10 @@
-"""Test sprincl.utils
+"""Test corelay.utils
 
 """
 
 import pytest
 
-from sprincl.utils import import_or_stub, Iterable, zip_equal
+from corelay.utils import import_or_stub, Iterable, zip_equal
 
 
 def test_conditional_import():

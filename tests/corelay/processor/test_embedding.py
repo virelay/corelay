@@ -6,7 +6,7 @@ import pytest
 from sklearn.datasets import load_digits
 from sklearn.metrics.pairwise import euclidean_distances
 
-from sprincl.processor import embedding
+from corelay.processor import embedding
 
 EMBEDDING_PROCESSORS = [embedding.TSNEEmbedding, embedding.LLEEmbedding, embedding.PCAEmbedding]
 

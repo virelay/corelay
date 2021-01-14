@@ -9,8 +9,8 @@ import numpy as np
 from sklearn.datasets import make_blobs
 from sklearn.metrics.pairwise import euclidean_distances
 
-from sprincl.processor import clustering
-from sprincl.base import Param
+from corelay.processor import clustering
+from corelay.base import Param
 
 try:
     import hdbscan  # pylint: disable=unused-import; # noqa: F401
