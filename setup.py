@@ -2,9 +2,9 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="sprincl",
-    version="0.1",
-    packages=find_packages(exclude=("tests",)),
+    name='corelay',
+    use_scm_version=True,
+    packages=['corelay'],
     install_requires=[
         'h5py>=2.9.0',
         'matplotlib>=3.0.3',
@@ -12,15 +12,12 @@ setup(
         'scikit-learn>=0.20.3',
         'scipy>=1.2.1',
         'Click>=7.0',
-        'bokeh>=1.2.0',
         'scikit-image>=0.15.0',
         'metrohash-python>=1.1.3.post2',
     ],
-    entry_points={
-        'console_scripts': [
-            'vispr = vispr.cli:main',
-        ]
-    },
+    setup_requires=[
+        'setuptools_scm',
+    ],
     extras_require={
         'umap': ['umap-learn>=0.3.9'],
         'hdbscan': ['hdbscan>=0.8.22']
