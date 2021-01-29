@@ -279,11 +279,8 @@ class HDF5Storage(DataStorageBase):
         """
         if not self.exists():
             raise NoDataSource("Key: '{}' does not exist.".format(self.data_key))
-        data = self.io[self.data_key]
-        if isinstance(data, h5py.Group):
-            # Change key to integer if k is digit, so that we can use the dict like a tuple or list
-            return OrderedDict(((int(k) if k.isdigit() else k, v[()]) for k, v in data.items()))
-        return data[()]
+        _, data = self._unpack('/', self.io[self.data_key])
+        return data
 
     def write(self, data_out, data_in=None, meta=None):
         """
@@ -318,6 +315,20 @@ class HDF5Storage(DataStorageBase):
         return self.io.keys()
 
     @staticmethod
+    def _unpack(key, value):
+        if key.isdigit():
+            key = int(key)
+        if isinstance(value, h5py.Dataset):
+            check = h5py.check_string_dtype(value.dtype)
+            value = value[()]
+            if check is not None:
+                value = value.decode(check.encoding)
+        elif isinstance(value, h5py.Group):
+            # Change key to integer if k is digit, so that we can use the dict like a tuple or list
+            value = OrderedDict((HDF5Storage._unpack(k, v) for k, v in value.items()))
+        return key, value
+
+    @staticmethod
     def _get_shape_dtype(value):
         """Infer shape and dtype of given element v.
 
@@ -332,10 +343,8 @@ class HDF5Storage(DataStorageBase):
             Return the shape and dtype of v that works with h5py.require_dataset
 
         """
-        if not isinstance(value, np.ndarray):
-            shape = ()
-            dtype = h5py.special_dtype(vlen=str) if isinstance(value, str) else np.dtype(type(value))
-        else:
-            shape = value.shape
-            dtype = value.dtype
-        return shape, dtype
+        if isinstance(value, np.ndarray):
+            return value.shape, value.dtype
+        if isinstance(value, str):
+            return (), h5py.string_dtype(encoding='utf-8')
+        return (), np.dtype(type(value))
