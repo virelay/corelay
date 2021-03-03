@@ -39,20 +39,25 @@ class MyPipeline(Pipeline):
     postprocess = Task()
 
 
-# Use Pipeline 'as is'
-pipeline = MyPipeline()
-output1 = pipeline(np.random.rand(5, 3))
-print('Pipeline output:', output1)
+def main():
+    # Use Pipeline 'as is'
+    pipeline = MyPipeline()
+    output1 = pipeline(np.random.rand(5, 3))
+    print('Pipeline output:', output1)
 
-# Tasks are filled with Processes during initialization of the Pipeline class
-# keyword arguments do not have to be in order, and if not supplied, the default value will be used
-custom_pipeline = MyPipeline(
-    # The pipeline's Task sets the `bind_method` Parameter's default to True. Supplying a value here avoids falling back
-    # to the default value, and thus we do not need a `self` argument for our function:
-    prepreprocess=FunctionProcessor(function=(lambda x: x + 1), bind_method=False),
-    preprocess=(lambda x: x.mean(1)),
-    affinity=RadialBasisFunction(sigma=.1),
-    postprocess=MyProcess(stuff=3)
-)
-output2 = custom_pipeline(np.ones((5, 3, 5)))
-print('Custom pipeline output:', output2)
+    # Tasks are filled with Processes during initialization of the Pipeline class
+    # keyword arguments do not have to be in order, and if not supplied, the default value will be used
+    custom_pipeline = MyPipeline(
+        # The pipeline's Task sets the `bind_method` Parameter's default to True. Supplying a value here avoids falling
+        # back to the default value, and thus we do not need a `self` argument for our function:
+        prepreprocess=FunctionProcessor(function=(lambda x: x + 1), bind_method=False),
+        preprocess=(lambda x: x.mean(1)),
+        affinity=RadialBasisFunction(sigma=.1),
+        postprocess=MyProcess(stuff=3)
+    )
+    output2 = custom_pipeline(np.ones((5, 3, 5)))
+    print('Custom pipeline output:', output2)
+
+
+if __name__ == '__main__':
+    main()
