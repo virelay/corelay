@@ -63,7 +63,6 @@ class HashedHDF5:
 
         return _iterread(group['data'])
 
-
     def write(self, data_out, data_in, meta):
         """Write output to a hashed h5 group, with hash of (data_in, meta)"""
         def _iterwrite(data, group, elem):

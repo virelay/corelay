@@ -26,6 +26,7 @@ def param_values():
     """
     return dict(param1=1, param2='string')
 
+
 class TestHashedHDF5:
     """Test class for HashedHDF5"""
     @staticmethod
@@ -77,6 +78,7 @@ class TestHashedHDF5:
             iobj.write(data_out=data_out, data_in=1, meta=1)
             loaded = iobj.read(data_in=1, meta=1)
             assert all((out == load).all() for out, load in zip(data_out, loaded))
+
 
 @pytest.mark.parametrize("storage", [io.HDF5Storage, io.PickleStorage])
 def test_data_storage_at_functionality(storage, tmp_path):
