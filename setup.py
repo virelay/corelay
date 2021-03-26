@@ -12,7 +12,7 @@ setup(
         'scikit-learn>=0.20.3',
         'scipy>=1.2.1',
         'Click>=7.0',
-        'scikit-image>=0.15.0',
+        'scikit-image>=0.18.0',
         'metrohash-python>=1.1.3.post2',
     ],
     setup_requires=[
