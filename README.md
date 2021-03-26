@@ -49,7 +49,7 @@ repository at `docs/database_specification.md`. An example to create HDF5 files 
 shown in `example/hdf5_structure.py`
 
 To do a full SpRAy analysis which can be visualized with **ViRelAy**, an advanced script can be found in
-`example/virelay_pipeline.py`.
+`example/virelay_analysis.py`.
 
 The following shows the contents of `example/memoize_spectral_pipeline.py`:
 
