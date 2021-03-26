@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
     name='corelay',
     use_scm_version=True,
-    packages=['corelay'],
+    packages=find_packages(include=['corelay*']),
     install_requires=[
         'h5py>=2.9.0',
         'matplotlib>=3.0.3',

@@ -38,7 +38,7 @@ $ pip install 'git+git://github.com/virelay/corelay'
 
 To install optional HDBSCAN and UMAP support, use
 ```shell
-$ pip install 'git+git://github.com/virelay/corelay[umap,hdbscan]'
+$ pip install 'git+git://github.com/virelay/corelay#egg=corelay[umap,hdbscan]'
 ```
 
 ## Usage
