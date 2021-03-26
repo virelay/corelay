@@ -3,18 +3,18 @@ import json
 import h5py
 import click
 import numpy as np
-from skimage.measure import compare_ssim
+from skimage.metrics import structural_similarity
 from scipy.stats import pearsonr
 from scipy.spatial.distance import pdist, squareform
 
-from sprincl.base import Param
-from sprincl.processor.base import Processor
-from sprincl.processor.flow import Sequential, Parallel
-from sprincl.processor.distance import SciPyPDist
-from sprincl.pipeline.spectral import SpectralClustering
-from sprincl.processor.clustering import KMeans, DBSCAN, HDBSCAN, AgglomerativeClustering
-from sprincl.processor.embedding import TSNEEmbedding, UMAPEmbedding, EigenDecomposition
-from sprincl.processor.affinity import SparseKNN
+from corelay.base import Param
+from corelay.processor.base import Processor
+from corelay.processor.flow import Sequential, Parallel
+from corelay.processor.distance import SciPyPDist
+from corelay.pipeline.spectral import SpectralClustering
+from corelay.processor.clustering import KMeans, DBSCAN, HDBSCAN, AgglomerativeClustering
+from corelay.processor.embedding import TSNEEmbedding, UMAPEmbedding, EigenDecomposition
+from corelay.processor.affinity import SparseKNN
 
 
 class Flatten(Processor):
@@ -69,7 +69,7 @@ class SSIM(Processor):
         N, H, W = data.shape
         return squareform(pdist(
             data.reshape(N, H * W),
-            metric=lambda x, y: compare_ssim(x.reshape(H, W), y.reshape(H, W), multichannel=False)
+            metric=lambda x, y: structural_similarity(x.reshape(H, W), y.reshape(H, W), multichannel=False)
         ))
 
 
