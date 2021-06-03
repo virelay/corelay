@@ -66,10 +66,14 @@ class TSNEEmbedding(Embedding):
     """
     n_components = Param(int, default=2, identifier=True)
     metric = Param(str, default='euclidean', identifier=True)
+    perplexity = Param(float, default=30., identifier=True)
 
     def function(self, data):
         # pylint: disable=not-a-mapping
-        tsne = TSNE(n_components=self.n_components, metric=self.metric, **self.kwargs)
+        tsne = TSNE(n_components=self.n_components,
+                    metric=self.metric,
+                    perplexity=self.perplexity,
+                    **self.kwargs)
         emb = tsne.fit_transform(data)
         return emb
 
