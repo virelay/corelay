@@ -9,7 +9,7 @@ A quick practical explanation of Pipelines, Tasks, Processors and Params is show
 CoRelAy was created to to quickly implement pipelines to generate analysis data
 which can then be visualized using ViRelAy.
 
-If you find CoRelAy useful for your research, why no cite our related [paper](https://arxiv.org/abs/2106.13200):
+If you find CoRelAy useful for your research, why not cite our related [paper](https://arxiv.org/abs/2106.13200):
 ```
 @article{anders2021software,
   author        = {{Anders}, Christopher J. and {Neumann}, David and {Samek}, Wojciech and {M{\"u}ller}, Klaus-Robert and {Lapuschkin}, Sebastian},
