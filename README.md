@@ -12,16 +12,15 @@ which can then be visualized using ViRelAy.
 If you find CoRelAy useful for your research, why not cite our related [paper](https://arxiv.org/abs/2106.13200):
 ```
 @article{anders2021software,
-  author        = {{Anders}, Christopher J. and {Neumann}, David and {Samek}, Wojciech and {M{\"u}ller}, Klaus-Robert and {Lapuschkin}, Sebastian},
-  title         = "{Software for Dataset-wide XAI: From Local Explanations to Global Insights with Zennit, CoRelAy, and ViRelAy}",
-  journal       = {arXiv e-prints},
-  keywords      = {Computer Science - Machine Learning},
-  year          = 2021,
-  month         = jun,
-  eid           = {arXiv:2106.13200},
-  archivePrefix = {arXiv},
-  eprint        = {2106.13200},
-  primaryClass  = {cs.LG}
+      author={Anders, Christopher J. and
+              Neumann, David and
+              Samek, Wojciech and
+              Müller, Klaus-Robert and
+              Lapuschkin, Sebastian},
+      title={Software for Dataset-wide XAI: From Local Explanations to Global Insights with {Zennit}, {CoRelAy}, and {ViRelAy}},
+      journal= {CoRR},
+      volume = {abs/2106.13200},
+      year={2021},
 }
 ```
 
