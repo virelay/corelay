@@ -18,8 +18,8 @@ If you find CoRelAy useful for your research, why not cite our related [paper](h
               Müller, Klaus-Robert and
               Lapuschkin, Sebastian},
       title={Software for Dataset-wide XAI: From Local Explanations to Global Insights with {Zennit}, {CoRelAy}, and {ViRelAy}},
-      journal= {CoRR},
-      volume = {abs/2106.13200},
+      journal={CoRR},
+      volume={abs/2106.13200},
       year={2021},
 }
 ```
