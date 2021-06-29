@@ -28,12 +28,12 @@ If you find CoRelAy useful for your research, why not cite our related [paper](h
 
 CoRelAy may be installed using pip with
 ```shell
-$ pip install 'git+git://github.com/virelay/corelay'
+$ pip install corelay
 ```
 
 To install optional HDBSCAN and UMAP support, use
 ```shell
-$ pip install 'git+git://github.com/virelay/corelay#egg=corelay[umap,hdbscan]'
+$ pip install corelay[umap,hdbscan]
 ```
 
 ## Usage
