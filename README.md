@@ -6,7 +6,7 @@ Any step of the pipeline may then be indiviually changed by assigning a new oper
 Processors have Params which define their operation.
 A quick practical explanation of Pipelines, Tasks, Processors and Params is shown in `example/corelay_basics.py`.
 
-CoRelAy was created to to quickly implement pipelines to generate analysis data
+CoRelAy was created to quickly implement pipelines to generate analysis data
 which can then be visualized using ViRelAy.
 
 If you find CoRelAy useful for your research, why not cite our related [paper](https://arxiv.org/abs/2106.13200):
