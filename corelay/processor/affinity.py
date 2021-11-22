@@ -51,8 +51,8 @@ class SparseKNN(Affinity):
         # number of samples
         n = data.shape[0]
 
-        # silently use maximum number of neighbors if there are more samples than k
-        k = k if k < (n - 1) else (n - 1)
+        # silently use maximum number of neighbors if k is larger
+        k = min(k, n - 1)
 
         # set up indices for sparse representation of nearest neighbors
         cols = data.argsort(1)[:, 1:k + 1]
