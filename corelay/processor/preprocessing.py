@@ -52,7 +52,8 @@ class Histogram(PreProcessor):
 
 
 class ImagePreProcessor(PreProcessor):
-    """
+    """Abstract PreProcessor for Images.
+
     Parameters
     ----------
     filter : int

@@ -139,7 +139,7 @@ class AgglomerativeClustering(Clustering):
 
 
 class Dendrogram(Clustering):
-    """Dendrogram
+    """Dendrogram.
 
     Parameters
     ----------
