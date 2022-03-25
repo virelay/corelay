@@ -27,11 +27,11 @@ class SpectralEmbedding(Pipeline):
     laplacian : callable, optional
         laplacian function of signature: (distance : :obj:`numpy.ndarray`,) -> :obj:`numpy.ndarray`
 
-    Note
-    ----
-    Pre-computed distance matrices can be supplied by passing `pairwise_distance`=(lambda x: x).
-    Pre-computed affinity matrices can be supplied by additionally passing `affinity`=(lambda x: x).
-    Pre-computed graph laplacian matrices can be supplied by further passing `laplacian`=(lambda x: x).
+    Notes
+    -----
+    Pre-computed distance matrices can be supplied by passing ``pairwise_distance=(lambda x: x)``.
+    Pre-computed affinity matrices can be supplied by additionally passing ``affinity=(lambda x: x)``.
+    Pre-computed graph laplacian matrices can be supplied by further passing ``laplacian=(lambda x: x)``.
 
     """
     preprocessing = Task(default=(lambda x: x))

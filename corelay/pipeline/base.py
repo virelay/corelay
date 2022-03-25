@@ -40,10 +40,10 @@ class Task(Slot):
     Attributes
     ----------
     proc_type : type
-        Class of the :obj:`Processor`s allowed for this :obj:`Task`.
-    default : :obj:`Processor` or :obj:`types.FunctionType` or :obj:`types.MethodType` Default :obj:`Processor` to use
-        if no Processor is assigned. If a :obj:`types.FunctionType` or :obj:`types.MethodType`, an appropriate
-        :obj:`FunctionProcessor` will be created.
+        Class of the :obj:`Processor` allowed for this :obj:`Task`.
+    default : :obj:`Processor` or :obj:`types.FunctionType` or :obj:`types.MethodType`
+        Default :obj:`Processor` to use if no Processor is assigned. If a :obj:`types.FunctionType` or
+        :obj:`types.MethodType`, an appropriate :obj:`FunctionProcessor` will be created.
     proc_kwargs : dict
         Keyword arguments to overwrite on the supplied Processor.
 
@@ -54,7 +54,7 @@ class Task(Slot):
         Parameters
         ----------
         proc_type : type
-            Class of the :obj:`Processor`s allowed for this :obj:`Task`.
+            Class of the :obj:`Processor` allowed for this :obj:`Task`.
         default : :obj:`Processor` or :obj:`types.FunctionType` or :obj:`types.MethodType` Default :obj:`Processor` to
             use if no Processor is assigned. If a :obj:`types.FunctionType` or :obj:`types.MethodType`, an appropriate
             :obj:`FunctionProcessor` will be created.
@@ -91,21 +91,21 @@ class Pipeline(Processor):
     Attributes
     ----------
     task_scheme : :obj:`collections.OrderedDict`
-        OrderedDict of Tasks which can be filled with :obj:`Processor`s.
+        OrderedDict of Tasks which can be filled with :obj:`Processor`.
     processes : :obj:`collections.OrderedDict`
-        OrderedDict of the :obj:`Processor`s that filled the `task_scheme`.
+        OrderedDict of the :obj:`Processor` that filled the `task_scheme`.
 
     """
 
     def checkpoint_processes(self):
         """Find the checkpoint :obj:`Processor` closest to output and return an
-        :obj:`collections.OrderedDict` of that and all following :obj:`Processor`s.
+        :obj:`collections.OrderedDict` of that and all following :obj:`Processor`.
 
         Returns
         -------
         :obj:`collections.OrderedDict`
             The :obj:`Processor` that is the checkpoint closest to output and all its following
-            :obj:`Processor`s in an :obj:`OrderedDict`.
+            :obj:`Processor` in an :obj:`OrderedDict`.
 
         Raises
         ------
@@ -159,7 +159,7 @@ class Pipeline(Processor):
         Returns
         -------
         object
-            Output of all :obj:`Processor`s that are flagged as pipeline outputs. If no processors
+            Output of all :obj:`Processor` that are flagged as pipeline outputs. If no processors
             are flagged as outputs, return the output of the last processor.
 
         """
@@ -175,7 +175,11 @@ class Pipeline(Processor):
         return tuple(outputs)
 
     def __repr__(self):
-        """Example of the pipeline representation:
+        """Represent a Pipeline as str.
+
+        Example
+        -------
+        >>> MyPipeline()
         MyPipeline(
             FunctionProcessor(function=(lambda x: x.mean(1)),) -> output:np.ndarray
             SciPyPDist(metric=sqeuclidean) -> output:np.ndarray
