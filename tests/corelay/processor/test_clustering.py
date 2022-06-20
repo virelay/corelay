@@ -24,7 +24,7 @@ def data():
     """Return data with 1000 elements with 5 blobs.
 
     """
-    data, _ = make_blobs(1000, centers=5, random_state=100)
+    data, _ = make_blobs(1000, centers=5, random_state=100)  # pylint: disable=unbalanced-tuple-unpacking
     return data
 
 
@@ -33,7 +33,7 @@ def tiny_data():
     """Return data with 50 elements with 5 blobs.
 
     """
-    data, _ = make_blobs(50, centers=5, random_state=100)
+    data, _ = make_blobs(50, centers=5, random_state=100)  # pylint: disable=unbalanced-tuple-unpacking
     return data
 
 

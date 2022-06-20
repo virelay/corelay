@@ -70,7 +70,7 @@ class HashedHDF5:
             if isinstance(data, tuple):
                 g_new = group.require_group(elem)
                 for n, array in enumerate(data_out):
-                    _iterwrite(array, g_new, '{:03d}'.format(n))
+                    _iterwrite(array, g_new, f'{n:03d}')
             elif isinstance(data, np.ndarray):
                 group[elem] = data
             else:
@@ -157,7 +157,7 @@ class DataStorageBase(Plugboard):
                 setattr(result.default, key, value)
             except AttributeError as err:
                 raise TypeError(
-                    "'{}' is an invalid keyword argument for '{}.at'.".format(key, type(self).__name__)
+                    f"'{key}' is an invalid keyword argument for '{type(self).__name__}.at'."
                 ) from err
         return result
 
@@ -200,7 +200,7 @@ class PickleStorage(DataStorageBase):
         super().__init__(**kwargs)
         if mode not in ['w', 'r', 'a']:
             raise ValueError("Mode should be set to 'w', 'r' or 'a'.")
-        self.io = open(path, mode + 'b')
+        self.io = open(path, mode + 'b')  # pylint: disable=consider-using-with
         self.data = {}
 
     def _load_data(self):
@@ -220,7 +220,7 @@ class PickleStorage(DataStorageBase):
 
         """
         if not self.exists():
-            raise NoDataSource("Key: '{}' does not exist.".format(self.data_key))
+            raise NoDataSource(f"Key: '{self.data_key}' does not exist.")
         return self.data[self.data_key]
 
     def write(self, data_out, data_in=None, meta=None):
@@ -277,7 +277,7 @@ class HDF5Storage(DataStorageBase):
 
         """
         if not self.exists():
-            raise NoDataSource("Key: '{}' does not exist.".format(self.data_key))
+            raise NoDataSource(f"Key: '{self.data_key}' does not exist.")
         _, data = self._unpack('/', self.io[self.data_key])
         return data
 
@@ -292,11 +292,11 @@ class HDF5Storage(DataStorageBase):
         if isinstance(data_out, dict):
             for key, value in data_out.items():
                 shape, dtype = self._get_shape_dtype(value)
-                self.io.require_dataset(data=value, shape=shape, dtype=dtype, name='{}/{}'.format(self.data_key, key))
+                self.io.require_dataset(data=value, shape=shape, dtype=dtype, name=f'{self.data_key}/{key}')
         elif isinstance(data_out, tuple):
             for key, value in enumerate(data_out):
                 shape, dtype = self._get_shape_dtype(value)
-                self.io.require_dataset(data=value, shape=shape, dtype=dtype, name='{}/{}'.format(self.data_key, key))
+                self.io.require_dataset(data=value, shape=shape, dtype=dtype, name=f'{self.data_key}/{key}')
         else:
             shape, dtype = self._get_shape_dtype(data_out)
             self.io.require_dataset(data=data_out, shape=shape, dtype=dtype, name=self.data_key)

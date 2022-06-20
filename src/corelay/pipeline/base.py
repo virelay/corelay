@@ -188,4 +188,4 @@ class Pipeline(Processor):
         )
         """
         pipeline = '\n    '.join([proc.__repr__() for proc in self.collect_attr(Task).values()])
-        return '{}(\n    {}\n)'.format(self.__class__.__name__, pipeline)
+        return f'{self.__class__.__name__}(\n    {pipeline}\n)'
