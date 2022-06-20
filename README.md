@@ -1,10 +1,15 @@
-# Compose Relevance Analysis (CoRelAy)
+# CoRelAy &ndash; Composing Relevance Analysis
+
+![CoRelAy Logo](docs/images/corelay-logo.png)
+
+[![Documentation Status](https://readthedocs.org/projects/corelay/badge/?version=latest)](https://corelay.readthedocs.io/en/latest/?badge=latest)
+[![PyPI Version](https://img.shields.io/pypi/v/corelay)](https://pypi.org/project/corelay/)
+[![License](https://img.shields.io/pypi/l/corelay)](https://github.com/virelay/corelay/blob/master/COPYING.LESSER)
 
 CoRelAy is a tool to compose small-scale (single-machine) analysis pipelines.
 Pipelines are designed with a number of steps (Task) with default operations (Processor).
 Any step of the pipeline may then be indiviually changed by assigning a new operator (Processor).
 Processors have Params which define their operation.
-A quick practical explanation of Pipelines, Tasks, Processors and Params is shown in `example/corelay_basics.py`.
 
 CoRelAy was created to quickly implement pipelines to generate analysis data
 which can then be visualized using ViRelAy.
@@ -24,8 +29,12 @@ If you find CoRelAy useful for your research, why not cite our related [paper](h
 }
 ```
 
-## Install
+## Documentation
+The latest documentation is hosted at
+[corelay.readthedocs.io](https://corelay.readthedocs.io/en/latest/).
 
+
+## Install
 CoRelAy may be installed using pip with
 ```shell
 $ pip install corelay
