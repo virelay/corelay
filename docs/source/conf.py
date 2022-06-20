@@ -21,7 +21,7 @@ extensions = [
     'sphinx.ext.autosummary',
     'sphinx.ext.napoleon',
     'sphinx.ext.linkcode',
-    'sphinx.ext.imgmath',
+    'sphinx.ext.mathjax',
     'sphinx.ext.extlinks',
     'sphinx_rtd_theme',
     'sphinx_copybutton',
@@ -101,7 +101,7 @@ extlinks = {
 
 LINKCODE_URL = (
     f'https://github.com/virelay/corelay/blob/{REVISION}'
-    '/{filepath}#L{linestart}-L{linestop}'
+    '/src/{filepath}#L{linestart}-L{linestop}'
 )
 
 
