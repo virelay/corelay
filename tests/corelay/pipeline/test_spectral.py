@@ -78,57 +78,64 @@ class TestSpectral:
     @staticmethod
     def test_data_generation(spiral_data):
         """sanity check. make sure the data looks as expected (from the outside)"""
-        assert isinstance(spiral_data, np.ndarray), 'Expected numpy.ndarray type, got {}'.format(type(spiral_data))
-        assert spiral_data.shape == (300, 2), 'Expected spiral_data shape (300, 2), got {}'.format(spiral_data.shape)
+        assert isinstance(spiral_data, np.ndarray), f'Expected numpy.ndarray type, got {type(spiral_data)}'
+        assert spiral_data.shape == (300, 2), f'Expected spiral_data shape (300, 2), got {spiral_data.shape}'
 
     @staticmethod
     def test_spectral_embedding_default_params(spiral_data):
         """test wheter the SE operates on data all the way through, using its default parameters."""
         pipeline = SpectralEmbedding()
         output = pipeline(spiral_data)
-        assert isinstance(output, tuple), 'Expected tuple type output, got {}'.format(type(output))
-        assert len(output) == 2, 'Expected output length of 2, got {}'.format(len(output))
+        assert isinstance(output, tuple), f'Expected tuple type output, got {type(output)}'
+        assert len(output) == 2, f'Expected output length of 2, got {len(output)}'
 
         eigval, eigvec = output
-        assert isinstance(eigval, np.ndarray), 'Expected eigval to be numpy.ndarray, but got {}'.format(type(eigval))
-        assert isinstance(eigvec, np.ndarray), 'Expected eigvec to be numpy.ndarray, but got {}'.format(type(eigvec))
-        assert eigvec.shape[0] == spiral_data.shape[0],\
-            'Expected number of eigenvectors to be identical to number of samples ({}), but got {}'\
-            .format(spiral_data.shape[0], eigvec.shape[0])
-        assert eigvec.shape[1] == eigval.size,\
-            'Expected dim of eigenvectors {} be be identical to the number of reported eigenvalues {}'\
-            .format(eigvec.shape[1], eigval.size)
+        assert isinstance(eigval, np.ndarray), f'Expected eigval to be numpy.ndarray, but got {type(eigval)}'
+        assert isinstance(eigvec, np.ndarray), f'Expected eigvec to be numpy.ndarray, but got {type(eigvec)}'
+        assert eigvec.shape[0] == spiral_data.shape[0], (
+            'Expected number of eigenvectors to be identical to number of samples '
+            f'({spiral_data.shape[0]}), but got {eigvec.shape[0]}'
+        )
+        assert eigvec.shape[1] == eigval.size, (
+            f'Expected dim of eigenvectors {eigvec.shape[1]} be be identical '
+            f'to the number of reported eigenvalues {eigval.size}'
+        )
 
     @staticmethod
     def test_spectral_clustering_default_params(spiral_data):
         """test wheter the SC operates on data all the way through, using its default parameters."""
         pipeline = SpectralClustering()
         output = pipeline(spiral_data)
-        assert isinstance(output, tuple), 'Expected tuple type output, got {}'.format(type(output))
-        assert len(output) == 2, 'Expected output lenght of 2, got {}'.format(len(output))
+        assert isinstance(output, tuple), f'Expected tuple type output, got {type(output)}'
+        assert len(output) == 2, f'Expected output lenght of 2, got {len(output)}'
 
         eigenstuff, labels = output
-        assert isinstance(eigenstuff, tuple),\
-            'Expected tuple type output for eigenstuff, got {}'.format(type(eigenstuff))
-        assert len(eigenstuff) == 2,\
-            'Expected eigenstuff length of 2, got {}'.format(len(eigenstuff))
+        assert isinstance(eigenstuff, tuple), (
+            f'Expected tuple type output for eigenstuff, got {type(eigenstuff)}'
+        )
+        assert len(eigenstuff) == 2, (
+            f'Expected eigenstuff length of 2, got {len(eigenstuff)}'
+        )
 
         eigval, eigvec = eigenstuff
-        assert isinstance(eigval, np.ndarray), 'Expected eigval to be numpy.ndarray, but got {}'.format(type(eigval))
-        assert isinstance(eigvec, np.ndarray), 'Expected eigvec to be numpy.ndarray, but got {}'.format(type(eigvec))
-        assert eigvec.shape[0] == spiral_data.shape[0],\
-            'Expected number of eigenvectors to be identical to number of samples ({}), but got {}'\
-            .format(spiral_data.shape[0], eigvec.shape[0])
-        assert eigvec.shape[1] == eigval.size,\
-            'Expected dim of eigenvectors {} be be identical to the number of reported eigenvalues {}'\
-            .format(eigvec.shape[1], eigval.size)
+        assert isinstance(eigval, np.ndarray), f'Expected eigval to be numpy.ndarray, but got {type(eigval)}'
+        assert isinstance(eigvec, np.ndarray), f'Expected eigvec to be numpy.ndarray, but got {type(eigvec)}'
+        assert eigvec.shape[0] == spiral_data.shape[0], (
+            'Expected number of eigenvectors to be identical to number of samples '
+            f'({spiral_data.shape[0]}), but got {eigvec.shape[0]}'
+        )
+        assert eigvec.shape[1] == eigval.size, (
+            f'Expected dim of eigenvectors {eigvec.shape[1]} be be identical to the number of '
+            f'reported eigenvalues {eigval.size}'
+        )
 
-        assert isinstance(labels, np.ndarray), 'Expected labels to be numpy.ndarray, but got {}'.format(type(labels))
-        assert labels.size == spiral_data.shape[0],\
-            'Expected number of labels to be identical to number of samples in spiral_data ({}), but got {}'\
-            .format(spiral_data.shape[0], labels.size)
+        assert isinstance(labels, np.ndarray), f'Expected labels to be numpy.ndarray, but got {type(labels)}'
+        assert labels.size == spiral_data.shape[0], (
+            'Expected number of labels to be identical to number of samples in spiral_data '
+            f'({spiral_data.shape[0]}), but got {labels.size}'
+        )
 
-        assert labels.ndim == 1, 'Expected labels to be flat array, but was shaped {}'.format(labels.shape)
+        assert labels.ndim == 1, f'Expected labels to be flat array, but was shaped {labels.shape}'
 
     @staticmethod
     def test_spectral_clustering_step_by_step_custom_params(spiral_data, k_knn, k_eig, k_clusters):
@@ -162,9 +169,9 @@ class TestSpectral:
         )
 
         output_pipeline = pipeline(spiral_data)
-        assert len(output_pipeline) == 4,\
-            'length of output expected to be 4 (affinity, laplacian, embedding, labels), but is {}'\
-            .format(len(output_pipeline))
+        assert len(output_pipeline) == 4, (
+            f'length of output expected to be 4 (affinity, laplacian, embedding, labels), but is {len(output_pipeline)}'
+        )
 
         # unpack pipeline results
         aff_pipe, lap_pipe, eig_pipe, label_pipe = output_pipeline

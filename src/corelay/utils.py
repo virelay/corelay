@@ -26,7 +26,7 @@ class Iterable(metaclass=IterableMeta):
         if not all(isinstance(obj, type) for obj in params):
             raise TypeError("Member types must be types!")
         # pylint: disable=no-member
-        return type('{}[{}]'.format(cls.__name__, params), (cls,), {'__membertype__': params})
+        return type(f'{cls.__name__}[{params}]', (cls,), {'__membertype__': params})
 
 
 def zip_equal(*args):
@@ -69,10 +69,9 @@ def zip_equal(*args):
 
 def dummy_from_module_import(name):
     """Use to replace 'from lib import func'."""
-    def func(*args, **kwargs):
-        raise RuntimeError("Support for {1} was not installed! Install with: pip install {0}[{1}]".format(
-            __name__.split('.')[0], name
-        ))
+    def func(*args, **kwargs):  # pylint: disable=unused-argument
+        package_name = __name__.split('.', maxsplit=1)[0]
+        raise RuntimeError(f"Support for {name} was not installed! Install with: pip install {package_name}[{name}]")
     return func
 
 
@@ -81,9 +80,10 @@ def dummy_import_module(name):
     class Class:
         """Dummy substitute class."""
         def __getattr__(self, item):
-            raise RuntimeError("Support for {1} was not installed! Install with: pip install {0}[{1}]".format(
-                __name__.split('.')[0], name))
-
+            package_name = __name__.split('.', maxsplit=1)[0]
+            raise RuntimeError(
+                f"Support for {name} was not installed! Install with: pip install {package_name}[{name}]"
+            )
     return Class()
 
 
@@ -109,7 +109,7 @@ def import_or_stub(name, subname=None):
                 try:
                     attr = getattr(tmp, model_attribute)
                 except AttributeError as err:
-                    message = "cannot import name '{}' from '{}' ({})".format(model_attribute, name, tmp.__file__)
+                    message = f"cannot import name '{model_attribute}' from '{name}' ({tmp.__file__})"
                     raise ImportError(message) from err
                 else:
                     module.append(attr)

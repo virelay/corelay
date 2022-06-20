@@ -22,7 +22,7 @@ def data():
     """Return data with images of 2 kind of digits with shape (360, 64).
 
     """
-    digits = load_digits(2)  # shape 360 x 64
+    digits = load_digits(n_class=2)  # shape 360 x 64
     # pylint: disable=no-member
     return digits.data
 

@@ -51,10 +51,10 @@ class Processor(Plugboard):
         """
         positions = dict(zip((name for name, param in self.collect(Param).items() if param.is_positional), args))
         if len(positions) < len(args):
-            raise TypeError('Expected at most {} positional arguments, got {}'.format(len(positions), len(args)))
+            raise TypeError(f'Expected at most {len(positions)} positional arguments, got {len(args)}')
         for name in positions:
             if name in kwargs:
-                raise TypeError("Argument was specified as both positional and keyword: '{}'".format(name))
+                raise TypeError(f"Argument was specified as both positional and keyword: '{name}'")
         positions.update(kwargs)
         super().__init__(**positions)
         self.checkpoint_data = None
@@ -160,8 +160,8 @@ class Processor(Plugboard):
             return x
 
         name = self.__class__.__name__
-        params = ', '.join(['{}={}'.format(k, transform(v)) for k, v in self.param_values().items() if v])
-        return '{}({}) -> {}'.format(name, params, self._output_repr)
+        params = ', '.join([f'{k}={transform(v)}' for k, v in self.param_values().items() if v])
+        return f'{name}({params}) -> {self._output_repr}'
 
 
 class FunctionProcessor(Processor):
@@ -214,6 +214,6 @@ def ensure_processor(proc, **kwargs):
         if callable(proc):
             proc = FunctionProcessor(function=proc)
         else:
-            raise TypeError('Supplied processor {} is neither a Processor, nor callable!')
+            raise TypeError(f'Supplied processor {proc} is neither a Processor, nor callable!')
     proc.update_defaults(**kwargs)
     return proc

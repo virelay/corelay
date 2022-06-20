@@ -78,19 +78,12 @@ class Slot(EmptyInit):
                 )
         ):
             raise TypeError(
-                "'{}' object '{}' default values '{}' is neither a type, nor a tuple of types.".format(
-                    type(self).__name__,
-                    self.__name__,
-                    self.dtype
-                )
+                f"'{type(self).__name__}' object '{self.__name__}' default values '{self.dtype}' "
+                "is neither a type, nor a tuple of types."
             )
         if self.default is not None and not isinstance(self.default, self.dtype):
             raise TypeError(
-                "'{}' object '{}' default value is not of type '{}'.".format(
-                    type(self).__name__,
-                    self.__name__,
-                    self.dtype
-                )
+                f"'{type(self).__name__}' object '{self.__name__}' default value is not of type '{self.dtype}'."
             )
 
     def get_plug(self, instance, obj=None, default=None):
@@ -295,19 +288,13 @@ class Plug(EmptyInit):
         """
         if self.obj is None:
             raise TypeError(
-                "'{}' object '{}' is mandatory, yet it has been accessed without being set.".format(
-                    type(self.slot).__name__,
-                    self.slot.__name__
-                )
+                f"'{type(self.slot).__name__}' object '{self.slot.__name__}' is mandatory, "
+                "yet it has been accessed without being set."
             )
         if not isinstance(self.obj, self.slot.dtype):
             raise TypeError(
-                "'{}' object '{}' value '{}' is not of type '{}'.".format(
-                    type(self.slot).__name__,
-                    self.slot.__name__,
-                    self.obj,
-                    self.slot.dtype
-                )
+                f"'{type(self.slot).__name__}' object '{self.slot.__name__}' value '{self.obj}' "
+                f"is not of type '{self.slot.dtype}'."
             )
 
     @property
@@ -420,11 +407,7 @@ class SlotDefaultAccess:
         slot = getattr(type(self._instance), name)
         if not isinstance(slot, Slot):
             raise AttributeError(
-                "'{}' object has no attribute '{}' of type '{}'".format(
-                    type(self._instance),
-                    name,
-                    Slot
-                )
+                f"'{type(self._instance)}' object has no attribute '{name}' of type '{Slot}'"
             )
         return slot.get_plug(self._instance, default=default)
 

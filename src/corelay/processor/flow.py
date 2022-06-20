@@ -50,7 +50,7 @@ class Shaper(Processor):
                     try:
                         obj = data[index]
                     except KeyError as err:
-                        raise TypeError("'{}' is not a valid index for '{}'".format(index, data)) from err
+                        raise TypeError(f"'{index}' is not a valid index for '{data}'") from err
                 result.append(obj)
             return tuple(result)
 
