@@ -1,4 +1,4 @@
-"""Module containing basic Sprincl classes, such as Param"""
+"""Module containing basic CoRelAy classes, such as Param"""
 from .plugboard import Slot
 
 
