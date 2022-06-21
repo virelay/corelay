@@ -1,4 +1,4 @@
-"""Sprincl utils contains conditional importing functionality.
+"""CoRelAy utils contains conditional importing functionality.
 
 """
 
