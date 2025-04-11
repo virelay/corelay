@@ -21,7 +21,7 @@ class Processor(Plugboard):
         Defines whether the Processor should yield an output for a Pipeline.
     is_checkpoint : bool
         Assigned as :obj:`Param`, will be assigned as an instance attribute in `__init__`.
-        Defines whether checkpointed pipeline computations should start at this point, if there exists a previously
+        Defines whether check-pointed pipeline computations should start at this point, if there exists a previously
         computed checkpoint value.
     checkpoint_data : object
         If this Processor is a checkpoint, and if the Processor was called at least once, stores the output of this
@@ -41,7 +41,7 @@ class Processor(Plugboard):
         is_checkpoint : bool
             Whether the Processor should yield an output for a Pipeline.
         is_output : bool
-            Whether checkpointed pipeline computations should start at this point, if there exists a previously computed
+            Whether check-pointed pipeline computations should start at this point, if there exists a previously computed
             checkpoint value.
         *args : list
             Params that have been flagged as positional, in their order of declaration.
@@ -75,7 +75,7 @@ class Processor(Plugboard):
         """
 
     def __call__(self, data):
-        """Apply `self.funtion` on input data, save output if `self.is_checkpoint`
+        """Apply `self.function` on input data, save output if `self.is_checkpoint`
 
         Parameters
         ----------
@@ -114,7 +114,7 @@ class Processor(Plugboard):
         return self.collect_attr(Param)
 
     def identifiers(self):
-        """Returns a dict containing the class qualifer name, as well all Parameters marked as identifiers with their
+        """Returns a dict containing the class qualifier name, as well all Parameters marked as identifiers with their
         values
 
         Returns

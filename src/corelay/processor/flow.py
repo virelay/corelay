@@ -10,7 +10,7 @@ class Shaper(Processor):
     Attributes
     ----------
     indices : iterable of (int or iterable of int)
-        Iterable of indices to copy/ extract. The resuling output will be a tuple with the same member shape. Each index
+        Iterable of indices to copy/ extract. The resulting output will be a tuple with the same member shape. Each index
         may be passed an arbitrary amount of times. Outer tuples allow ints and tuples, inner tuples only allow ints.
 
     Examples

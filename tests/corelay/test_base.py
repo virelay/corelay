@@ -7,8 +7,8 @@ from corelay.base import Param
 class TestParam:
     """Test class for Param"""
     @staticmethod
-    def test_instatiation():
-        """Param should instatiate correctly when passing any dtype."""
+    def test_instantiation():
+        """Param should instantiate correctly when passing any dtype."""
         Param(object)
 
     @staticmethod

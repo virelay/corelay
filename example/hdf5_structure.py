@@ -93,9 +93,9 @@ def make_group_example():
         # we chose 2 clusters
         g_clu['/my_clustering/#clusters'] = 2
 
-        # we define a protoype for our clustering
+        # we define a prototype for our clustering
         g_clu['/my_clustering/prototype/average/name'] = 'My Random Prototype'
-        # for demonstration purposes, we use random data here. the first dimonsion is the number of clusters
+        # for demonstration purposes, we use random data here. the first dimension is the number of clusters
         g_clu['/my_clustering/prototype/average/root'] = np.random.normal(size=(2, 32, 32)).astype(np.float32)
 
 
@@ -167,9 +167,9 @@ def make_dataset_example():
         # we chose 2 clusters
         g_clu['/my_clustering/#clusters'] = 2
 
-        # we define a protoype for our clustering
+        # we define a prototype for our clustering
         g_clu['/my_clustering/prototype/average/name'] = 'My Random Prototype'
-        # for demonstration purposes, we use random data here. the first dimonsion is the number of clusters
+        # for demonstration purposes, we use random data here. the first dimension is the number of clusters
         g_clu['/my_clustering/prototype/average/root'] = np.random.normal(size=(2, 32, 32)).astype(np.float32)
 
 

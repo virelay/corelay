@@ -3,7 +3,7 @@ from .tracker import Tracker
 
 
 class EmptyInit:
-    """Empty Init is a class intened to be inherited as a last step down the MRO, to catch any remaining positional
+    """Empty Init is a class intended to be inherited as a last step down the MRO, to catch any remaining positional
     and/or keyword arguments and thus raise proper Exceptions.
     """
     # Following is not useless, since this super delegation causes python to raise a more informative exception.
@@ -32,7 +32,7 @@ class Slot(EmptyInit):
     default : :obj:`dtype`
         Default parameter value, should be an instance of (one of) :obj:`dtype`.
     optional : bool
-        Non-mutuable. True, if Slot has a non-None default value, e.g. is optional.
+        Non-mutable. True, if Slot has a non-None default value, e.g. is optional.
 
     See Also
     --------
@@ -51,7 +51,7 @@ class Slot(EmptyInit):
             Default plug value, should be an instance of (one of) :obj:`dtype`. May be `None` to indicate that no
             default value has been set.
         **kwargs :
-            Keyword arguments passed down to potential entries below Slot in the MRO, for cooperativities' sake. In
+            Keyword arguments passed down to potential entries below Slot in the MRO, for cooperativity's sake. In
             normal cases, this next class will be `EmptyInit`, and thus accept no more kwargs.
 
         """
@@ -215,9 +215,9 @@ class Slot(EmptyInit):
         Parameters
         ----------
         obj : object
-            Value to intialize the newly created Plug container's object value to.
+            Value to initialize the newly created Plug container's object value to.
         default : object
-            Value to intialize the newly created Plug container's default value to.
+            Value to initialize the newly created Plug container's default value to.
 
         Returns
         -------
@@ -266,7 +266,7 @@ class Plug(EmptyInit):
         default : object
             Plug-dependent lower-priority object held in the container. If not set, self.fallback is returned.
         **kwargs :
-            Keyword arguments passed down to potential entries below Plug in the MRO, for cooperativities' sake. In
+            Keyword arguments passed down to potential entries below Plug in the MRO, for cooperativity's sake. In
             normal cases, this next class will be `EmptyInit`, and thus accept no more kwargs.
 
         """
@@ -310,17 +310,17 @@ class Plug(EmptyInit):
 
     @property
     def dtype(self):
-        """Get associated Slot's dtype. Non-mutuable."""
+        """Get associated Slot's dtype. Non-mutable."""
         return self.slot.dtype
 
     @property
     def optional(self):
-        """Get whether container has default values. Non-mutuable."""
+        """Get whether container has default values. Non-mutable."""
         return self.default is not None
 
     @property
     def fallback(self):
-        """Get associated Slot's default value. Non-mutuable."""
+        """Get associated Slot's default value. Non-mutable."""
         return self.slot.default
 
     @property
@@ -412,7 +412,7 @@ class SlotDefaultAccess:
         return slot.get_plug(self._instance, default=default)
 
     def __get__(self, instance, owner):
-        """Return a new instance of SlotDefaultAccess, initialized with the priovided instance value."""
+        """Return a new instance of SlotDefaultAccess, initialized with the provided instance value."""
         return type(self)(instance)
 
     def __set__(self, instance, value):
@@ -441,8 +441,8 @@ class SlotDefaultAccess:
 
 
 class Plugboard(Tracker, EmptyInit):
-    """Optional Manager class for Slots. Uses SlotDefaultAccess to access Plug default values. Also intializes Plug
-    container object values during instatiation by keywords.
+    """Optional Manager class for Slots. Uses SlotDefaultAccess to access Plug default values. Also initializes Plug
+    container object values during instantiation by keywords.
 
     Parameters
     ----------
@@ -452,7 +452,7 @@ class Plugboard(Tracker, EmptyInit):
     See Also
     --------
     :obj:`Slot`
-    :obj:`SlotDefaultAcces`
+    :obj:`SlotDefaultAccess`
     :obj:`Plug`
 
     """
@@ -464,8 +464,8 @@ class Plugboard(Tracker, EmptyInit):
         Parameters
         ----------
         **kwargs :
-            Keyword arguements to initialize Slots. Only keyword arguments which correspond to class' Slot attribute
-            names are processed. All other keyword arguements are passed to the next class' __init__ method in the MRO.
+            Keyword arguments to initialize Slots. Only keyword arguments which correspond to class' Slot attribute
+            names are processed. All other keyword arguments are passed to the next class' __init__ method in the MRO.
 
         """
         slots = self.collect(Slot)

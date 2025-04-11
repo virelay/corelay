@@ -50,29 +50,29 @@ class TestTask:
     """Test class for Task"""
     @staticmethod
     def test_instantiation_default():
-        """Instatiation without any arguments should succeed"""
+        """instantiation without any arguments should succeed"""
         Task()
 
     @staticmethod
     def test_instantiation_arguments(processor_type):
-        """Instatiating with correct arguments should succeed"""
+        """Instantiating with correct arguments should succeed"""
         Task(proc_type=processor_type, default=processor_type(), is_output=True)
 
     @staticmethod
     def test_proc_type_no_proc():
-        """Instatiating with a proc_type which is not a subclass for Processor should raise a TypeError"""
+        """Instantiating with a proc_type which is not a subclass for Processor should raise a TypeError"""
         with pytest.raises(TypeError):
             Task(proc_type=FunctionType, default=(lambda x: x))
 
     @staticmethod
     def test_default_no_proc():
-        """Instatiating with a default value not of type Processor should fail"""
+        """Instantiating with a default value not of type Processor should fail"""
         with pytest.raises(TypeError):
             Task(proc_type=Processor, default='bla')
 
     @staticmethod
     def test_proc_type_default_type_mismatch(processor_type):
-        """Instatiating with a default value not of type proc_type should raise a TypeError"""
+        """Instantiating with a default value not of type proc_type should raise a TypeError"""
         with pytest.raises(TypeError):
             Task(proc_type=processor_type, default=(lambda x: x))
 
@@ -94,18 +94,18 @@ class TestTask:
 class TestPipeline:
     """Test class for Pipeline"""
     @staticmethod
-    def test_instatiation_base():
-        """Instatiation of the base class without any arguments should succeed"""
+    def test_instantiation_base():
+        """instantiation of the base class without any arguments should succeed"""
         Pipeline()
 
     @staticmethod
-    def test_instatiation_default(pipeline_type):
-        """Instatiation of a custom subclass without any arguments should succeed"""
+    def test_instantiation_default(pipeline_type):
+        """instantiation of a custom subclass without any arguments should succeed"""
         pipeline_type()
 
     @staticmethod
-    def test_instatiation_arguments(pipeline_type, processor_type):
-        """Instatiation with correct arguments should succeed"""
+    def test_instantiation_arguments(pipeline_type, processor_type):
+        """instantiation with correct arguments should succeed"""
         pipeline_type(task_1=lambda x: x + 2, task_2=processor_type())
 
     @staticmethod

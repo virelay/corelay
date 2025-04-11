@@ -7,6 +7,7 @@
 ### General (v0.3.0)
 
 - Added this changelog, as well as a contributors list, which contains a list of all people that made contributions to the project.
+- Added a CSpell configuration for spell-checking the contents of the repository, checked all files, and corrected all spelling mistakes.
 
 ## v0.2.1
 

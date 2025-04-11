@@ -9,24 +9,25 @@
 
 CoRelAy is a tool to compose small-scale (single-machine) analysis pipelines.
 Pipelines are designed with a number of steps (Task) with default operations (Processor).
-Any step of the pipeline may then be indiviually changed by assigning a new operator (Processor).
+Any step of the pipeline may then be individually changed by assigning a new operator (Processor).
 Processors have Params which define their operation.
 
 CoRelAy was created to quickly implement pipelines to generate analysis data
 which can then be visualized using ViRelAy.
 
 If you find CoRelAy useful for your research, why not cite our related [paper](https://arxiv.org/abs/2106.13200):
-```
+
+```bibtex
 @article{anders2021software,
-      author  = {Anders, Christopher J. and
-                 Neumann, David and
-                 Samek, Wojciech and
-                 Müller, Klaus-Robert and
-                 Lapuschkin, Sebastian},
-      title   = {Software for Dataset-wide XAI: From Local Explanations to Global Insights with {Zennit}, {CoRelAy}, and {ViRelAy}},
-      journal = {CoRR},
-      volume  = {abs/2106.13200},
-      year    = {2021},
+  author  = {Anders, Christopher J. and
+             Neumann, David and
+             Samek, Wojciech and
+             Müller, Klaus-Robert and
+             Lapuschkin, Sebastian},
+  title   = {Software for Dataset-wide XAI: From Local Explanations to Global Insights with {Zennit}, {CoRelAy}, and {ViRelAy}},
+  journal = {CoRR},
+  volume  = {abs/2106.13200},
+  year    = {2021},
 }
 ```
 
@@ -131,7 +132,7 @@ def main():
         start_time = time.perf_counter()
 
         # Processors flagged with "is_output=True" will be accumulated in the output
-        # the output will be a tree of tuples, with the same hierachy as the pipeline
+        # the output will be a tree of tuples, with the same hierarchy as the pipeline
         # (i.e. clusterings here contains a tuple of the k-means outputs)
         clusterings, tsne = pipeline(data)
 

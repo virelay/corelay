@@ -71,7 +71,7 @@ def main():
         start_time = time.perf_counter()
 
         # Processors flagged with "is_output=True" will be accumulated in the output
-        # the output will be a tree of tuples, with the same hierachy as the pipeline
+        # the output will be a tree of tuples, with the same hierarchy as the pipeline
         # (i.e. clusterings here contains a tuple of the k-means outputs)
         clusterings, tsne = pipeline(data)
 

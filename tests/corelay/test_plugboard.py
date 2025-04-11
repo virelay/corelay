@@ -8,29 +8,29 @@ class TestSlot:
     """Test class for Slot"""
     @staticmethod
     def test_init():
-        """Slot should successfully instatiate in any case"""
+        """Slot should successfully instantiate in any case"""
         Slot()
 
     @staticmethod
     def test_init_consistent_args():
-        """If arguments are consistent, Slot should successfully instatiate"""
+        """If arguments are consistent, Slot should successfully instantiate"""
         Slot(dtype=int, default=5)
 
     @staticmethod
     def test_init_inconsistent_args():
-        """If arguments are inconsistent, Slot should raise TypeError when instatiating"""
+        """If arguments are inconsistent, Slot should raise TypeError when instantiating"""
         with pytest.raises(TypeError):
             Slot(dtype=str, default=5)
 
     @staticmethod
     def test_init_unknown_args():
-        """When unknown arguments are passed, Slot should raise TypeError when instatiating"""
+        """When unknown arguments are passed, Slot should raise TypeError when instantiating"""
         with pytest.raises(TypeError):
             Slot(monkey='banana')
 
     @staticmethod
     def test_init_class_name():
-        """When instatiated in a class, the __name__ parameter of Slot should be set accordingly"""
+        """When instantiated in a class, the __name__ parameter of Slot should be set accordingly"""
         class SlotHolder:
             """Holds a single Slot"""
             my_slot = Slot()
@@ -38,7 +38,7 @@ class TestSlot:
 
     @staticmethod
     def test_init_instance_default():
-        """When instatiated in a class and accessed in an instance, with only default set, the default value should be
+        """When instantiated in a class and accessed in an instance, with only default set, the default value should be
         returned.
         """
         class SlotHolder:
@@ -59,7 +59,7 @@ class TestSlot:
 
     @staticmethod
     def test_instance_get_no_default():
-        """When instatiated in a class and accessed in an instance, without anything set, accessing the value should
+        """When instantiated in a class and accessed in an instance, without anything set, accessing the value should
         raise a TypeError.
         """
         class SlotHolder:
@@ -173,114 +173,114 @@ class TestPlug:
     """Test class for Plug"""
     @staticmethod
     def test_init_with_slot_default():
-        """Instatiating a Plug with a slot's default value should succeed."""
+        """instantiating a Plug with a slot's default value should succeed."""
         slot = Slot(dtype=int, default=10)
         Plug(slot)
 
     @staticmethod
     def test_init_no_slot_default():
-        """Instatiating a Plug without a slot's default value should fail."""
+        """instantiating a Plug without a slot's default value should fail."""
         slot = Slot(dtype=int)
         with pytest.raises(TypeError):
             Plug(slot)
 
     @staticmethod
     def test_init_consistent():
-        """Instatiating a Plug with obj and default set as the correct slot's dtype should succeed."""
+        """instantiating a Plug with obj and default set as the correct slot's dtype should succeed."""
         slot = Slot(dtype=int)
         Plug(slot, obj=15, default=16)
 
     @staticmethod
     def test_init_consistent_obj():
-        """Instatiating a Plug with obj set as the correct slot's dtype should succeed."""
+        """instantiating a Plug with obj set as the correct slot's dtype should succeed."""
         slot = Slot(dtype=int)
         Plug(slot, obj=15)
 
     @staticmethod
     def test_init_consistent_default():
-        """Instatiating a Plug with default set as the correct slot's dtype should succeed."""
+        """instantiating a Plug with default set as the correct slot's dtype should succeed."""
         slot = Slot(dtype=int)
         Plug(slot, default=15)
 
     @staticmethod
     def test_init_inconsistent_obj():
-        """Instatiating a Plug with obj not set as slot's dtype should fail."""
+        """instantiating a Plug with obj not set as slot's dtype should fail."""
         slot = Slot(dtype=str)
         with pytest.raises(TypeError):
             Plug(slot, obj=15)
 
     @staticmethod
     def test_init_inconsistent_default():
-        """Instatiating a Plug with obj not set as slot's dtype should fail."""
+        """instantiating a Plug with obj not set as slot's dtype should fail."""
         slot = Slot(dtype=str)
         with pytest.raises(TypeError):
             Plug(slot, default=15)
 
     @staticmethod
-    def test_obj_hierachy_obj():
+    def test_obj_hierarchy_obj():
         """Accessing obj with slot default, plug default and obj set should return obj."""
         slot = Slot(dtype=str, default='fallback')
         plug = Plug(slot, obj='obj', default='default')
         assert plug.obj == 'obj'
 
     @staticmethod
-    def test_obj_hierachy_default():
+    def test_obj_hierarchy_default():
         """Accessing obj with slot default and plug default set should return default."""
         slot = Slot(dtype=str, default='fallback')
         plug = Plug(slot, default='default')
         assert plug.obj == 'default'
 
     @staticmethod
-    def test_obj_hierachy_fallback():
+    def test_obj_hierarchy_fallback():
         """Accessing obj with only slot default set should return slot default."""
         slot = Slot(dtype=str, default='fallback')
         plug = Plug(slot)
         assert plug.obj == 'fallback'
 
     @staticmethod
-    def test_default_hierachy_obj():
+    def test_default_hierarchy_obj():
         """Accessing default with slot default, default and obj set should return default."""
         slot = Slot(dtype=str, default='fallback')
         plug = Plug(slot, default='default')
         assert plug.default == 'default'
 
     @staticmethod
-    def test_default_hierachy_default():
+    def test_default_hierarchy_default():
         """Accessing default with slot default and plug default set should return default."""
         slot = Slot(dtype=str, default='fallback')
         plug = Plug(slot, default='default')
         assert plug.default == 'default'
 
     @staticmethod
-    def test_default_hierachy_fallback():
+    def test_default_hierarchy_fallback():
         """Accessing default with only slot default set should return slot default."""
         slot = Slot(dtype=str, default='fallback')
         plug = Plug(slot)
         assert plug.default == 'fallback'
 
     @staticmethod
-    def test_fallback_hierachy_obj():
+    def test_fallback_hierarchy_obj():
         """Accessing fallback with slot default, default and obj set should return slot default."""
         slot = Slot(dtype=str, default='fallback')
         plug = Plug(slot, default='default')
         assert plug.fallback == 'fallback'
 
     @staticmethod
-    def test_fallback_hierachy_default():
+    def test_fallback_hierarchy_default():
         """Accessing fallback with slot default and plug default set should return slot default."""
         slot = Slot(dtype=str, default='fallback')
         plug = Plug(slot, default='default')
         assert plug.fallback == 'fallback'
 
     @staticmethod
-    def test_fallback_hierachy_fallback():
+    def test_fallback_hierarchy_fallback():
         """Accessing fallback with only slot default set should return slot default."""
         slot = Slot(dtype=str, default='fallback')
         plug = Plug(slot)
         assert plug.fallback == 'fallback'
 
     @staticmethod
-    def test_hierachy_none():
+    def test_hierarchy_none():
         """Accessing any of default and fallback with only obj set should return None."""
         slot = Slot(dtype=str)
         plug = Plug(slot, obj='obj')
@@ -288,7 +288,7 @@ class TestPlug:
         assert plug.fallback is None
 
     @staticmethod
-    def test_delete_hierachy():
+    def test_delete_hierarchy():
         """Deleting obj with default set should return default."""
         slot = Slot(dtype=str)
         plug = Plug(slot, default='default', obj='obj')
@@ -296,7 +296,7 @@ class TestPlug:
         assert plug.obj == 'default'
 
     @staticmethod
-    def test_delete_hierachy_last():
+    def test_delete_hierarchy_last():
         """Deleting such that all obj, default and fallback are None should fail."""
         slot = Slot(dtype=str)
         plug = Plug(slot, default='default', obj='obj')
@@ -392,25 +392,25 @@ class TestPlugboard:
     """Test class for Plugboard"""
     @staticmethod
     def test_init():
-        """Instatiating a Plugboard without anything set should suceed."""
+        """instantiating a Plugboard without anything set should succeed."""
         Plugboard()
 
     @staticmethod
     def test_init_unknown_kwargs():
-        """Instatiating a Plugboard with unknown kwargs should fail."""
+        """instantiating a Plugboard with unknown kwargs should fail."""
         with pytest.raises(TypeError):
             Plugboard(stuff=19)
 
     @staticmethod
     def test_init_args():
-        """Instatiating a Plugboard with any positional args should fail."""
+        """instantiating a Plugboard with any positional args should fail."""
         with pytest.raises(TypeError):
             # pylint: disable=too-many-function-args
             Plugboard(19)
 
     @staticmethod
     def test_init_assign():
-        """Instatiating a Plugboard with kwargs identifying Slots should set those."""
+        """instantiating a Plugboard with kwargs identifying Slots should set those."""
         class MyPlugboard(Plugboard):
             """Custom Plugboard"""
             my_slot = Slot(dtype=int, default=15)

@@ -124,17 +124,17 @@ class Pipeline(Processor):
         return checkpoint_processes
 
     def from_checkpoint(self):
-        """Re-evaluate from last checkpointed :obj:`Processor` using its respective output.
+        """Re-evaluate from last check-pointed :obj:`Processor` using its respective output.
 
         Returns
         -------
         object
-            Output of the whole pipeline, starting from checkpointed :obj:`Processor` closest to output.
+            Output of the whole pipeline, starting from check-pointed :obj:`Processor` closest to output.
 
         Raises
         ------
         RuntimeError
-            If the checkpointed :obj:`Processor` closest to output does not have any
+            If the check-pointed :obj:`Processor` closest to output does not have any
             `checkpoint_data` store, i.e. the :obj:`Processor` was never called once after being declared a checkpoint.
 
         """
