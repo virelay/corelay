@@ -1,0 +1,17 @@
+{
+  "name": "@corelay/cspell-config",
+  "version": "0.5.0",
+  "description": "The CSpell configuration for CoRelAy.",
+  "author": {
+    "name": "David Neumann",
+    "email": "david.neumann@lecode.de"
+  },
+  "license": "AGPL-3.0-or-later",
+  "private": true,
+  "dependencies": {
+    "cspell": "^8.16.1"
+  },
+  "scripts": {
+    "cspell": "npx --prefix tests/cspell cspell lint --config .cspell.json --root ../.. '**'"
+  }
+}

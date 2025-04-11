@@ -49,7 +49,7 @@ class HashedHDF5:
     def read(self, data_in, meta):
         """Read output from a hashed h5 group, with hash of (data_in, meta)"""
         def _iterread(base):
-            """Iteratively read from HDF5 Group into tuple hierachy of ndarrays"""
+            """Iteratively read from HDF5 Group into tuple hierarchy of ndarrays"""
             if isinstance(base, h5py.Group):
                 return tuple(_iterread(base[key]) for key in sorted(base))
             if isinstance(base, h5py.Dataset):
@@ -66,7 +66,7 @@ class HashedHDF5:
     def write(self, data_out, data_in, meta):
         """Write output to a hashed h5 group, with hash of (data_in, meta)"""
         def _iterwrite(data, group, elem):
-            """Iteratively write to a HDF5 Group from a tuple hierachy of ndarrays"""
+            """Iteratively write to a HDF5 Group from a tuple hierarchy of ndarrays"""
             if isinstance(data, tuple):
                 g_new = group.require_group(elem)
                 for n, array in enumerate(data_out):
@@ -77,7 +77,7 @@ class HashedHDF5:
                 raise TypeError('Unsupported output type!')
 
         def _iterhash(base):
-            """Iteratively hash from tuple hierachy into tuple hierachy of hashes"""
+            """Iteratively hash from tuple hierarchy into tuple hierarchy of hashes"""
             if isinstance(base, tuple):
                 return tuple(_iterhash(obj) for obj in base)
             return ext_hash(base)

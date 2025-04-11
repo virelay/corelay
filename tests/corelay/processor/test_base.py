@@ -66,12 +66,12 @@ class TestProcessor:
 
     @staticmethod
     def test_creation(processor_type):
-        """Processors should instatiatiate properly in all cases"""
+        """Processors should instantiate properly in all cases"""
         processor_type()
 
     @staticmethod
     def test_instance_assign(processor_type, kwargs):
-        """Parameter values passed as keyword arguments during instatiation should be properly set"""
+        """Parameter values passed as keyword arguments during instantiation should be properly set"""
         processor = processor_type(**kwargs)
         assert all(getattr(processor, key) == val for key, val in kwargs.items())
 
@@ -165,7 +165,7 @@ class TestProcessor:
 
     @staticmethod
     def test_reset_defaults_assigned(processor_type):
-        """Resetting Param default values should go back to returning instatiation-time default values"""
+        """Resetting Param default values should go back to returning instantiation-time default values"""
         proc = processor_type(param_1='soup', param_2=2)
         proc.update_defaults(param_2=1)
         proc.reset_defaults()
@@ -183,7 +183,7 @@ class TestFunctionProcessor:
     """Test class for FunctionProcessor"""
     @staticmethod
     def test_instantiation(unbound_function):
-        """Instatiation should succeed with an unbound function as a keyword argument"""
+        """instantiation should succeed with an unbound function as a keyword argument"""
         FunctionProcessor(function=unbound_function)
 
     @staticmethod
@@ -228,7 +228,7 @@ class TestEnsureProcessor:
 
     @staticmethod
     def test_invalid():
-        """Passing anythin but a callable or Processor should raise a TypeError"""
+        """Passing anything but a callable or Processor should raise a TypeError"""
         with pytest.raises(TypeError):
             ensure_processor('mummy')
 

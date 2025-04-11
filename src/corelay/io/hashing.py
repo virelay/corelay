@@ -21,7 +21,7 @@ except ImportError:
 class Hasher(MetroHash128):
     """Hasher object with a write function for file-like updates"""
     def write(self, data):
-        """Update using write for file-like behaviour"""
+        """Update using write for file-like behavior"""
         self.update(data)
         return len(data)
 

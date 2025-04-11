@@ -63,6 +63,24 @@ jobs:
       - name: Run test
         run: tox --skip-pkg-install -e ${{ matrix.tox_env }}
 
+  spell-check:
+    name: Spell-Check Repository
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install NodeJS
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install CSpell Global Configuration
+        run: npm --prefix tests/cspell install
+      - name: Run CSpell Spell Checker
+        run: npm --prefix tests/cspell run cspell
+
   docs:
     name: docs
     runs-on: ubuntu-latest

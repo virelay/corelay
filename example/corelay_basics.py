@@ -28,7 +28,7 @@ class MyPipeline(Pipeline):
     # supplied with the same name in __init__ as a keyword argument. The first value is an optional expected Process
     # type, second is a default value, which has to be an instance of that type. If the default argument is not a
     # Process, it will be converted to a FunctionProcessor by default, functions fed to FunctionProcessors are by
-    # default not bound to the class. To bind them, we can suppy `bind_method=True` to the FunctionProcessor. Supplying
+    # default not bound to the class. To bind them, we can supply `bind_method=True` to the FunctionProcessor. Supplying
     # it to the task changes the default value of the Processor before creation:
     prepreprocess = Task(proc_type=FunctionProcessor, default=(lambda self, x: x * 2), bind_method=True)
     # Otherwise, we do not need to supply `self` for the default function:
