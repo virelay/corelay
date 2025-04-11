@@ -23,7 +23,7 @@ def tracked():
 
 @pytest.fixture(scope='module')
 def values():
-    """Fixute of list of values, how they were written in the tracked fixture class."""
+    """Fixture of list of values, how they were written in the tracked fixture class."""
     result = dict(
         attr_1=42,
         attr_2='apple',

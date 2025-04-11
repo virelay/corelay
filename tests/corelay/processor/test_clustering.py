@@ -76,7 +76,7 @@ def test_embedding_on_distances_agg_clustering(distances):
     assert (np.unique(emb, return_counts=True)[1] / 1000).std() < 0.05
 
 
-def test_denrogram_creation(tiny_data):
+def test_dendrogram_creation(tiny_data):
     """Test dendrogram creation with a given path.
 
     """
@@ -87,7 +87,7 @@ def test_denrogram_creation(tiny_data):
     os.remove(output_path)
 
 
-def test_denrogram_creation_with_file_object(tiny_data):
+def test_dendrogram_creation_with_file_object(tiny_data):
     """Test dendrogram creation with a given file object.
 
     """

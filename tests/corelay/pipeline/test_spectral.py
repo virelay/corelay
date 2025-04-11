@@ -66,12 +66,12 @@ def k_clusters():
 class TestSpectral:
     """Test class for SpectralClustering"""
     @staticmethod
-    def test_spectral_embedding_instatiation():
+    def test_spectral_embedding_instantiation():
         """test whether we can instantiate a spectral embedding instance successfully"""
         SpectralEmbedding()
 
     @staticmethod
-    def test_spectral_clustering_instatiation():
+    def test_spectral_clustering_instantiation():
         """test whether we can instantiate a spectral clustering instance successfully"""
         SpectralClustering()
 
@@ -83,7 +83,7 @@ class TestSpectral:
 
     @staticmethod
     def test_spectral_embedding_default_params(spiral_data):
-        """test wheter the SE operates on data all the way through, using its default parameters."""
+        """test whether the SE operates on data all the way through, using its default parameters."""
         pipeline = SpectralEmbedding()
         output = pipeline(spiral_data)
         assert isinstance(output, tuple), f'Expected tuple type output, got {type(output)}'
@@ -103,11 +103,11 @@ class TestSpectral:
 
     @staticmethod
     def test_spectral_clustering_default_params(spiral_data):
-        """test wheter the SC operates on data all the way through, using its default parameters."""
+        """test whether the SC operates on data all the way through, using its default parameters."""
         pipeline = SpectralClustering()
         output = pipeline(spiral_data)
         assert isinstance(output, tuple), f'Expected tuple type output, got {type(output)}'
-        assert len(output) == 2, f'Expected output lenght of 2, got {len(output)}'
+        assert len(output) == 2, f'Expected output length of 2, got {len(output)}'
 
         eigenstuff, labels = output
         assert isinstance(eigenstuff, tuple), (
