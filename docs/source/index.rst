@@ -2,6 +2,9 @@
 CoRelAy Documentation
 =====================
 
+.. image:: ../../design/corelay-logo-with-title.png
+    :alt: CoRelAy Logo
+
 CoRelAy is a tool to compose small-scale (single-machine) analysis pipelines. It
 was created to swiftly implement pipelines to generate analysis data which can
 then be visualized using ViRelAy.

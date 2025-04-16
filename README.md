@@ -1,6 +1,6 @@
 # CoRelAy &ndash; Composing Relevance Analysis
 
-![CoRelAy Logo](docs/images/corelay-logo.png)
+![CoRelAy Logo](https://raw.githubusercontent.com/virelay/corelay/refs/heads/main/design/corelay-logo-with-title.png)
 
 [![Documentation Status](https://readthedocs.org/projects/corelay/badge/?version=latest)](https://corelay.readthedocs.io/en/latest/?badge=latest)
 [![tests](https://github.com/virelay/corelay/actions/workflows/tests.yml/badge.svg)](https://github.com/virelay/corelay/actions/workflows/tests.yml)
