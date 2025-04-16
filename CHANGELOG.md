@@ -4,8 +4,10 @@
 
 *Release date to be determined.*
 
-### General (v0.3.0)
+### General Updates in v0.3.0
 
+- Renamed the `master` branch to `main` in order to avoid any links to sensitive topics.
+  - All references to the `master` branch in the repository were updated to `main`.
 - Added this changelog, as well as a contributors list, which contains a list of all people that made contributions to the project.
 - Added a CSpell configuration for spell-checking the contents of the repository, checked all files, and corrected all spelling mistakes.
 
@@ -13,13 +15,13 @@
 
 *Released on June 21, 2022.*
 
-### General (v0.2.1)
+### General Updates in v0.2.1
 
 - Fixed a small typo in the read me by @p16i in #8.
 - Clarified the maximum number of neighbors in the `SparseKNN` affinity by replacing the confusing `if`-`else` expression with the `min` function by @chr5tphr in #10.
 - Added a new logo, which has a design similar to the logo of ViRelAy and added a link to the documentation, as well as some badges to the read me by @chr5tphr in #12.
 
-### CI/CD (v0.2.1)
+### CI/CD Updates in v0.2.1
 
 - Added a GitHub Actions workflow, which runs the unit tests and builds the documentation by @chr5tphr in #13.
   - Fixed tests and PyLint errors
@@ -37,7 +39,7 @@
     - Change the linkcode URL in the documentation to correctly point to `src/corelay` on GitHub.
     - Updated the outdated PyLint configuration by removing deprecated disables.
 
-### Documentation (v0.2.1)
+### Documentation Updates in v0.2.1
 
 - Added Sphinx-based documentation by @chr5tphr in #11.
   - Fixed the Docstrings and some NumPyDoc issues.
