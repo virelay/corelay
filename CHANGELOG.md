@@ -17,6 +17,8 @@
     - Named and cleaned up all objects and groups in the SVG.
   - A PNG version of the logo without the title was also added.
   - All references to the old logo were updated to point to the new location. The URL used in the read me was made absolute, because the read me is also used for the PyPI package and PyPI would not be able to resolve the relative URL to the logo on GitHub.
+- The project is dual-licensed under the GNU General Public License Version 3 (GPL-3.0) or later, and the GNU Lesser General Public License Version 3 (LGPL-3.0) or later. The GPL-3.0 license is in the `COPYING` file and the LGPL-3.0 license is in the `COPYING.LESSER` file. Additionally, there used to be a `LICENSE` file, which contained a note about the dual-licensing. This was, however, confusing, as GitHub does not recognize that the file is only a note about the dual-licensing and not the actual license. The `LICENSE` file was removed and the note about the dual-licensing was added to the read me.
+- Added a `CITATION.cff` file, which contains the necessary information to cite this repository. This file is based on the [Citation File Format (CFF)](https://citation-file-format.github.io) standard. This file is supported by GitHub and results in a "Cite this repository" button on the website, which allows users to directly generate a proper citation for the repository in multiple different formats.
 
 ### Documentation Updates in v0.3.0
 
