@@ -10,6 +10,18 @@
   - All references to the `master` branch in the repository were updated to `main`.
 - Added this changelog, as well as a contributors list, which contains a list of all people that made contributions to the project.
 - Added a CSpell configuration for spell-checking the contents of the repository, checked all files, and corrected all spelling mistakes.
+- Moved the logo and its source file from the docs to a separate top-level `design` directory.
+  - The source file was cleaned up:
+    - Converted the title of the logo to a path, because the font is from Google Fonts and not available in the SVG. It would be possible to embed the font, but this would increase the size of the SVG significantly and would require us to include the license.
+    - The logo was previously only available with the title. For this reason a second page was added to the SVG, which contains the logo without the title.
+    - Named and cleaned up all objects and groups in the SVG.
+  - A PNG version of the logo without the title was also added.
+  - All references to the old logo were updated to point to the new location. The URL used in the read me was made absolute, because the read me is also used for the PyPI package and PyPI would not be able to resolve the relative URL to the logo on GitHub.
+
+### Documentation Updates in v0.3.0
+
+- The logo was added to the documentation, which previously contained a copy of the logo in the `docs/images` directory, but did not include it. The version contained in the `docs/images` directory was removed and the index page now directly references the logo in the `design` directory.
+- The favicon used in the documentation was updated to use the SVG version of the logo without the title. Previously, it was still the old "S" logo, which was from before CoRelAy was renamed from Sprincl.
 
 ## v0.2.1
 
