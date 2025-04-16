@@ -5,7 +5,7 @@
 [![Documentation Status](https://readthedocs.org/projects/corelay/badge/?version=latest)](https://corelay.readthedocs.io/en/latest/?badge=latest)
 [![tests](https://github.com/virelay/corelay/actions/workflows/tests.yml/badge.svg)](https://github.com/virelay/corelay/actions/workflows/tests.yml)
 [![PyPI Version](https://img.shields.io/pypi/v/corelay)](https://pypi.org/project/corelay/)
-[![License](https://img.shields.io/pypi/l/corelay)](https://github.com/virelay/corelay/blob/master/COPYING.LESSER)
+[![License](https://img.shields.io/pypi/l/corelay)](https://github.com/virelay/corelay/blob/main/COPYING.LESSER)
 
 CoRelAy is a tool to compose small-scale (single-machine) analysis pipelines.
 Pipelines are designed with a number of steps (Task) with default operations (Processor).

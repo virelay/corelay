@@ -85,7 +85,7 @@ def getrev():
             text=True
         ).stdout[:-1]
     except CalledProcessError:
-        revision = 'master'
+        revision = 'main'
 
     return revision
 
