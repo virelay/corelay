@@ -1,0 +1,16 @@
+
+# Flake8 configuration file
+[flake8]
+
+# Ignores the following rules:
+# R0902 Too many instance attributes
+# R0913 Too many arguments
+# R0914 Too many local variables
+# W503  Line-break before binary operator
+ignore = R0902,R0913,R0914,W503
+
+# Exclude the following directories from linting
+exclude=.venv,.git,.tox,build,dist,docs,*egg,*.ini
+
+# Maximum number of characters on a single line
+max-line-length = 120
