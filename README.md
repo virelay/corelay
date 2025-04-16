@@ -7,13 +7,9 @@
 [![PyPI Version](https://img.shields.io/pypi/v/corelay)](https://pypi.org/project/corelay/)
 [![License](https://img.shields.io/pypi/l/corelay)](https://github.com/virelay/corelay/blob/main/COPYING.LESSER)
 
-CoRelAy is a tool to compose small-scale (single-machine) analysis pipelines.
-Pipelines are designed with a number of steps (Task) with default operations (Processor).
-Any step of the pipeline may then be individually changed by assigning a new operator (Processor).
-Processors have Params which define their operation.
+CoRelAy is a tool to compose small-scale (single-machine) analysis pipelines. Pipelines are designed with a number of steps (Task) with default operations (Processor). Any step of the pipeline may then be individually changed by assigning a new operator (Processor). Processors have Params which define their operation.
 
-CoRelAy was created to quickly implement pipelines to generate analysis data
-which can then be visualized using ViRelAy.
+CoRelAy was created to quickly implement pipelines to generate analysis data which can then be visualized using ViRelAy.
 
 If you find CoRelAy useful for your research, why not cite our related [paper](https://arxiv.org/abs/2106.13200):
 
@@ -32,22 +28,25 @@ If you find CoRelAy useful for your research, why not cite our related [paper](h
 ```
 
 ## Documentation
-The latest documentation is hosted at
-[corelay.readthedocs.io](https://corelay.readthedocs.io/en/latest/).
 
+The latest documentation is hosted at [corelay.readthedocs.io](https://corelay.readthedocs.io/en/latest/).
 
 ## Install
+
 CoRelAy may be installed using pip with
+
 ```shell
 $ pip install corelay
 ```
 
 To install optional HDBSCAN and UMAP support, use
+
 ```shell
 $ pip install corelay[umap,hdbscan]
 ```
 
 ## Usage
+
 Examples to highlight some features of **CoRelAy** can be found in `example/`.
 
 We mainly use HDF5 files to store results. The structure used by **ViRelAy** is documented in the **ViRelAy**
@@ -146,3 +145,7 @@ def main():
 if __name__ == '__main__':
     main()
 ```
+
+## License
+
+CoRelAy is dual-licensed under the [GNU General Public License Version 3 (GPL-3.0)](https://www.gnu.org/licenses/gpl-3.0.html) or later, and the [GNU Lesser General Public License Version 3 (LGPL-3.0)](https://www.gnu.org/licenses/lgpl-3.0.html) or later. For more information see the [GPL-3.0](https://github.com/virelay/corelay/blob/main/COPYING) and [LGPL-3.0](https://github.com/virelay/corelay/blob/main/COPYING.LESSER) license files.
