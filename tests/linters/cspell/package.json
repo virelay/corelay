@@ -12,6 +12,6 @@
     "cspell": "^8.16.1"
   },
   "scripts": {
-    "cspell": "npx --prefix tests/cspell cspell lint --config .cspell.json --root ../.. '**'"
+    "cspell": "npx --prefix tests/linters/cspell cspell lint --config .cspell.json --root ../.. '**'"
   }
 }
