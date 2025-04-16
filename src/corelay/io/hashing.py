@@ -2,7 +2,7 @@
 
 Note
 ----
-See https://github.com/chr5tphr/funcache/blob/master/funcache/hashing.py
+See https://github.com/chr5tphr/funcache/blob/main/funcache/hashing.py
 
 """
 import pickle
