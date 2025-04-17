@@ -72,6 +72,7 @@ class TSNEEmbedding(Embedding):
     def function(self, data):
         # pylint: disable=not-a-mapping
         tsne = TSNE(n_components=self.n_components,
+                    init='random',
                     metric=self.metric,
                     perplexity=self.perplexity,
                     early_exaggeration=self.early_exaggeration,
