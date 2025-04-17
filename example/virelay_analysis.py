@@ -69,7 +69,7 @@ class SSIM(Processor):
         N, H, W = data.shape
         return squareform(pdist(
             data.reshape(N, H * W),
-            metric=lambda x, y: structural_similarity(x.reshape(H, W), y.reshape(H, W), multichannel=False)
+            metric=lambda x, y: structural_similarity(x.reshape(H, W), y.reshape(H, W))
         ))
 
 
