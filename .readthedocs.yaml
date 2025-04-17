@@ -1,13 +1,20 @@
+
+# Use the v2 version of the Read the Docs build configuration file format
 version: 2
 
+# Configures the build environment to use Ubuntu 24.04 and Python 3.12
 build:
-  os: ubuntu-20.04
+  os: ubuntu-24.04
   tools:
-    python: "3.9"
+    python: "3.13"
 
+# Configures the Sphinx documentation build to use the configuration file located at docs/source/conf.py
 sphinx:
   configuration: docs/source/conf.py
 
+# Configures the Python environment to be used; the documentation uses the linkcode extension, to generate links to the source code on GitHub; to
+# produce the links, the extension needs ViRelAy to be installed; also, the "docs" extra requirements are installed, which contains the Sphinx
+# extensions used in the documentation
 python:
   install:
     - method: pip

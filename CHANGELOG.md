@@ -18,6 +18,7 @@
   - All references to the old logo were updated to point to the new location. The URL used in the read me was made absolute, because the read me is also used for the PyPI package and PyPI would not be able to resolve the relative URL to the logo on GitHub.
 - The project is dual-licensed under the GNU General Public License Version 3 (GPL-3.0) or later, and the GNU Lesser General Public License Version 3 (LGPL-3.0) or later. The GPL-3.0 license is in the `COPYING` file and the LGPL-3.0 license is in the `COPYING.LESSER` file. Additionally, there used to be a `LICENSE` file, which contained a note about the dual-licensing. This was, however, confusing, as GitHub does not recognize that the file is only a note about the dual-licensing and not the actual license. The `LICENSE` file was removed and the note about the dual-licensing was added to the read me.
 - Added a `CITATION.cff` file, which contains the necessary information to cite this repository. This file is based on the [Citation File Format (CFF)](https://citation-file-format.github.io) standard. This file is supported by GitHub and results in a "Cite this repository" button on the website, which allows users to directly generate a proper citation for the repository in multiple different formats.
+- The configuration for the GitLab CI, which was stored in the `.gitlab-ci.yml` file, was removed. The project is no longer being hosted on GitLab, and the CI configuration is no longer needed.
 
 ### CoRelAy Updates in v0.3.0
 
@@ -27,9 +28,12 @@
   - The tox configuration was updated and now uses tox-uv to run all commands via uv instead of directly creating environments. This means, that all Python environments can now be run without having to install multiple Python versions.
   - The tox configuration was also cleaned up.
   - Support for Python 3.7 was removed, not only because it has already reached its end-of-life, but also because some of the dependencies (especially tox-uv) do not support it anymore. The two remaining supported Python versions (3.8 and 3.9) are now recorded in the `.python-versions` file, which makes it trivial to install them using uv.
+- Updated the Python dependencies in the `pyproject.toml` to their respective latest versions.
+- Some of the new dependency versions no longer support Python 3.8 and Python 3.9 (as well as Python 3.10). For this reason, the project was migrated to support Python 3.11, 3.12, and 3.13. The `.python-versions` file, the tox configuration, and the GitHub Actions workflow were updated to reflect this change.
 - The unit tests were moved from the `tests` folder to `tests/unit_tests`, which clears up space for other test files.
 - The tox configuration was moved from the root directory to the `tests` directory, which is more appropriate, as tox is mostly used for testing and linting.
 - The configurations for the linters PyLint and Flake8 were moved from the root directory of the repository (in the case of PyLint) and from the tox configuration file (in the case of Flake8) into the `tests/linters` directory. The CSpell configuration was also moved there.
+- The `corelay/version.py` file was deleted as it is automatically generated during the build process and should not be checked into source control.
 
 ### CI/CD Updates in v0.3.0
 
@@ -43,8 +47,10 @@
 
 ### Documentation Updates in v0.3.0
 
+- The configuration for Read the Docs was updated to use the latest available versions of Ubuntu (24.04) and Python (3.12). It was also documented.
 - The logo was added to the documentation, which previously contained a copy of the logo in the `docs/images` directory, but did not include it. The version contained in the `docs/images` directory was removed and the index page now directly references the logo in the `design` directory.
 - The favicon used in the documentation was updated to use the SVG version of the logo without the title. Previously, it was still the old "S" logo, which was from before CoRelAy was renamed from Sprincl.
+- One of the new dependency versions (`metrohash-python`) requires a C++ compiler to build and uses the `c++` command, which may not be available on all systems. To ensure that users are not confused by this, a note was added to the read me file explaining that the `c++` command is required to build the project and showing how to install it on Fedora (one of the systems that do not have the `c++` command installed by default).
 
 ## v0.2.1
 
