@@ -15,12 +15,9 @@ Thumbs.db
 .*venv/
 
 # Build output
-__pycache__
-.python
-*.egg-info
 __pycache__/
-build/
-dist/
+source/dist/
+source/corelay/version.py
 
 # MyPy type information cache
 .mypy_cache

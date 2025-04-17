@@ -39,6 +39,13 @@ CoRelAy may be installed using pip with
 $ pip install corelay
 ```
 
+> [!NOTE]
+> If you experience issues installing the `metrohash-python` dependency, this may be due to the `c++` command being missing. For example, under Fedora, the `gcc-c++` package has to be installed to make the `c++` command available. You can install it using
+
+```shell
+$ sudo dnf install gcc-c++
+```
+
 To install optional HDBSCAN and UMAP support, use
 
 ```shell
