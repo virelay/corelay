@@ -1,4 +1,8 @@
 """Plugboards are classes which contain Slots that are filled using Plugs."""
+
+import numpy
+from types import BuiltinFunctionType, BuiltinMethodType, FunctionType, MethodType
+
 from .tracker import Tracker
 
 
@@ -61,6 +65,14 @@ class Slot(EmptyInit):
         self.__name__ = ''
         self._consistent()
 
+    _function_types = (
+        BuiltinFunctionType,
+        BuiltinMethodType,
+        MethodType,
+        numpy.ufunc,
+        type(numpy.max)
+    )
+
     def _consistent(self):
         """Check whether self.dtype and self.default are consistent, e.g. self.default is either None, or of type
         self.dtype.
@@ -81,7 +93,15 @@ class Slot(EmptyInit):
                 f"'{type(self).__name__}' object '{self.__name__}' default values '{self.dtype}' "
                 "is neither a type, nor a tuple of types."
             )
-        if self.default is not None and not isinstance(self.default, self.dtype):
+
+        # If the user sets the dtype to FunctionType, then we should add some more types to check against, because many functions are not of type
+        # FunctionType, e.g., builtin functions, methods, and, since NumPy 1.26, NumPy array functions are no longer actual functions; so, for
+        # example, something like pooling_function = Param(FunctionType, np.sum) would not work anymore
+        effective_dtypes = self.dtype if isinstance(self.dtype, tuple) else (self.dtype,)
+        if FunctionType in effective_dtypes:
+            effective_dtypes = effective_dtypes + Slot._function_types
+
+        if self.default is not None and not isinstance(self.default, effective_dtypes):
             raise TypeError(
                 f"'{type(self).__name__}' object '{self.__name__}' default value is not of type '{self.dtype}'."
             )
@@ -276,6 +296,14 @@ class Plug(EmptyInit):
         self._default = default
         self._consistent()
 
+    _function_types = (
+        BuiltinFunctionType,
+        BuiltinMethodType,
+        MethodType,
+        numpy.ufunc,
+        type(numpy.max)
+    )
+
     def _consistent(self):
         """Checks whether all values are consistent, e.g. at least one of obj, default and fallback is set and of dtype
         slot.dtype.
@@ -291,7 +319,15 @@ class Plug(EmptyInit):
                 f"'{type(self.slot).__name__}' object '{self.slot.__name__}' is mandatory, "
                 "yet it has been accessed without being set."
             )
-        if not isinstance(self.obj, self.slot.dtype):
+
+        # If the user sets the dtype to FunctionType, then we should add some more types to check against, because many functions are not of type
+        # FunctionType, e.g., builtin functions, methods, and, since NumPy 1.26, NumPy array functions are no longer actual functions; so, for
+        # example, something like pooling_function = Param(FunctionType, np.sum) would not work anymore
+        effective_dtypes = self.slot.dtype if isinstance(self.slot.dtype, tuple) else (self.slot.dtype,)
+        if FunctionType in effective_dtypes:
+            effective_dtypes = effective_dtypes + Plug._function_types
+
+        if not isinstance(self.obj, effective_dtypes):
             raise TypeError(
                 f"'{type(self.slot).__name__}' object '{self.slot.__name__}' value '{self.obj}' "
                 f"is not of type '{self.slot.dtype}'."

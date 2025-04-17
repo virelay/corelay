@@ -163,7 +163,7 @@ class Rescale(ImagePreProcessor):
         if self.channels_first:
             data = np.moveaxis(data, 1, -1)
         # pylint: disable=not-a-mapping
-        out = np.stack([skimage.transform.rescale(x, self.scale, order=self.filter, multichannel=multichannel,
+        out = np.stack([skimage.transform.rescale(x, self.scale, order=self.filter, channel_axis=-1 if multichannel else None,
                                                   **self.kwargs) for x in data])
         if self.channels_first:
             out = np.moveaxis(out, -1, 1)

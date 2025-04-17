@@ -133,7 +133,7 @@ class AgglomerativeClustering(Clustering):
 
     def function(self, data):
         # pylint: disable=not-a-mapping
-        clustering = sklearn.cluster.AgglomerativeClustering(n_clusters=self.n_clusters, affinity=self.metric,
+        clustering = sklearn.cluster.AgglomerativeClustering(n_clusters=self.n_clusters, metric=self.metric,
                                                              linkage=self.linkage, **self.kwargs)
         return clustering.fit_predict(data)
 
