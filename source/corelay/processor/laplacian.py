@@ -1,80 +1,88 @@
-"""Graph Laplacian Processors (mainly for spectral embedding)
+"""A module that contains processors for computing the graph Laplacian, which is mainly used for spectral embeddings."""
 
-"""
-import logging
+from typing import Any
 
-import numpy as np
-from scipy import sparse as sp
+import numpy
+import scipy.sparse
+from numpy.typing import NDArray
 
-from .base import Processor
-
-LOGGER = logging.getLogger(__name__)
+from corelay.processor.base import Processor
 
 
-def a1ifmat(x):
-    """Return flat representation of x if x is a :obj:`numpy.matrix`
+def a1ifmat(matrix: NDArray[Any] | numpy.matrix[Any, Any]) -> NDArray[Any]:
+    """Converts the specified matrix to a flat representation. If the matrix is already a flat NumPy array, it is returned as is.
 
-    Parameters
-    ----------
-    x : :obj:`numpy.ndarray` or :obj:`numpy.matrix`
-        Object to convert if necessary
+    Args:
+        matrix (NDArray[Any] | numpy.matrix[Any, Any]): The input matrix to be converted.
 
-    Returns
-    -------
-    :obj:`numpy.ndarray`
-        Matrix as flat :obj:`numpy.ndarray` if `x` was a :obj:`numpy.matrix`, else `x`
-
+    Returns:
+        NDArray[Any]: The converted matrix. If the input was a NumPy matrix, it is returned as a flat NumPy array. Otherwise, the input is returned as
+            is.
     """
-    return x.A1 if isinstance(x, np.matrix) else x
+
+    return matrix.A1 if isinstance(matrix, numpy.matrix) else matrix
 
 
 class Laplacian(Processor):
-    """Graph Laplacian Processor
+    """The abstract base class for processors that compute a graph Laplacian.
 
+    Args:
+        is_output (bool, optional): A value indicating whether this ``Laplacian`` processor is the output of a ``Pipeline``. Defaults to `False`.
+        is_checkpoint (bool | None, optional): A value indicating whether check-pointed pipeline computations should start at this point, if there
+            exists a previously computed checkpoint value. Defaults to `False`.
+        io (Storable | None, optional): An IO object that is used to cache intermediate results of the pipeline, which can then be re-used in this
+            run or in subsequent runs of the ``Pipeline``. Defaults to an instance of ``NoStorage``.
     """
 
 
 class SymmetricNormalLaplacian(Laplacian):
-    """ Normal Symmetric Graph Laplacian
+    """A ``Processor`` that computes the normal symmetric graph Laplacian.
 
+    Args:
+        is_output (bool, optional): A value indicating whether this ``SymmetricNormalLaplacian`` Laplacian processor is the output of a ``Pipeline``.
+            Defaults to `False`.
+        is_checkpoint (bool | None, optional): A value indicating whether check-pointed pipeline computations should start at this point, if there
+            exists a previously computed checkpoint value. Defaults to `False`.
+        io (Storable | None, optional): An IO object that is used to cache intermediate results of the pipeline, which can then be re-used in this
+            run or in subsequent runs of the ``Pipeline``. Defaults to an instance of ``NoStorage``.
     """
-    def function(self, data):
-        """Normalized Symmetric Graph Laplacian
 
-        Parameters
-        ----------
-        data : :obj:`sp.csr_matrix` or :obj:`np.ndarray`
-            Graph affinity/similarity matrix.
+    def function(self, data: Any) -> Any:
+        """Computes the symmetric normal graph Laplacian.
 
-        Returns
-        -------
-        :obj:`sp.csr_matrix`
-            Sparse representation of a symmetric graph laplacian matrix
+        Args:
+            data (Any): The graph affinity/similarity matrix. This can be a NumPy array or a sparse matrix.
 
+        Returns:
+            Any: Returns the symmetric normal graph Laplacian, which is a sparse representation of the symmetric graph Laplacian matrix.
         """
-        deg = sp.diags(a1ifmat(data.sum(1))**-.5, 0)
-        lap = deg @ data @ deg
-        return lap
+
+        input_data: scipy.sparse.csr_matrix | NDArray[Any] = data
+        degree = scipy.sparse.diags(a1ifmat(input_data.sum(1))**-0.5, 0)
+        return degree @ input_data @ degree
 
 
 class RandomWalkNormalLaplacian(Laplacian):
-    """ Normal Random Walk Graph Laplacian
+    """A ``Processor`` that computes the normal random walk graph Laplacian.
 
+    Args:
+        is_output (bool, optional): A value indicating whether this ``RandomWalkNormalLaplacian`` Laplacian processor is the output of a ``Pipeline``.
+            Defaults to `False`.
+        is_checkpoint (bool | None, optional): A value indicating whether check-pointed pipeline computations should start at this point, if there
+            exists a previously computed checkpoint value. Defaults to `False`.
+        io (Storable | None, optional): An IO object that is used to cache intermediate results of the pipeline, which can then be re-used in this
+            run or in subsequent runs of the ``Pipeline``. Defaults to an instance of ``NoStorage``.
     """
-    def function(self, data):
-        """Normalized Random Walk Graph Laplacian
 
-        Parameters
-        ----------
-        affinity : :obj:`sp.csr_matrix` or :obj:`np.ndarray`
-            Graph affinity/similarity matrix.
+    def function(self, data: Any) -> Any:
+        """Computes the random walk normal graph Laplacian.
 
-        Returns
-        -------
-        :obj:`sp.csr_matrix`
-            Sparse representation of a random walk graph laplacian matrix
+        Args:
+            data (Any): The graph affinity/similarity matrix. This can be a NumPy array or a sparse matrix.
 
+        Returns:
+            Any: Returns the random walk normal graph Laplacian, which is a sparse representation of the random walk graph Laplacian matrix.
         """
-        deg = sp.diags(a1ifmat(data.sum(1))**-1., 0)
-        lap = deg @ data
-        return lap
+
+        degree = scipy.sparse.diags(a1ifmat(data.sum(1))**-1., 0)
+        return degree @ data

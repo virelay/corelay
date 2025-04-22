@@ -1,508 +1,722 @@
-"""Tests for corelay/plugboard.py"""
+"""A module that contains unit tests for the ``corelay.plugboard`` module."""
+
 import pytest
 
 from corelay.plugboard import Slot, Plug, Plugboard
 
 
 class TestSlot:
-    """Test class for Slot"""
+    """Contains unit tests for the ``Slot`` class."""
+
     @staticmethod
-    def test_init():
-        """Slot should successfully instantiate in any case"""
+    def test_init() -> None:
+        """Tests that a ``Slot`` can be instantiated successfully."""
+
         Slot()
 
     @staticmethod
-    def test_init_consistent_args():
-        """If arguments are consistent, Slot should successfully instantiate"""
+    def test_init_consistent_args() -> None:
+        """Tests that a ``Slot`` can be instantiated successfully if its arguments are consistent."""
+
         Slot(dtype=int, default=5)
 
     @staticmethod
-    def test_init_inconsistent_args():
-        """If arguments are inconsistent, Slot should raise TypeError when instantiating"""
+    def test_init_inconsistent_args() -> None:
+        """Tests that instantiating a ``Slot`` with inconsistent arguments raises an exception."""
+
         with pytest.raises(TypeError):
             Slot(dtype=str, default=5)
 
     @staticmethod
-    def test_init_unknown_args():
-        """When unknown arguments are passed, Slot should raise TypeError when instantiating"""
+    def test_init_unknown_args() -> None:
+        """Tests that instantiating a ``Slot`` with unknown arguments raises an exception."""
+
         with pytest.raises(TypeError):
             Slot(monkey='banana')
 
     @staticmethod
-    def test_init_class_name():
-        """When instantiated in a class, the __name__ parameter of Slot should be set accordingly"""
+    def test_init_class_name() -> None:
+        """Tests that when instantiating a class, the __name__ parameter of a contained ``Slot`` is set accordingly."""
+
         class SlotHolder:
-            """Holds a single Slot"""
+            """A test class that holds a single ``Slot``."""
+
             my_slot = Slot()
+            """A test slot."""
+
         assert SlotHolder.my_slot.__name__ == 'my_slot'
 
     @staticmethod
-    def test_init_instance_default():
-        """When instantiated in a class and accessed in an instance, with only default set, the default value should be
-        returned.
-        """
+    def test_init_instance_default() -> None:
+        """Tests that when accessing a ``Slot`` in an instance, where only the default value is set, the default is returned."""
+
         class SlotHolder:
-            """Holds a single Slot"""
+            """A test class that holds a single ``Slot``."""
+
             my_slot = Slot(default=42)
+            """A test slot."""
+
         slot_holder = SlotHolder()
         assert slot_holder.my_slot == 42
 
     @staticmethod
-    def test_instance_get():
-        """Getting a value after setting it should succeed."""
+    def test_instance_get() -> None:
+        """Tests that getting a value after setting it succeeds."""
+
         class SlotHolder:
-            """Holds a single Slot"""
+            """A test class that holds a single ``Slot``."""
+
             my_slot = Slot(dtype=int)
+            """A test slot."""
+
         slot_holder = SlotHolder()
         slot_holder.my_slot = 15
         assert slot_holder.my_slot == 15
 
     @staticmethod
-    def test_instance_get_no_default():
-        """When instantiated in a class and accessed in an instance, without anything set, accessing the value should
-        raise a TypeError.
-        """
+    def test_instance_get_no_default() -> None:
+        """Tests that when accessing a ``Slot`` in an instance, where nothing is set, an exception is raised."""
+
         class SlotHolder:
-            """Holds a single Slot"""
+            """A test class that holds a single ``Slot``."""
+
             my_slot = Slot()
+            """A test slot."""
+
         slot_holder = SlotHolder()
+
         with pytest.raises(TypeError):
-            # pylint: disable=pointless-statement
-            slot_holder.my_slot
+            _ = slot_holder.my_slot
 
     @staticmethod
-    def test_instance_set():
-        """Setting a value without a default value afterwards should succeed."""
+    def test_instance_set() -> None:
+        """Tests that everything works alright when not setting a default value, but then setting the value of the object before accessing it."""
+
         class SlotHolder:
-            """Holds a single Slot"""
+            """A test class that holds a single ``Slot``."""
+
             my_slot = Slot(dtype=int)
+            """A test slot."""
+
         slot_holder = SlotHolder()
         slot_holder.my_slot = 15
 
+        assert slot_holder.my_slot == 15
+
     @staticmethod
-    def test_instance_set_wrong_dtype():
-        """Setting a default value afterwards with a wrong dtype should not succeed."""
+    def test_instance_set_wrong_dtype() -> None:
+        """Tests that setting a value with the wrong data type raises an exception."""
+
         class SlotHolder:
-            """Holds a single Slot"""
+            """A test class that holds a single ``Slot``."""
+
             my_slot = Slot(str)
+            """A test slot."""
+
         slot_holder = SlotHolder()
+
         with pytest.raises(TypeError):
             slot_holder.my_slot = 15
 
     @staticmethod
-    def test_instance_delete_unchanged():
-        """Setting a value and deleting it afterwards with a set default value should return the default value"""
+    def test_instance_delete_unchanged() -> None:
+        """Tests that setting a value and deleting it afterwards with a set default value returns the default value"""
+
         class SlotHolder:
-            """Holds a single Slot"""
+            """A test class that holds a single ``Slot``."""
+
             my_slot = Slot(int, 42)
+            """A test slot."""
+
         slot_holder = SlotHolder()
         slot_holder.my_slot = 15
+
         del slot_holder.my_slot
         assert slot_holder.my_slot == 42
 
     @staticmethod
-    def test_instance_delete_without_default():
-        """Setting a value and deleting it afterwards with a set default value should raise an Exception."""
+    def test_instance_delete_without_default() -> None:
+        """Tests that setting a value and deleting it afterwards without a default value raises an exception."""
+
         class SlotHolder:
-            """Holds a single Slot"""
+            """A test class that holds a single ``Slot``."""
+
             my_slot = Slot(int)
+            """A test slot."""
+
         slot_holder = SlotHolder()
         slot_holder.my_slot = 15
+
         with pytest.raises(TypeError):
             del slot_holder.my_slot
 
     @staticmethod
-    def test_class_set_dtype():
-        """Setting a consistent dtype should succeed."""
+    def test_class_set_dtype() -> None:
+        """Tests that setting a new data type that is consistent with the data type of the already existing default value succeeds."""
+
         class SlotHolder:
-            """Holds a single Slot"""
+            """A test class that holds a single ``Slot``."""
+
             my_slot = Slot(dtype=object, default=15)
-        SlotHolder.dtype = int
+            """A test slot."""
+
+        SlotHolder.my_slot.dtype = int
 
     @staticmethod
-    def test_class_set_dtype_inconsistent():
-        """Setting an inconsistent dtype should fail."""
+    def test_class_set_dtype_inconsistent() -> None:
+        """Tests that setting an new data type that is not consistent with the already existing default value fails."""
+
         class SlotHolder:
-            """Holds a single Slot"""
+            """A test class that holds a single ``Slot``."""
+
             my_slot = Slot(dtype=object, default=15)
+            """A test slot."""
+
         with pytest.raises(TypeError):
             SlotHolder.my_slot.dtype = str
 
     @staticmethod
-    def test_class_optional():
-        """Slots with default values should be optional."""
+    def test_class_optional() -> None:
+        """Tests that slots with default values are optional."""
+
         class SlotHolder:
-            """Holds a single Slot"""
+            """A test class that holds a single ``Slot``."""
+
             my_slot = Slot(dtype=int, default=15)
+            """A test slot."""
+
         assert SlotHolder.my_slot.optional
 
     @staticmethod
-    def test_class_not_optional():
-        """Slots without default values should not be optional."""
+    def test_class_not_optional() -> None:
+        """Tests that slots without default values are not optional."""
+
         class SlotHolder:
-            """Holds a single Slot"""
+            """A test class that holds a single ``Slot``."""
+
             my_slot = Slot(dtype=int)
+            """A test slot."""
+
         assert not SlotHolder.my_slot.optional
 
     @staticmethod
-    def test_class_call():
-        """Calling a Slot should yield a Plug associated with the Slot"""
+    def test_class_call() -> None:
+        """Tests that calling a ``Slot`` yields the ``Plug`` associated with the ``Slot``."""
+
         class SlotHolder:
-            """Holds a single Slot"""
+            """A test class that holds a single ``Slot``."""
+
             my_slot = Slot(dtype=int, default=15)
+            """A test slot."""
+
         assert SlotHolder.my_slot is SlotHolder.my_slot().slot
 
     @staticmethod
-    def test_class_call_obj():
-        """Calling a Slot with obj-argument should yield a Plug with that obj set"""
+    def test_class_call_obj() -> None:
+        """Tests that calling a ``Slot`` with an ``obj`` argument yields a ``Plug`` with the ``obj`` property set to that value."""
+
         class SlotHolder:
-            """Holds a single Slot"""
+            """A test class that holds a single ``Slot``."""
+
             my_slot = Slot(dtype=int)
+            """A test slot."""
+
         assert SlotHolder.my_slot(obj=15).obj == 15
 
     @staticmethod
-    def test_class_call_default():
-        """Calling a Slot with default-argument should yield a Plug with that default set"""
+    def test_class_call_default() -> None:
+        """Tests that calling a ``Slot`` with default-argument yields a ``Plug`` with that default set."""
+
         class SlotHolder:
-            """Holds a single Slot"""
+            """A test class that holds a single ``Slot``."""
+
             my_slot = Slot(dtype=int)
+            """A test slot."""
+
         assert SlotHolder.my_slot(default=15).default == 15
 
 
 class TestPlug:
-    """Test class for Plug"""
+    """Contains unit tests for the ``Plug`` class."""
+
     @staticmethod
-    def test_init_with_slot_default():
-        """instantiating a Plug with a slot's default value should succeed."""
+    def test_init_with_slot_default() -> None:
+        """Tests that instantiating a ``Plug`` with the default value of a ``Slot`` succeeds."""
+
         slot = Slot(dtype=int, default=10)
         Plug(slot)
 
     @staticmethod
-    def test_init_no_slot_default():
-        """instantiating a Plug without a slot's default value should fail."""
+    def test_init_no_slot_default() -> None:
+        """Tests that instantiating a ``Plug`` without the default value of a ``Slot`` fails."""
+
         slot = Slot(dtype=int)
+
         with pytest.raises(TypeError):
             Plug(slot)
 
     @staticmethod
-    def test_init_consistent():
-        """instantiating a Plug with obj and default set as the correct slot's dtype should succeed."""
+    def test_init_consistent() -> None:
+        """Tests that instantiating a ``Plug`` with the ``obj`` and ``default`` properties set to values that are consistent with the data type of the
+        ``Slot`` succeeds.
+        """
+
         slot = Slot(dtype=int)
         Plug(slot, obj=15, default=16)
 
     @staticmethod
-    def test_init_consistent_obj():
-        """instantiating a Plug with obj set as the correct slot's dtype should succeed."""
+    def test_init_consistent_obj() -> None:
+        """Tests that instantiating a ``Plug`` with the ``obj`` property set to a value that is consistent with the data type of the ``Slot``
+        succeeds.
+        """
+
         slot = Slot(dtype=int)
         Plug(slot, obj=15)
 
     @staticmethod
-    def test_init_consistent_default():
-        """instantiating a Plug with default set as the correct slot's dtype should succeed."""
+    def test_init_consistent_default() -> None:
+        """Tests that instantiating a ``Plug`` with the ``default`` property set to a value that is consistent with the data type of the ``Slot``
+        succeeds.
+        """
+
         slot = Slot(dtype=int)
         Plug(slot, default=15)
 
     @staticmethod
-    def test_init_inconsistent_obj():
-        """instantiating a Plug with obj not set as slot's dtype should fail."""
+    def test_init_inconsistent_obj() -> None:
+        """Tests that instantiating a ``Plug`` with the ``obj`` property set to a value that is not consistent with the data type of the ``Slot``
+        fails.
+        """
+
         slot = Slot(dtype=str)
+
         with pytest.raises(TypeError):
             Plug(slot, obj=15)
 
     @staticmethod
-    def test_init_inconsistent_default():
-        """instantiating a Plug with obj not set as slot's dtype should fail."""
+    def test_init_inconsistent_default() -> None:
+        """Tests that instantiating a ``Plug`` with the ``default`` property set to a value that is not consistent with the data type of the ``Slot``
+        fails.
+        """
+
         slot = Slot(dtype=str)
+
         with pytest.raises(TypeError):
             Plug(slot, default=15)
 
     @staticmethod
-    def test_obj_hierarchy_obj():
-        """Accessing obj with slot default, plug default and obj set should return obj."""
+    def test_obj_hierarchy_obj() -> None:
+        """Tests that accessing the ``obj`` property while the ``Slot`` and the ``Plug`` have a default values and the the ``obj`` property of the
+        ``Plug`` was initialized to a value, should return the value that ``obj`` initialized with.
+        """
+
         slot = Slot(dtype=str, default='fallback')
         plug = Plug(slot, obj='obj', default='default')
+
         assert plug.obj == 'obj'
 
     @staticmethod
-    def test_obj_hierarchy_default():
-        """Accessing obj with slot default and plug default set should return default."""
+    def test_obj_hierarchy_default() -> None:
+        """Tests that accessing the ``obj`` property while the ``Slot`` and the ``Plug`` have a default values, should return the ``default`` value
+        of the ``Plug``.
+        """
+
         slot = Slot(dtype=str, default='fallback')
         plug = Plug(slot, default='default')
+
         assert plug.obj == 'default'
 
     @staticmethod
-    def test_obj_hierarchy_fallback():
-        """Accessing obj with only slot default set should return slot default."""
+    def test_obj_hierarchy_fallback() -> None:
+        """Tests that accessing the ``obj`` property while the ``Slot`` has a default value, should return the ``default`` value of the ``Slot``."""
+
         slot = Slot(dtype=str, default='fallback')
         plug = Plug(slot)
+
         assert plug.obj == 'fallback'
 
     @staticmethod
-    def test_default_hierarchy_obj():
-        """Accessing default with slot default, default and obj set should return default."""
+    def test_default_hierarchy_obj() -> None:
+        """Tests that accessing the ``default`` property while the ``Slot`` and the ``Plug`` have a default values and the the ``obj`` property of the
+        ``Plug`` was initialized to a value, should return the ``default`` value of the ``Plug``.
+        """
+
         slot = Slot(dtype=str, default='fallback')
-        plug = Plug(slot, default='default')
+        plug = Plug(slot, obj='obj', default='default')
+
         assert plug.default == 'default'
 
     @staticmethod
-    def test_default_hierarchy_default():
-        """Accessing default with slot default and plug default set should return default."""
+    def test_default_hierarchy_default() -> None:
+        """Tests that accessing the ``default`` property while the ``Slot`` and the ``Plug`` have a default values, should return the ``default``
+        value of the ``Plug``.
+        """
+
         slot = Slot(dtype=str, default='fallback')
         plug = Plug(slot, default='default')
+
         assert plug.default == 'default'
 
     @staticmethod
-    def test_default_hierarchy_fallback():
-        """Accessing default with only slot default set should return slot default."""
+    def test_default_hierarchy_fallback() -> None:
+        """Tests that accessing the ``default`` property while the ``Slot`` has a default value, should return the ``default`` value of the ``Slot``.
+        """
+
         slot = Slot(dtype=str, default='fallback')
         plug = Plug(slot)
+
         assert plug.default == 'fallback'
 
     @staticmethod
-    def test_fallback_hierarchy_obj():
-        """Accessing fallback with slot default, default and obj set should return slot default."""
+    def test_fallback_hierarchy_obj() -> None:
+        """Tests that accessing the ``fallback`` property while the ``Slot`` and the ``Plug`` have a default values and the the ``obj`` property of
+        the ``Plug`` was initialized to a value, should return the ``default`` value of the ``Slot``.
+        """
+
         slot = Slot(dtype=str, default='fallback')
-        plug = Plug(slot, default='default')
+        plug = Plug(slot, obj='obj', default='default')
+
         assert plug.fallback == 'fallback'
 
     @staticmethod
-    def test_fallback_hierarchy_default():
-        """Accessing fallback with slot default and plug default set should return slot default."""
+    def test_fallback_hierarchy_default() -> None:
+        """Tests that accessing the ``fallback`` property while the ``Slot`` and the ``Plug`` have a default values, should return the ``default``
+        value of the ``Slot``.
+        """
+
         slot = Slot(dtype=str, default='fallback')
         plug = Plug(slot, default='default')
+
         assert plug.fallback == 'fallback'
 
     @staticmethod
-    def test_fallback_hierarchy_fallback():
-        """Accessing fallback with only slot default set should return slot default."""
+    def test_fallback_hierarchy_fallback() -> None:
+        """Tests that accessing the ``fallback`` property while the ``Slot`` has a default value, should return the ``default`` value of the ``Slot``.
+        """
+
         slot = Slot(dtype=str, default='fallback')
         plug = Plug(slot)
+
         assert plug.fallback == 'fallback'
 
     @staticmethod
-    def test_hierarchy_none():
-        """Accessing any of default and fallback with only obj set should return None."""
+    def test_hierarchy_none() -> None:
+        """Tests that accessing the ``default`` and ``fallback`` properties while the neither the ``Slot`` nor the ``Plug`` have a default value, but
+        the ``obj`` property of the ``Plug`` was initialized to a value returns `None`.
+        """
+
         slot = Slot(dtype=str)
         plug = Plug(slot, obj='obj')
+
         assert plug.default is None
         assert plug.fallback is None
 
     @staticmethod
-    def test_delete_hierarchy():
-        """Deleting obj with default set should return default."""
+    def test_delete_hierarchy() -> None:
+        """Tests that deleting the value of the ``obj`` property with the ``Plug`` having a ``default`` set, returns the ``default`` value of the
+        ``Plug``.
+        """
+
         slot = Slot(dtype=str)
         plug = Plug(slot, default='default', obj='obj')
         del plug.obj
+
         assert plug.obj == 'default'
 
     @staticmethod
-    def test_delete_hierarchy_last():
-        """Deleting such that all obj, default and fallback are None should fail."""
+    def test_delete_hierarchy_last() -> None:
+        """Tests that deleting the value of the ``default`` property of the ``Plug`` fails, when the ``Slot`` has no ``default`` value and the value
+        of the ``obj`` property of the ``Plug`` was previously deleted.
+        """
+
         slot = Slot(dtype=str)
         plug = Plug(slot, default='default', obj='obj')
         del plug.obj
+
         with pytest.raises(TypeError):
             del plug.default
 
     @staticmethod
-    def test_obj_set():
-        """Setting obj consistently should succeed."""
+    def test_obj_set() -> None:
+        """Tests that setting the ``obj`` property of a ``Plug`` to a value that is consistent with the data type of the ``Slot`` succeeds."""
+
         slot = Slot(dtype=str, default='fallback')
         plug = Plug(slot)
         plug.obj = 'obj'
 
     @staticmethod
-    def test_obj_set_inconsistent():
-        """Setting obj inconsistently should fail."""
+    def test_obj_set_inconsistent() -> None:
+        """Tests that setting the ``obj`` property of a ``Plug`` to a value that is not consistent with the data type of the ``Slot`` fails."""
+
         slot = Slot(dtype=str, default='fallback')
         plug = Plug(slot)
+
         with pytest.raises(TypeError):
             plug.obj = 15
 
     @staticmethod
-    def test_obj_del():
-        """Deleting obj with slot default should succeed."""
+    def test_obj_del() -> None:
+        """Tests that deleting the value of the ``obj`` property of a ``Plug`` that is associated with a ``Slot`` that has a default value succeeds.
+        """
+
         slot = Slot(dtype=str, default='fallback')
         plug = Plug(slot)
         plug.obj = 'obj'
         del plug.obj
 
     @staticmethod
-    def test_default_set():
-        """Setting default consistently should succeed."""
+    def test_default_set() -> None:
+        """Tests that setting the ``default`` property of a ``Plug`` to a value that is consistent with the data type of the ``Slot`` succeeds."""
+
         slot = Slot(dtype=str, default='fallback')
         plug = Plug(slot)
         plug.default = 'default'
 
     @staticmethod
-    def test_default_set_inconsistent():
-        """Setting default inconsistently should fail."""
+    def test_default_set_inconsistent() -> None:
+        """Tests that setting the ``default`` property of a ``Plug`` to a value that is not consistent with the data type of the ``Slot`` fails."""
+
         slot = Slot(dtype=str, default='fallback')
         plug = Plug(slot)
+
         with pytest.raises(TypeError):
             plug.default = 15
 
     @staticmethod
-    def test_default_del():
-        """Deleting default with slot default should succeed."""
+    def test_default_del() -> None:
+        """Tests that deleting the value of the ``default`` property of a ``Plug`` that is associated with a ``Slot`` that has a ``default`` value
+        succeeds.
+        """
+
         slot = Slot(dtype=str, default='fallback')
         plug = Plug(slot)
         plug.default = 'default'
+
         del plug.default
 
     @staticmethod
-    def test_not_optional():
-        """If neither default, nor slot default are set, object should not be optional."""
+    def test_not_optional() -> None:
+        """Tests that if neither the ``Plug`` nor the ``Slot`` have a ``default`` value, the ``obj`` value is not optional."""
+
         slot = Slot(dtype=str)
         plug = Plug(slot, obj='obj')
+
         assert not plug.optional
 
     @staticmethod
-    def test_optional():
-        """If default is set, object should be optional."""
+    def test_optional() -> None:
+        """Tests that if the ``default`` value of the ``Plug`` is set, the ``obj`` property is optional."""
+
         slot = Slot(dtype=str)
         plug = Plug(slot, default='default', obj='obj')
+
         assert plug.optional
 
     @staticmethod
-    def test_slot_set_consistent():
-        """Assigning a new slot with the correct dtype should succeed."""
+    def test_slot_set_consistent() -> None:
+        """Tests that assigning a new ``Slot`` to a ``Plug``, that has the correct data type succeeds."""
+
         slot = Slot(dtype=object)
         plug = Plug(slot, obj='default')
         plug.slot = Slot(dtype=str)
 
     @staticmethod
-    def test_slot_set_inconsistent():
-        """Assigning a new slot without the correct dtype should fail."""
+    def test_slot_set_inconsistent() -> None:
+        """Tests that assigning a new ``Slot`` to a ``Plug``, that does not have the correct data type fails."""
+
         slot = Slot(dtype=object)
         plug = Plug(slot, obj='default')
+
         with pytest.raises(TypeError):
-            plug.slot = slot(dtype=int)
+            plug.slot = Slot(dtype=int)
 
     @staticmethod
-    def test_slot_set_no_default():
-        """Assigning a new slot without any other but the slot default value set should fail."""
+    def test_slot_set_no_default() -> None:
+        """Tests that assigning a new ``Slot`` to a ``Plug``, that does not have a default value, and neither the original ``Slot`` nor the ``Plug``
+        have a ``default`` or ``obj`` value fails.
+        """
+
         slot = Slot(dtype=object, default='fallback')
         plug = Plug(slot)
+
         with pytest.raises(TypeError):
-            plug.slot = slot(dtype=str)
+            plug.slot = Slot(dtype=str)
 
 
 class TestPlugboard:
-    """Test class for Plugboard"""
+    """Contains unit tests for the ``Plugboard`` class."""
+
     @staticmethod
-    def test_init():
-        """instantiating a Plugboard without anything set should succeed."""
+    def test_init() -> None:
+        """Tests that instantiating a ``Plugboard`` without anything set succeeds."""
+
         Plugboard()
 
     @staticmethod
-    def test_init_unknown_kwargs():
-        """instantiating a Plugboard with unknown kwargs should fail."""
+    def test_init_unknown_kwargs() -> None:
+        """Tests that instantiating a ``Plugboard`` with unknown keyword arguments fails."""
+
         with pytest.raises(TypeError):
             Plugboard(stuff=19)
 
     @staticmethod
-    def test_init_args():
-        """instantiating a Plugboard with any positional args should fail."""
+    def test_init_args() -> None:
+        """Tests that instantiating a ``Plugboard`` with any positional arguments fails."""
+
         with pytest.raises(TypeError):
-            # pylint: disable=too-many-function-args
-            Plugboard(19)
+            Plugboard(19)  # type: ignore[call-arg] # pylint: disable=too-many-function-args
 
     @staticmethod
-    def test_init_assign():
-        """instantiating a Plugboard with kwargs identifying Slots should set those."""
+    def test_init_assign() -> None:
+        """Tests that instantiating a ``Plugboard`` with keyword arguments identifying slots, sets the values of those slots."""
+
         class MyPlugboard(Plugboard):
-            """Custom Plugboard"""
+            """A test plugboard that holds a single ``Slot``."""
+
             my_slot = Slot(dtype=int, default=15)
+            """A test slot."""
+
         plugboard = MyPlugboard(my_slot=19)
+
         assert plugboard.my_slot == 19
 
     @staticmethod
-    def test_default_get():
-        """Accessing a Plugboard's Slot default values with an explicit obj value should succeed."""
+    def test_default_get() -> None:
+        """Tests that accessing the default value of a ``Slot`` in a ``Plugboard`` that has an explicit ``obj`` value succeeds."""
+
         class MyPlugboard(Plugboard):
-            """Custom Plugboard"""
+            """A test plugboard that holds a single ``Slot``."""
+
             my_slot = Slot(dtype=int, default=15)
+            """A test slot."""
+
         plugboard = MyPlugboard(my_slot=19)
+
         assert plugboard.default.my_slot == 15
 
     @staticmethod
-    def test_default_set():
-        """Setting a Plugboard's Slot default values should succeed."""
+    def test_default_set() -> None:
+        """Tests that setting the default value of a ``Slot`` in a ``Plugboard`` that is consistent with the data type of the ``Slot`` succeeds."""
+
         class MyPlugboard(Plugboard):
-            """Custom Plugboard"""
+            """A test plugboard that holds a single ``Slot``."""
+
             my_slot = Slot(dtype=int, default=15)
+            """A test slot."""
+
         plugboard = MyPlugboard()
         plugboard.default.my_slot = 17
+
         assert plugboard.my_slot == 17
 
     @staticmethod
-    def test_default_set_dict():
-        """Setting a Plugboard's Slot default values using a dict should succeed."""
+    def test_default_set_dict() -> None:
+        """Tests that setting the default value of a ``Slot`` in a ``Plugboard`` that is consistent with the data type of the ``Slot`` using a
+        dictionary succeeds.
+        """
+
         class MyPlugboard(Plugboard):
-            """Custom Plugboard"""
+            """A test plugboard that holds a single ``Slot``."""
+
             my_slot = Slot(dtype=int, default=15)
+            """A test slot."""
+
         plugboard = MyPlugboard()
-        plugboard.default = dict(my_slot=17)
+        plugboard.default = {'my_slot': 17}
+
         assert plugboard.my_slot == 17
 
     @staticmethod
-    def test_default_set_dict_wrong():
-        """Setting a Plugboard's Slot default values using anything but a dict should fail."""
+    def test_default_set_dict_wrong() -> None:
+        """Tests that setting the default value of a ``Slot`` in a ``Plugboard`` using anything but a dictionary or the attribute accessor of the
+        ``Slot`` fails.
+        """
+
         class MyPlugboard(Plugboard):
-            """Custom Plugboard"""
+            """A test plugboard that holds a single ``Slot``."""
+
             my_slot = Slot(dtype=int, default=15)
+            """A test slot."""
+
         plugboard = MyPlugboard()
+
         with pytest.raises(TypeError):
-            plugboard.default = 15
+            plugboard.default = 15  # type: ignore[assignment]
 
     @staticmethod
-    def test_default_del():
-        """Deleting a plugboard's slot default values should succeed."""
+    def test_default_del() -> None:
+        """Tests that deleting the default value of a ``Slot`` in a ``Plugboard`` succeeds and reverts back to the default value of the ``Slot``."""
+
         class MyPlugboard(Plugboard):
-            """Custom Plugboard"""
+            """A test plugboard that holds a single ``Slot``."""
+
             my_slot = Slot(dtype=int, default=15)
+            """A test slot."""
+
         plugboard = MyPlugboard()
         plugboard.default.my_slot = 17
         del plugboard.default.my_slot
+
         assert plugboard.my_slot == 15
 
     @staticmethod
-    def test_default_set_influence_obj():
-        """Setting a Plugboard's Slot default values should not influence the Plug obj value."""
+    def test_default_set_influence_obj() -> None:
+        """Tests that setting the default value of a ``Slot`` in a ``Plugboard`` does not influence the value of the ``Slot``."""
+
         class MyPlugboard(Plugboard):
-            """Custom Plugboard"""
+            """A test plugboard that holds a single ``Slot``."""
+
             my_slot = Slot(dtype=int, default=15)
+            """A test slot."""
+
         plugboard = MyPlugboard(my_slot=19)
         plugboard.default.my_slot = 17
+
         assert plugboard.my_slot == 19
 
     @staticmethod
-    def test_default_dir():
-        """The default __dir__ should contain all Slots"""
+    def test_default_dir() -> None:
+        """Tests that the ``default`` property of the plugboard is a dictionary, that contains entries for all of its slots."""
+
         class MyPlugboard(Plugboard):
-            """Custom Plugboard"""
+            """A test plugboard that holds a single ``Slot``."""
+
             my_slot = Slot(dtype=int, default=15)
+            """A test slot."""
+
         plugboard = MyPlugboard()
+
         assert set(plugboard.collect(Slot)) == set(dir(plugboard.default))
 
     @staticmethod
-    def test_update_defaults():
-        """Setting a Plugboard's Slot default values using update_defaults should succeed."""
+    def test_update_defaults() -> None:
+        """Tests that setting the default value of a ``Slot`` in a ``Plugboard`` that is consistent with the data type of the ``Slot`` using the
+        ``update_defaults`` method succeeds.
+        """
+
         class MyPlugboard(Plugboard):
-            """Custom Plugboard"""
+            """A test plugboard that holds a single ``Slot``."""
+
             my_slot = Slot(dtype=int, default=15)
+            """A test slot."""
+
         plugboard = MyPlugboard()
         plugboard.update_defaults(my_slot=17)
+
         assert plugboard.my_slot == 17
 
     @staticmethod
-    def test_reset_defaults():
-        """Resetting a plugboard's slot default values should succeed."""
+    def test_reset_defaults() -> None:
+        """Tests that resetting the default value of a ``Slot`` in a ``Plugboard`` succeeds."""
+
         class MyPlugboard(Plugboard):
-            """Custom Plugboard"""
+            """A test plugboard that holds a single ``Slot``."""
+
             my_slot = Slot(dtype=int, default=15)
+            """A test slot."""
+
         plugboard = MyPlugboard()
         plugboard.default.my_slot = 17
         plugboard.reset_defaults()
+
         assert plugboard.my_slot == 15

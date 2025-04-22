@@ -44,11 +44,10 @@ authors = [
 
 # The project's dependencies, which are included in the requirements of the published package
 dependencies = [
-    "click>=8.1.8,<9.0.0",
     "h5py>=3.13.0,<4.0.0",
     "matplotlib>=3.10.1,<4.0.0",
     "metrohash-python>=1.1.3.3,<2.0.0",
-    "numpy>=2.2.4,<3.0.0",
+    "numpy>=2.2.5,<3.0.0",
     "scikit-image>=0.25.2,<1.0.0",
     "scikit-learn>=1.6.1,<2.0.0",
     "scipy>=1.15.2,<2.0.0"
@@ -75,30 +74,57 @@ Repository = "https://github.com/virelay/corelay.git"
 Issues = "https://github.com/virelay/corelay/issues"
 Changelog = "https://github.com/virelay/corelay/blob/main/CHANGELOG.md"
 
-# Configuration specified to the UV Python package manager
-[tool.uv]
+# Groups of extra dependencies that are not included in the requirements of the published package, but users may install them optionally; installing
+# them provides additional functionality, but is not required to use the package
+[project.optional-dependencies]
 
-# Dependencies that are only installed during the development of the project and are not included in the requirements of the published package
-dev-dependencies = [
+# Dependencies required for using the Uniform Manifold Approximation and Projection (UMAP) dimensionality reduction algorithm
+umap = [
+    "umap-learn>=0.5.7,<1.0.0"
+]
 
-    # Dependencies required for building the documentation
+# Dependencies required for using the Hierarchical Density-Based Spatial Clustering of Applications with Noise (HDBSCAN) clustering algorithm
+hdbscan = [
+    "hdbscan>=0.8.40,<1.0.0"
+]
+
+# Groups of development dependencies that are not included in the requirements of the published package; they can be installed separately or
+# all-in-one with the "dev" group, which includes all development dependencies
+[dependency-groups]
+
+# Dependencies required for development; this group includes all other groups
+dev = [
+    { include-group = "testing" },
+    { include-group = "linting" },
+    { include-group = "docs" }
+]
+
+# Dependencies required for testing
+testing = [
+    "tox>=4.25.0,<5.0.0",
+    "tox-uv>=1.25.0,<2.0.0",
+    "pytest>=8.3.5,<9.0.0",
+    "coverage>=7.8.0,<8.0.0",
+    "pytest-cov>=6.1.1,<7.0.0"
+]
+
+# Dependencies required for linting
+linting = [
+    "pylint>=3.3.6,<4.0.0",
+    "pycodestyle>=2.13.0,<3.0.0",
+    "pydoclint>=0.6.6,<1.0.0",
+    "mypy>=1.15.0,<2.0.0",
+    "scipy-stubs>=1.15.2.2,<2.0.0",
+    "pytest-mypy>=1.0.1,<2.0.0"
+]
+
+# Dependencies required for building the documentation
+docs = [
     "sphinx>=8.2.3,<9.0.0",
     "sphinx-copybutton>=0.5.2,<1.0.0",
     "sphinx-rtd-theme>=3.0.2,<4.0.0",
     "sphinxcontrib.bibtex>=2.6.3,<3.0.0",
-    "sphinxcontrib.datatemplates>=0.11.0,<1.0.0",
-
-    # Dependencies required for testing
-    "tox>=4.25.0,<5.0.0",
-    "tox-uv>=1.25.0,<2.0.0",
-    "coverage>=7.8.0,<8.0.0",
-    "pytest-cov>=6.1.1,<7.0.0",
-    "pytest>=8.3.5,<9.0.0",
-    "setuptools>=78.1.0,<79.0.0",
-
-    # Dependencies required for linting
-    "flake8>=7.2.0,<8.0.0",
-    "pylint>=3.3.6,<4.0.0"
+    "sphinxcontrib.datatemplates>=0.11.0,<1.0.0"
 ]
 
 # Configures which build system is used by UV to build the project
