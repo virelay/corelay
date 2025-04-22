@@ -1,0 +1,15 @@
+
+# The PyDocLint configuration
+[tool.pydoclint]
+
+# The ViRelAy backend REST API project uses the Google style docstrings
+style = 'google'
+
+# Normally, the class docstring would contain the documentation for the __init__ function, but we prefer to have a separate docstring for the __init__
+allow-init-docstring = true
+
+# Normally, the class docstring would contain the documentation for the class attributes, but we prefer to have separate docstrings for the attributes
+check-class-attributes = false
+
+# Short docstring should not be skipped, as the only reason they are short may be that they are missing sections
+skip-checking-short-docstrings = false

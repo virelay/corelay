@@ -1,81 +1,104 @@
-"""Test module for corelay/processor/flow.py"""
+"""A module that contains unit tests for the ``corelay.processor.flow`` module."""
+
 import pytest
 
-from corelay.processor.flow import Shaper, Parallel, Sequential
 from corelay.processor.base import FunctionProcessor
+from corelay.processor.flow import Shaper, Parallel, Sequential
 
 
 class TestShaper:
-    """Test class for Shaper"""
+    """Contains unit tests for the ``Shaper`` class."""
+
     @staticmethod
-    def test_extract():
-        """Extracting a single element should succeed"""
+    def test_extract() -> None:
+        """Tests that extracting a single element succeeds."""
+
         shaper = Shaper(indices=(1,))
         assert shaper([1, 2, 3]) == (2,)
 
     @staticmethod
-    def test_extract_multi():
-        """Extracting multiple elements should succeed"""
+    def test_extract_multi() -> None:
+        """Tests that extracting multiple elements succeeds."""
+
         shaper = Shaper(indices=(1, 2))
         assert shaper([1, 2, 3]) == (2, 3)
 
     @staticmethod
-    def test_copy():
-        """Specifying the same index multiple times should succeed"""
+    def test_copy() -> None:
+        """Tests that specifying the same index multiple times succeeds."""
+
         shaper = Shaper(indices=(1, 2, 1))
         assert shaper([1, 2, 3]) == (2, 3, 2)
 
     @staticmethod
-    def test_stacked():
-        """Using another inner tuple for specifying indices should succeed"""
+    def test_stacked() -> None:
+        """Tests that using another inner tuple for specifying indices succeeds."""
+
         shaper = Shaper(indices=(1, 2, (0, 2)))
         assert shaper([1, 2, 3]) == (2, 3, (1, 3))
 
     @staticmethod
-    def test_stacked_too_much():
-        """Specifying tuples any deeper than depth 2 should fail"""
-        with pytest.raises(TypeError):
-            Shaper(indices=(0, (1, (2,))))
+    def test_stacked_multiple_levels() -> None:
+        """Tests that specifying indices that nest tuples deeper than depth 2 succeeds."""
+
+        shaper = Shaper(indices=(0, (1, (2,))))
+        assert shaper([1, 2, 3]) == (1, (2, (3,)))
 
 
 class TestParallel:
-    """Test class for Parallel"""
+    """Contains unit tests for the ``Parallel`` class."""
+
     @staticmethod
-    def test_non_iterable():
-        """Non-iterables should simply be copied as many times as there are children"""
-        parallel = Parallel(children=[FunctionProcessor(function=(lambda x, n=n: x + n)) for n in range(5)])
+    def test_non_iterable() -> None:
+        """Tests that non-iterables are simply copied as many times as there are children."""
+
+        parallel = Parallel(children=[FunctionProcessor(processing_function=lambda x, n=n: x + n) for n in range(5)])
         assert parallel(1) == (1, 2, 3, 4, 5)
 
     @staticmethod
-    def test_iterable():
-        """Iterables are valid if they have the same length as there are children"""
-        parallel = Parallel(children=[FunctionProcessor(function=(lambda x, n=n: x + n)) for n in range(5)])
+    def test_iterable() -> None:
+        """Tests that iterables are only valid if their length is the same as the number of children, when the children were given as a keyword
+        argument.
+        """
+
+        parallel = Parallel(children=[FunctionProcessor(processing_function=lambda x, n=n: x + n) for n in range(5)])
         assert parallel((4, 3, 2, 1, 0)) == (4, 4, 4, 4, 4)
 
     @staticmethod
-    def test_iterable_positional():
-        """Iterables are valid if they have the same length as there are children with children given positionally"""
-        parallel = Parallel([FunctionProcessor(function=(lambda x, n=n: x + n)) for n in range(5)])
+    def test_iterable_positional() -> None:
+        """Tests that iterables are only valid if their length is the same as the number of children with children, when the children were given as
+        positional arguments.
+        """
+
+        parallel = Parallel([FunctionProcessor(processing_function=lambda x, n=n: x + n) for n in range(5)])
         assert parallel((4, 3, 2, 1, 0)) == (4, 4, 4, 4, 4)
 
     @staticmethod
-    def test_iterable_length_mismatch():
-        """Iterables are invalid if they have a different length compared to the number of children"""
-        parallel = Parallel(children=[FunctionProcessor(function=(lambda x, n=n: x + n)) for n in range(5)])
+    def test_iterable_length_mismatch() -> None:
+        """Tests that iterables are invalid if their length is different from the number of children."""
+
+        parallel = Parallel(children=[FunctionProcessor(processing_function=lambda x, n=n: x + n) for n in range(5)])
         with pytest.raises(TypeError):
             parallel((4, 3, 2, 1))
 
 
 class TestSequential:
-    """Test class for Sequential"""
+    """Contains unit tests for the ``Sequential`` class."""
+
     @staticmethod
-    def test_sequential():
-        """Input should be passed sequentially along all child processors"""
-        sequential = Sequential(children=[FunctionProcessor(function=lambda x, c=c: c + x) for c in 'bcde'])
+    def test_sequential() -> None:
+        """Tests that the input to the ``Sequential`` is passed sequentially through the processors as argument in the same order that the child
+        processors were specified, when the child processors were specified as a keyword argument.
+        """
+
+        sequential = Sequential(children=[FunctionProcessor(processing_function=lambda x, c=c: c + x) for c in 'bcde'])
         assert sequential('a') == 'edcba'
 
     @staticmethod
-    def test_sequential_positional():
-        """Input should be passed sequentially along all child processors when given children positionally"""
-        sequential = Sequential([FunctionProcessor(function=lambda x, c=c: c + x) for c in 'bcde'])
+    def test_sequential_positional() -> None:
+        """Tests that the input to the ``Sequential`` is passed sequentially through the processors as argument in the same order that the child
+        processors were specified, when the child processors were specified as a positional argument.
+        """
+
+        sequential = Sequential([FunctionProcessor(processing_function=lambda x, c=c: c + x) for c in 'bcde'])
         assert sequential('a') == 'edcba'

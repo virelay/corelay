@@ -1,123 +1,235 @@
-"""CoRelAy utils contains conditional importing functionality.
-
+"""A module containing utility classes and functions for CoRelAy, such as an iterable with member type checking, an enhanced zip function, and
+conditional import functions.
 """
 
+from collections.abc import Callable, Iterable, Iterator
 from importlib import import_module
-from typing import Iterable as IterableBase
+from types import ModuleType
+from typing import Any, NoReturn, overload
 
 
-class IterableMeta(type):
-    """Meta class to implement member instance checking for Iterables"""
-    def __instancecheck__(cls, instance):
-        """Is instance if iterable and all members are of provided types"""
-        return isinstance(instance, IterableBase) and all(isinstance(obj, cls.__membertype__) for obj in instance)
+def zip_equal(*args: Iterable[Any]) -> Iterator[tuple[Any, ...]]:
+    """Zips its positional arguments, but only if they are of equal length.
 
+    Args:
+        *args (Iterable[Any]): The iterables that are to be zipped. They must be of equal length.
 
-class Iterable(metaclass=IterableMeta):
-    """Iterables with strict member type checking"""
-    __membertype__ = object
+    Raises:
+        TypeError: The positional arguments have different lengths.
 
-    def __class_getitem__(cls, params):
-        """Dynamically creates a subclass with the provided member types"""
-        if not isinstance(params, tuple):
-            params = (params,)
-        if not params:
-            raise TypeError("At least one member type must be specified!")
-        if not all(isinstance(obj, type) for obj in params):
-            raise TypeError("Member types must be types!")
-        # pylint: disable=no-member
-        return type(f'{cls.__name__}[{params}]', (cls,), {'__membertype__': params})
-
-
-def zip_equal(*args):
-    """Zip positional arguments only if they are of equal length.
-
-    Parameters
-    ----------
-    *args : Iterable
-        Iterables of equal length to be zipped
-
-    Yields
-    ------
-    tuple
-        Zipped elements
-
-    Raises
-    ------
-    TypeError
-        If positional arguments are no Iterables, or have different length.
-
+    Yields:
+        tuple[Any, ...]: Yields the zipped elements of the positional arguments.
     """
-    iterator_list = [iter(obj) for obj in args]
-    stop = False
-    while not stop:
-        more = False
-        result = []
-        for iterator in iterator_list:
+
+    iterators = [iter(iterable) for iterable in args]
+
+    has_any_iterator_stopped = False
+    while not has_any_iterator_stopped:
+        zipped_element = []
+        has_any_iterator_more_elements = False
+        for iterator in iterators:
             try:
                 value = next(iterator)
             except StopIteration:
-                stop = True
+                has_any_iterator_stopped = True
             else:
-                more = True
-                result.append(value)
-            if stop and more:
-                raise TypeError("Unequal length!")
-        if not stop:
-            yield tuple(result)
+                has_any_iterator_more_elements = True
+                zipped_element.append(value)
+
+            if has_any_iterator_stopped and has_any_iterator_more_elements:
+                raise TypeError('The iterables have different lengths.')
+
+        if not has_any_iterator_stopped:
+            yield tuple(zipped_element)
 
 
-def dummy_from_module_import(name):
-    """Use to replace 'from lib import func'."""
-    def func(*args, **kwargs):  # pylint: disable=unused-argument
+def dummy_from_module_import(module_name: str) -> Callable[..., Any]:
+    """Creates a stub function that raises an error when called. This is used to replace an actual import of a type or function from a module, like
+    `from module import type` or `from module import function`, of a package that has not been installed. It is useful for optional dependencies of a
+    package, because the retrieved function will raise an exception that tells the user how to install the missing dependencies for the functionality
+    to work. It does not matter if the user meant to import a function or a type, as types are also callable (i.e., if a type is called, then an
+    instance of the type is created and the constructor ``__init__`` is called) and invoking a function is syntactically indistinguishable from
+    instantiating an instance of a type. If the user meant to import a function, then the exception will be raised when the function is called. If the
+    user meant to import a type, then the exception will be raised when the user tries to instantiate an instance of the type.
+
+    Args:
+        module_name (str): The name of the module from which the type or function that is to be replaced was imported.
+
+    Returns:
+        Callable[..., Any]: Returns a function that raises an error when called, which instructs the user on how to install the missing dependencies.
+    """
+
+    def function(*_args: Any, **_kwargs: Any) -> NoReturn:
+        """A stub function that raises an error when called, which instructs the user on how to install the missing dependencies.
+
+        Args:
+            *_args (Any): The positional arguments that were passed to the function.
+            **_kwargs (Any): The keyword arguments that were passed to the function.
+
+        Raises:
+            RuntimeError: Always raises a ``RuntimeError`` with a message indicating how to install the missing dependencies.
+        """
+
+        # Retrieves the name of this package, which is the first part of the fully-qualified name of this module; this should always be "corelay",
+        # unless the project will be renamed at some point in the future
         package_name = __name__.split('.', maxsplit=1)[0]
-        raise RuntimeError(f"Support for {name} was not installed! Install with: pip install {package_name}[{name}]")
-    return func
+
+        raise RuntimeError(
+            f'Support for "{module_name}" was not installed. The missing dependencies can be installed as follows: '
+            f'pip install {package_name}[{module_name}].'
+        )
+
+    return function
 
 
-def dummy_import_module(name):
-    """Use to replace 'import lib`."""
+def dummy_import_module(module_name: str) -> Any:
+    """Creates a stub class that raises an error when any of its attributes are accessed and returns an instance of it. This is used to replace an
+    actual import of a module, like `import module`, of a package that has not been installed. It is useful for optional dependencies of a package,
+    because the retrieved object will raise an exception that tells the user how to install the missing dependencies for the functionality to work. It
+    does not matter that the user meant to import a module and not a class, as accessing a module's members is syntactically indistinguishable from
+    accessing a class's attributes. So of the user imported a module, the exception will be raised when the user tries to access any of the module's
+    members.
+
+    Args:
+        module_name (str): The name of the module that is to be replaced.
+
+    Returns:
+        Any: Returns an instance of a class that raises an error when any of its attributes are accessed, which instructs the user on how to install
+            the missing dependencies.
+    """
+
     class Class:
-        """Dummy substitute class."""
-        def __getattr__(self, item):
+        """A stub class that raises an error when any of its attributes are access, which instructs the user on how to install the missing
+        dependencies.
+        """
+
+        def __getattr__(self, _item: str) -> NoReturn:
+            """Is invoked when an attribute of the class is accessed. It raises a ``RuntimeError`` with a message indicating how to install the
+            missing dependencies.
+
+            Args:
+                _item (str): The name of the attribute that was accessed.
+
+            Raises:
+                RuntimeError: Always raises a ``RuntimeError`` with a message indicating how to install the missing dependencies.
+            """
+
+            # Retrieves the name of this package, which is the first part of the fully-qualified name of this module; this should always be "corelay",
+            # unless the project will be renamed at some point in the future
             package_name = __name__.split('.', maxsplit=1)[0]
+
             raise RuntimeError(
-                f"Support for {name} was not installed! Install with: pip install {package_name}[{name}]"
+                f'Support for "{module_name}" was not installed. The missing dependencies can be installed as follows: '
+                f'pip install {package_name}[{module_name}].'
             )
+
     return Class()
 
 
-def import_or_stub(name, subname=None):
-    """Use to conditionally import packages.
+@overload
+def import_or_stub(module_name: str) -> ModuleType:
+    """Tries to import a module. If the import fails, the requested module is replaced with a dummy that will raise an exception when used. This is
+    useful for optional dependencies of a package, because the retrieved module will raise an exception that tells the user how to install the missing
+    dependencies for the functionality to work.
 
-    Parameters
-    ----------
-    name: str
-        Module name. Ie. 'module.lib'
-    subname: tuple[str] or str or None
-        Functions or classes to be imported from 'name'.
+    Args:
+        module_name (str): The name of the module that is to be imported.
+
+    Returns:
+        ModuleType: Returns the imported module. If the import of the module fails, a dummy is returned that will raise an exception when used,
+            telling the user how to install the missing dependencies.
     """
-    subnames = (subname, ) if isinstance(subname, str) else subname  # convert to tuple
-    if subname is not None:
+
+
+@overload
+def import_or_stub(module_name: str, type_and_function_names: str) -> Callable[..., Any]:
+    """Tries to import a type or a function from a module. If the import fails, the requested type or function is replaced with a dummy that will
+    raise an exception when used. This is useful for optional dependencies of a package, because the retrieved type or function will raise an
+    exception that tells the user how to install the missing dependencies for the functionality to work.
+
+    Args:
+        module_name (str): The name of the module that is to be imported or from which the specified type or function is to be imported.
+        type_and_function_names (str): The name of the type or function that is to be imported from the module.
+
+    Returns:
+        Callable[..., Any]: Returns the imported type or function. If the import of the module fails, a dummy is returned that will raise an
+            exception when used, telling the user how to install the missing dependencies.
+    """
+
+
+@overload
+def import_or_stub(module_name: str, type_and_function_names: tuple[str, ...]) -> list[ModuleType | Callable[..., Any]]:
+    """Tries to import types and/or functions from a module. If the import fails, the requested types and/or functions are replaced with dummies that
+    will raise an exception when used. This is useful for optional dependencies of a package, because the retrieved types and/or functions will raise
+    an exception that tells the user how to install the missing dependencies for the functionality to work.
+
+    Args:
+        module_name (str): The name of the module that is to be imported or from which the specified types and/or functions are to be imported.
+        type_and_function_names (tuple[str, ...]): The names of the types and/or functions that are to be imported from the module.
+
+    Returns:
+        list[ModuleType | Callable[..., Any]]: Returns a list of the imported modules, types and/or functions. If the import of the module fails,
+            dummies are returned that will raise an exception when used, telling the user how to install the missing dependencies.
+    """
+
+
+def import_or_stub(
+    module_name: str,
+    type_and_function_names: str | tuple[str, ...] | None = None
+) -> list[ModuleType | Callable[..., Any]] | ModuleType | Callable[..., Any]:
+    """Tries to import a module, or types and/or functions from a module. If the import fails, the requested module, or types and/or functions are
+    replaced with dummies that will raise an exception when used. This is useful for optional dependencies of a package, because the retrieved module,
+    or types and/or functions will raise an exception that tells the user how to install the missing dependencies for the functionality to work.
+
+    Args:
+        module_name (str): The name of the module that is to be imported or from which the specified types and/or functions are to be imported.
+        type_and_function_names (str | tuple[str, ...] | None, optional): The names of the types and/or functions that are to be imported from the
+            module, e.g., `'function'` or `('function', 'type')`. If this argument is not provided, the entire module is imported. If the module, or
+            the types and/or functions cannot be imported, dummies will be returned that will raise an exception when used. Defaults to `None`.
+
+    Raises:
+        ImportError: If a type or function cannot be imported from a module that is installed, an ``ImportError`` is raised. This is done, instead of
+            stubbing the imported type or function, because this always indicates a bug in the code and cannot be fixed by the user installing a
+            missing dependency.
+
+    Returns:
+        list[ModuleType | Callable[..., Any]] | ModuleType | Callable[..., Any]: Returns the imported module, or types and/or functions that were
+            imported from the module. If the import of the module fails, dummies for the module, or types and/or functions are returned that will
+            raise an exception when used, telling the user how to install the missing dependencies.
+    """
+
+    # Creates a list of the modules, types, and functions that were imported
+    modules_types_and_functions: list[ModuleType | type | Callable[..., Any]] = []
+
+    # If a list of types and functions to import was provided, then they are imported (or replaced by dummies) and added to the list
+    if type_and_function_names is not None:
+        type_and_function_names = (type_and_function_names, ) if isinstance(type_and_function_names, str) else type_and_function_names
+
         try:
-            tmp = import_module(name)
+            imported_module = import_module(module_name)
         except ImportError:
-            module = [dummy_from_module_import(name) for _ in subnames]
+            modules_types_and_functions = [dummy_from_module_import(module_name) for _ in type_and_function_names]
         else:
-            module = []
-            for model_attribute in subnames:
+            for type_or_function_name in type_and_function_names:
                 try:
-                    attr = getattr(tmp, model_attribute)
-                except AttributeError as err:
-                    message = f"cannot import name '{model_attribute}' from '{name}' ({tmp.__file__})"
-                    raise ImportError(message) from err
-                else:
-                    module.append(attr)
-        if len(module) == 1:
-            module = module[0]
+                    type_or_function = getattr(imported_module, type_or_function_name)
+                except AttributeError as exception:
+                    raise ImportError(
+                        f'Cannot import name "{type_or_function_name}" from "{module_name}" ({imported_module.__file__}).'
+                    ) from exception
+
+                modules_types_and_functions.append(type_or_function)
+
+    # If, however, no list of types and functions to import was provided, then the entire module is imported (or replaced by a stub) and added to the
+    # list
     else:
         try:
-            module = import_module(name)
+            modules_types_and_functions = [import_module(module_name)]
         except ImportError:
-            module = dummy_import_module(name)
-    return module
+            modules_types_and_functions = [dummy_import_module(module_name)]
+
+    # If only a single module/type/function was imported, then it is returned directly, otherwise a list of the imported modules/types/functions is
+    # returned
+    if len(modules_types_and_functions) == 1:
+        return modules_types_and_functions[0]
+    return modules_types_and_functions

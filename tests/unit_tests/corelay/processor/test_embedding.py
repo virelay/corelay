@@ -1,62 +1,103 @@
-"""Test embedding processors.
+"""A module that contains unit tests for the ``corelay.processor.embedding`` module."""
 
-"""
+from importlib import import_module
 
+import numpy
 import pytest
+from numpy.typing import NDArray
 from sklearn.datasets import load_digits
 from sklearn.metrics.pairwise import euclidean_distances
+from sklearn.utils import Bunch
 
 from corelay.processor import embedding
+from corelay.processor.base import Processor
 
-EMBEDDING_PROCESSORS = [embedding.TSNEEmbedding, embedding.LLEEmbedding, embedding.PCAEmbedding]
+EMBEDDING_PROCESSORS: list[type[embedding.Embedding]] = [embedding.TSNEEmbedding, embedding.LLEEmbedding, embedding.PCAEmbedding]
+"""Contains a list of embedding processors that are to be tested."""
+
+
+EXTRA_PROCESSORS: list[type[embedding.Embedding]] = []
+"""Contains a list of extra embedding processors that are to be tested. The list of extra embedding processors depends on the availability of the
+respective libraries, which can optionally be installed by the user. If the library is not installed, the processor will not be available and can
+therefore not be tested.
+"""
+
 
 try:
-    import umap  # pylint: disable=unused-import; # noqa: F401
+    import_module('umap')
     EXTRA_PROCESSORS = [embedding.UMAPEmbedding]
 except ImportError:
-    EXTRA_PROCESSORS = []
+    pass
 
 
-@pytest.fixture
-def data():
-    """Return data with images of 2 kind of digits with shape (360, 64).
+@pytest.fixture(name='data', scope='module')
+def get_data_fixture() -> NDArray[numpy.float64]:
+    """A test fixture, which loads a digit dataset that comprises images of two kinds of digits with a shape of (360, 64).
 
+    Returns:
+        NDArray[numpy.float64]: Returns the data that was loaded from the dataset.
     """
-    digits = load_digits(n_class=2)  # shape 360 x 64
-    # pylint: disable=no-member
-    return digits.data
+
+    digits: Bunch = load_digits(n_class=2)
+    digits_data: NDArray[numpy.float64] = digits['data']
+    return digits_data
 
 
-@pytest.fixture
-def distances(data):
-    """Return euclidean distances on data.
+@pytest.fixture(name='distances', scope='module')
+def get_distances_fixture(data: NDArray[numpy.float64]) -> NDArray[numpy.float64]:
+    """A test fixture, which takes the digit dataset loaded in the ``data`` fixture and computes the euclidean distances on it.
 
+    Args:
+        data (NDArray[numpy.float64]): The input data that is to be used for the distance computation. This data comes from the ``data`` fixture.
+
+    Returns:
+        NDArray[numpy.float64]: Returns the euclidean distances that were computed on the input data.
     """
-    return euclidean_distances(data)
+
+    distance_matrix: NDArray[numpy.float64] = euclidean_distances(data)
+    return distance_matrix
 
 
-@pytest.mark.parametrize('processor', EMBEDDING_PROCESSORS + EXTRA_PROCESSORS)
-def test_embedding(processor, data):
-    """Test embedding processors on data and check the dimensions.
+@pytest.mark.parametrize('processor_type', EMBEDDING_PROCESSORS + EXTRA_PROCESSORS)
+def test_embedding(processor_type: type[Processor], data: NDArray[numpy.float64]) -> None:
+    """Tests the embedding processors on the specified data and checks the dimensions of the result.
 
+    Args:
+        processor_type (type[Processor]): The type of embedding processor that is to be tested.
+        data (NDArray[numpy.float64]): The input data that is to be used for the embedding. This data comes from the ``data`` fixture.
     """
-    emb = processor()(data)
-    assert emb.shape == (360, 2)
+
+    processor = processor_type()
+    output_embedding: NDArray[numpy.float64] = processor(data)
+
+    assert output_embedding.shape == (360, 2)
 
 
-def test_eigen_decomposition(distances):
-    """Test eigen decomposition and check the dimensions.
+def test_eigen_decomposition(distances: NDArray[numpy.float64]) -> None:
+    """Tests the eigen-decomposition of the distances and check the dimensions.
 
+    Args:
+        distances (NDArray[numpy.float64]): The input data that is to be used for the eigen-decomposition. This data comes from the ``distances``
+            fixture.
     """
-    eigval, eigvec = embedding.EigenDecomposition(n_eigval=32)(distances)
-    assert eigval.shape == (32, )
-    assert eigvec.shape == (360, 32)
+
+    eigen_decomposition = embedding.EigenDecomposition(n_eigval=32)
+    eigenvalues, eigenvector = eigen_decomposition(distances)
+
+    assert eigenvalues.shape == (32, )
+    assert eigenvector.shape == (360, 32)
 
 
-@pytest.mark.parametrize('processor', [embedding.TSNEEmbedding] + EXTRA_PROCESSORS)
-def test_embedding_on_distances(processor, distances):
-    """Test embedding processors on precomputed distances and check the dimensions.
+@pytest.mark.parametrize('processor_type', EXTRA_PROCESSORS + [embedding.TSNEEmbedding])
+def test_embedding_on_distances(processor_type: type[Processor], distances: NDArray[numpy.float64]) -> None:
+    """Tests the embedding processors on pre-computed distances and checks the dimensions.
 
+    Args:
+        processor_type (type[Processor]): The type of embedding processor that is to be tested.
+        distances (NDArray[numpy.float64]): The input data that is to be used for the embedding. This data comes from the ``distances`` fixture.
     """
-    emb = processor(metric='precomputed')(distances)
-    assert emb.shape == (360, 2)
+
+    processor = processor_type(metric='precomputed')
+    output_embedding = processor(distances)
+
+    assert output_embedding.shape == (360, 2)

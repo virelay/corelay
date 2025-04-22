@@ -7,11 +7,11 @@ on:
   push:
     branches:
       - main
-      # - develop
+      - develop
   pull_request:
     branches:
       - main
-      # - develop
+      - develop
 
 # This workflow contains multiple jobs for unit testing, linting, type checking, spell checking, and building
 jobs:
@@ -49,7 +49,7 @@ jobs:
       - name: Install CoRelAy and its Dependencies
         run: uv --directory source sync --all-extras --dev
       - name: Run Unit Tests
-        run: uv --directory source run tox --conf ../tests/tox.ini run -e ${{ matrix.tox-environment }}
+        run: uv --directory source run tox run -e ${{ matrix.tox-environment }}
 
   # Runs the PyLint linter
   pylint:
@@ -73,17 +73,17 @@ jobs:
       - name: Install CoRelAy and its Dependencies
         run: uv --directory source sync --all-extras --dev
       - name: Run PyLint Linter
-        run: uv --directory source run tox --conf ../tests/tox.ini run -e pylint
+        run: uv --directory source run tox run -e pylint
 
-  # Runs the Flake8 linter
-  flake8:
+  # Runs the PyCodeStyle linter
+  pycodestyle:
 
     # The job will run on the latest version of Ubuntu
-    name: Lint CoRelAy Using Flake8
+    name: Lint CoRelAy Using PyCodeStyle
     runs-on: ubuntu-latest
 
     # The job contains several steps: 1) checking out the repository, 2) installing the Python project management tool uv, 3) installing the correct
-    # Python version, 4) setting up the test environment by installing CoRelAy and its dependencies, and 5) running the Flake8 linter
+    # Python version, 4) setting up the test environment by installing CoRelAy and its dependencies, and 5) running the PyCodeStyle linter
     steps:
       - uses: actions/checkout@v4
         with:
@@ -96,8 +96,79 @@ jobs:
         run: uv python install 3.13.3
       - name: Install CoRelAy and its Dependencies
         run: uv --directory source sync --all-extras --dev
-      - name: Run Flake8 Linter
-        run: uv --directory source run tox --conf ../tests/tox.ini run -e flake8
+      - name: Run PyLint Linter
+        run: uv --directory source run tox run -e pycodestyle
+
+  # Runs the PyDocLint docstring linter
+  pydoclint:
+
+    # The job will run on the latest version of Ubuntu
+    name: Lint CoRelAy Docstrings Using PyDocLint
+    runs-on: ubuntu-latest
+
+    # The job contains several steps: 1) checking out the repository, 2) installing the Python project management tool uv, 3) installing the correct
+    # Python version, 4) setting up the test environment by installing CoRelAy and its dependencies, and 5) running the PyDocLint docstring linter
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: 0.6.14
+      - name: Install Python
+        run: uv python install 3.13.3
+      - name: Install CoRelAy and its Dependencies
+        run: uv --directory source sync --all-extras --dev
+      - name: Run PyLint Linter
+        run: uv --directory source run tox run -e pydoclint
+
+  # Runs the MyPy static type checker
+  mypy:
+
+    # The job will run on the latest version of Ubuntu
+    name: Static Type-Check CoRelAy Using MyPy
+    runs-on: ubuntu-latest
+
+    # The job contains several steps: 1) checking out the repository, 2) installing the Python project management tool uv, 3) installing the correct
+    # Python version, 4) setting up the test environment by installing CoRelAy and its dependencies, and 5) running the MyPy static type checker
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: 0.6.14
+      - name: Install Python
+        run: uv python install 3.13.3
+      - name: Install CoRelAy and its Dependencies
+        run: uv --directory source sync --all-extras --dev
+      - name: Run PyLint Linter
+        run: uv --directory source run tox run -e mypy
+
+  # Runs the Markdownlint linter
+  markdownlint:
+
+    # The job will run on the latest version of Ubuntu
+    name: Lint CoRelAy Using Markdownlint
+    runs-on: ubuntu-latest
+
+    # The job contains several steps: 1) checking out the repository, 2) installing Node.js, 3) installing the dependencies of the Markdownlint
+    # global configuration, and 4) running the Markdownlint linter
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.14.0'
+      - name: Install Markdownlint Global Configuration
+        run: npm --prefix tests/linters/markdownlint install
+      - name: Run Markdown Linter
+        run: npm --prefix tests/linters/markdownlint run markdownlint
 
   # Runs the spell checker CSpell to spell-check all files in the repository
   spell-check:
@@ -149,4 +220,4 @@ jobs:
       - name: Install TeX Live for Pybtex
         run: sudo apt-get update -y && sudo apt-get install -y texlive texlive-latex-extra dvipng
       - name: Build Documentation
-        run: uv --directory source run tox --conf ../tests/tox.ini run --notest -e docs
+        run: uv --directory source run tox run --notest -e docs

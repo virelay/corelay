@@ -1,218 +1,271 @@
-"""Test spectral pipeline and processors.
-
-"""
+"""A module that contains unit tests for the ``corelay.io.spectral`` module."""
 
 import os
 
+import numpy
 import pytest
-import numpy as np
-from numpy import pi
+from numpy.typing import NDArray
 
-
-import matplotlib.pyplot as plt
+from matplotlib import pyplot
 
 from corelay.pipeline.spectral import SpectralEmbedding, SpectralClustering
 from corelay.processor.affinity import SparseKNN
-from corelay.processor.laplacian import SymmetricNormalLaplacian
-from corelay.processor.embedding import EigenDecomposition
 from corelay.processor.clustering import KMeans
+from corelay.processor.embedding import EigenDecomposition
+from corelay.processor.laplacian import SymmetricNormalLaplacian
 
 
-@pytest.fixture(scope='module')
-def spiral_data(n=150):
-    """Sample some double spiral data points
+@pytest.fixture(name='spiral_data', scope='module')
+def get_spiral_data_fixture(number_of_samples_per_class: int = 150) -> NDArray[numpy.float64]:
+    """A fixture that produces data points that has the shape of a spiral.
 
-    Parameters
-    ----------
-    n : int
-        samples per class of the two classes
+    Args:
+        number_of_samples_per_class (int, optional): Number of samples per class. Defaults to 150.
 
+    Returns:
+        NDArray[numpy.float64]: Returns a NumPy array of shape (300, 2) containing the spiral data.
     """
-    np.random.seed(1345123)  # fix seed for data
-    _ = np.random.uniform(size=(2, 100)).T  # "part of the seed"
 
-    # generates double-spiral data in 2-d with N data points
-    theta = np.sqrt(np.random.rand(n)) * 2 * pi
+    # Fixes the seed for the random number generator to ensure reproducibility (100 random numbers are sampled uniformly as "part of the seed"; I do
+    # not know why the original author of this unit test did this, but I assume it is to remove some bad initial data points)
+    numpy.random.seed(1345123)
+    _ = numpy.random.uniform(size=(2, 100)).T
 
-    r_a = 2 * theta + pi
-    data_a = np.array([np.cos(theta) * r_a, np.sin(theta) * r_a]).T
-    x_a = data_a + np.random.randn(n, 2) * .5
+    # Generates double-spiral data in 2D with N data points
+    theta = numpy.sqrt(numpy.random.rand(number_of_samples_per_class)) * 2 * numpy.pi
 
-    r_b = -2 * theta - pi
-    data_b = np.array([np.cos(theta) * r_b, np.sin(theta) * r_b]).T
-    x_b = data_b + np.random.randn(n, 2) * .5
+    r_a = 2 * theta + numpy.pi
+    data_a = numpy.array([numpy.cos(theta) * r_a, numpy.sin(theta) * r_a]).T
+    x_a = data_a + numpy.random.randn(number_of_samples_per_class, 2) * 0.5
 
-    return np.append(x_a, x_b, axis=0)
+    r_b = -2 * theta - numpy.pi
+    data_b = numpy.array([numpy.cos(theta) * r_b, numpy.sin(theta) * r_b]).T
+    x_b = data_b + numpy.random.randn(number_of_samples_per_class, 2) * 0.5
 
-
-@pytest.fixture(scope='module')
-def k_knn(spiral_data):
-    """Choose k for KNN"""
-    return int(np.log(spiral_data.shape[0]))
+    return numpy.append(x_a, x_b, axis=0)
 
 
-@pytest.fixture(scope='module')
-def k_eig():
-    """Number for eigen values"""
+@pytest.fixture(name='number_of_neighbors', scope='module')
+def get_number_of_neighbors_fixture(spiral_data: NDArray[numpy.float64]) -> int:
+    """A fixture that choose a suitable number of neighbors for the k-nearest neighbors algorithm.
+    Args:
+        spiral_data (NDArray[numpy.float64]): The spiral test data.
+
+    Returns:
+        int: Returns a suitable number of neighbors for the k-nearest neighbors algorithm.
+    """
+
+    return int(numpy.log(spiral_data.shape[0]))
+
+
+@pytest.fixture(name='number_of_eigenvalues', scope='module')
+def get_number_of_eigenvalues_fixture() -> int:
+    """A fixtures that chooses a suitable number of eigenvalues.
+
+    Returns:
+        int: Returns a suitable number of eigenvalues.
+    """
+
     return 8
 
 
-@pytest.fixture(scope='module')
-def k_clusters():
-    """Number of clusters"""
+@pytest.fixture(name='number_of_clusters', scope='module')
+def get_number_of_clusters_fixture() -> int:
+    """A fixture that chooses a suitable number of clusters.
+
+    Returns:
+        int: Returns a suitable number of clusters.
+    """
+
     return 4
 
 
-class TestSpectral:
-    """Test class for SpectralClustering"""
+class TestSpectralEmbeddingAndSpectralClustering:
+    """Contains unit tests for the ``SpectralEmbedding`` and ``SpectralClustering`` classes."""
+
     @staticmethod
-    def test_spectral_embedding_instantiation():
-        """test whether we can instantiate a spectral embedding instance successfully"""
+    def test_spectral_embedding_instantiation() -> None:
+        """Tests whether we can instantiate a spectral embedding instance successfully."""
+
         SpectralEmbedding()
 
     @staticmethod
-    def test_spectral_clustering_instantiation():
-        """test whether we can instantiate a spectral clustering instance successfully"""
+    def test_spectral_clustering_instantiation() -> None:
+        """Tests whether we can instantiate a spectral clustering instance successfully."""
+
         SpectralClustering()
 
     @staticmethod
-    def test_data_generation(spiral_data):
-        """sanity check. make sure the data looks as expected (from the outside)"""
-        assert isinstance(spiral_data, np.ndarray), f'Expected numpy.ndarray type, got {type(spiral_data)}'
-        assert spiral_data.shape == (300, 2), f'Expected spiral_data shape (300, 2), got {spiral_data.shape}'
+    def test_data_generation(spiral_data: NDArray[numpy.float64]) -> None:
+        """Performs a sanity check to make sure the data looks as expected (from the outside).
 
-    @staticmethod
-    def test_spectral_embedding_default_params(spiral_data):
-        """test whether the SE operates on data all the way through, using its default parameters."""
-        pipeline = SpectralEmbedding()
-        output = pipeline(spiral_data)
-        assert isinstance(output, tuple), f'Expected tuple type output, got {type(output)}'
-        assert len(output) == 2, f'Expected output length of 2, got {len(output)}'
-
-        eigval, eigvec = output
-        assert isinstance(eigval, np.ndarray), f'Expected eigval to be numpy.ndarray, but got {type(eigval)}'
-        assert isinstance(eigvec, np.ndarray), f'Expected eigvec to be numpy.ndarray, but got {type(eigvec)}'
-        assert eigvec.shape[0] == spiral_data.shape[0], (
-            'Expected number of eigenvectors to be identical to number of samples '
-            f'({spiral_data.shape[0]}), but got {eigvec.shape[0]}'
-        )
-        assert eigvec.shape[1] == eigval.size, (
-            f'Expected dim of eigenvectors {eigvec.shape[1]} be be identical '
-            f'to the number of reported eigenvalues {eigval.size}'
-        )
-
-    @staticmethod
-    def test_spectral_clustering_default_params(spiral_data):
-        """test whether the SC operates on data all the way through, using its default parameters."""
-        pipeline = SpectralClustering()
-        output = pipeline(spiral_data)
-        assert isinstance(output, tuple), f'Expected tuple type output, got {type(output)}'
-        assert len(output) == 2, f'Expected output length of 2, got {len(output)}'
-
-        eigenstuff, labels = output
-        assert isinstance(eigenstuff, tuple), (
-            f'Expected tuple type output for eigenstuff, got {type(eigenstuff)}'
-        )
-        assert len(eigenstuff) == 2, (
-            f'Expected eigenstuff length of 2, got {len(eigenstuff)}'
-        )
-
-        eigval, eigvec = eigenstuff
-        assert isinstance(eigval, np.ndarray), f'Expected eigval to be numpy.ndarray, but got {type(eigval)}'
-        assert isinstance(eigvec, np.ndarray), f'Expected eigvec to be numpy.ndarray, but got {type(eigvec)}'
-        assert eigvec.shape[0] == spiral_data.shape[0], (
-            'Expected number of eigenvectors to be identical to number of samples '
-            f'({spiral_data.shape[0]}), but got {eigvec.shape[0]}'
-        )
-        assert eigvec.shape[1] == eigval.size, (
-            f'Expected dim of eigenvectors {eigvec.shape[1]} be be identical to the number of '
-            f'reported eigenvalues {eigval.size}'
-        )
-
-        assert isinstance(labels, np.ndarray), f'Expected labels to be numpy.ndarray, but got {type(labels)}'
-        assert labels.size == spiral_data.shape[0], (
-            'Expected number of labels to be identical to number of samples in spiral_data '
-            f'({spiral_data.shape[0]}), but got {labels.size}'
-        )
-
-        assert labels.ndim == 1, f'Expected labels to be flat array, but was shaped {labels.shape}'
-
-    @staticmethod
-    def test_spectral_clustering_step_by_step_custom_params(spiral_data, k_knn, k_eig, k_clusters):
-        """this test manually compares the pipelines working order against manually
-        executed steps with custom parameters attuned to the spiral data
-
-        first, separately prepare processors for customized pipeline
-        customizations:
-          1) parameters, as passed to the test function
-          2) all processors (affected by changed parameters) produce outputs this time for later comparison
-
+        Args:
+            spiral_data (NDArray[numpy.float64]): The spiral test data.
         """
 
-        knn = SparseKNN(n_neighbors=k_knn, symmetric=True, is_output=True)
-        lap = SymmetricNormalLaplacian(is_output=True)
+        assert isinstance(spiral_data, numpy.ndarray), f'Expected NumPy arrays, got {type(spiral_data)}.'
+        assert spiral_data.shape == (300, 2), f'Expected the spiral test data to be of shape (300, 2), got {spiral_data.shape}.'
 
-        v0 = np.random.rand(spiral_data.shape[0])  # some fixed init vector
-        v0 /= np.linalg.norm(v0, 1)
-        eig = EigenDecomposition(n_eigval=k_eig, is_output=True,
-                                 kwargs={'v0': v0})
+    @staticmethod
+    def test_spectral_embedding_default_params(spiral_data: NDArray[numpy.float64]) -> None:
+        """Tests whether the ``SpectralEmbedding`` operates on data all the way through, using its default parameters.
+
+        Args:
+            spiral_data (NDArray[numpy.float64]): The spiral test data.
+        """
+
+        pipeline = SpectralEmbedding()
+        output = pipeline(spiral_data)
+        assert isinstance(output, tuple), f'Expected the output to be of type tuple, got {type(output)}.'
+        assert len(output) == 2, f'Expected an output length of 2, got {len(output)}.'
+
+        eigenvalues, eigenvectors = output
+        assert isinstance(eigenvalues, numpy.ndarray), f'Expected the eigenvalues to be NumPy arrays, but got {type(eigenvalues)}.'
+        assert isinstance(eigenvectors, numpy.ndarray), f'Expected the eigenvectors to be NumPy arrays, but got {type(eigenvectors)}.'
+        assert eigenvectors.shape[0] == spiral_data.shape[0], (
+            f'Expected the number of eigenvectors to be identical to number of samples ({spiral_data.shape[0]}), but got {eigenvectors.shape[0]}'
+        )
+        assert eigenvectors.shape[1] == eigenvalues.size, (
+            f'Expected the dimensionality of the eigenvectors {eigenvectors.shape[1]} to be identical to the number of reported eigenvalues '
+            f'{eigenvalues.size}.'
+        )
+
+    @staticmethod
+    def test_spectral_clustering_default_params(spiral_data: NDArray[numpy.float64]) -> None:
+        """Tests whether the ``SpectralClustering`` operates on data all the way through, using its default parameters.
+
+        Args:
+            spiral_data (NDArray[numpy.float64]): The spiral test data.
+        """
+
+        pipeline = SpectralClustering()
+        output = pipeline(spiral_data)
+        assert isinstance(output, tuple), f'Expected the output to be of type tuple, got {type(output)}.'
+        assert len(output) == 2, f'Expected an output length of 2, got {len(output)}.'
+
+        eigenvalues_and_vectors, labels = output
+        assert isinstance(eigenvalues_and_vectors, tuple), f'Expected the output to be of type tuple, got {type(eigenvalues_and_vectors)}.'
+        assert len(eigenvalues_and_vectors) == 2, f'Expected the output tuple to be of length 2, got {len(eigenvalues_and_vectors)}.'
+
+        eigenvalues, eigenvectors = eigenvalues_and_vectors
+        assert isinstance(eigenvalues, numpy.ndarray), f'Expected the eigenvalues to be NumPy arrays, but got {type(eigenvalues)}.'
+        assert isinstance(eigenvectors, numpy.ndarray), f'Expected the eigenvectors to be NumPy arrays, but got {type(eigenvectors)}.'
+        assert eigenvectors.shape[0] == spiral_data.shape[0], (
+            f'Expected the number of eigenvectors to be identical to the number of samples ({spiral_data.shape[0]}), but got {eigenvectors.shape[0]}.'
+        )
+        assert eigenvectors.shape[1] == eigenvalues.size, (
+            f'Expected the dimensionality of the eigenvectors {eigenvectors.shape[1]} be be identical to the number of reported eigenvalues '
+            f'{eigenvalues.size}.'
+        )
+
+        assert isinstance(labels, numpy.ndarray), f'Expected labels to be NumPy arrays, but got {type(labels)}'
+        assert labels.size == spiral_data.shape[0], (
+            'Expected the number of labels to be identical to the number of samples in the spiral test data ({spiral_data.shape[0]}), but got '
+            f'{labels.size}.'
+        )
+
+        assert labels.ndim == 1, f'Expected the labels to be a flat array, but was shaped {labels.shape}.'
+
+    @staticmethod
+    def test_spectral_clustering_step_by_step_custom_params(
+        spiral_data: NDArray[numpy.float64],
+        number_of_neighbors: int,
+        number_of_eigenvalues: int,
+        number_of_clusters: int,
+    ) -> None:
+        """This test manually compares the pipelines working order against manually executed steps with custom parameters attuned to the spiral test
+        data. First, the processors are prepared separately in the same way they are set up in the custom pipeline. The parameters of the processors
+        are set to the values passed to the test function. All processors are then executed one by one, and the results are later compared to the
+        pipeline output.
+
+        Args:
+            spiral_data (NDArray[numpy.float64]): The spiral test data.
+            number_of_neighbors (int): The number of neighbors for the k-nearest neighbors algorithm.
+            number_of_eigenvalues (int): The number of eigenvalues to compute.
+            number_of_clusters (int): The number of clusters for the k-means algorithm.
+        """
+
+        sparse_knn = SparseKNN(n_neighbors=number_of_neighbors, symmetric=True, is_output=True)
+        symmetric_normal_laplacian = SymmetricNormalLaplacian(is_output=True)
+
+        # Generates a random fixed initialization vector for the eigenvalue decomposition
+        initialization_vector = numpy.random.rand(spiral_data.shape[0])
+        initialization_vector /= numpy.linalg.norm(initialization_vector, 1)
+        eigen_decomposition = EigenDecomposition(
+            n_eigval=number_of_eigenvalues,
+            is_output=True,
+            kwargs={'v0': initialization_vector}
+        )
 
         random_state = 0
-        kmn = KMeans(n_clusters=k_clusters, is_output=True,
-                     kwargs={'random_state': random_state})
+        k_means = KMeans(
+            n_clusters=number_of_clusters,
+            is_output=True,
+            kwargs={'random_state': random_state}
+        )
 
         pipeline = SpectralClustering(
-            affinity=knn,
-            laplacian=lap,
-            embedding=eig,
-            clustering=kmn
+            affinity=sparse_knn,
+            laplacian=symmetric_normal_laplacian,
+            embedding=eigen_decomposition,
+            clustering=k_means
         )
 
-        output_pipeline = pipeline(spiral_data)
-        assert len(output_pipeline) == 4, (
-            f'length of output expected to be 4 (affinity, laplacian, embedding, labels), but is {len(output_pipeline)}'
+        pipeline_output = pipeline(spiral_data)
+        assert len(pipeline_output) == 4, (
+            f'The length of the output was expected to be 4 (affinity, laplacian, eigenvalues, and labels), but is {len(pipeline_output)}.'
         )
 
-        # unpack pipeline results
-        aff_pipe, lap_pipe, eig_pipe, label_pipe = output_pipeline
+        # Unpacks the pipeline results
+        pipeline_affinity, pipeline_laplacian, pipeline_eigenvalues, pipeline_labels = pipeline_output
 
-        # produce results manually and compare to pipeline output
-        dist_man = pipeline.pairwise_distance(spiral_data)
-        aff_man = knn(dist_man)
-        np.testing.assert_array_equal(np.array(aff_man.todense()),
-                                      np.array(aff_pipe.todense()),
-                                      'Affinity matrices are not equal!')
+        # Produces the results manually and compares them to the pipeline output
+        manual_distance = pipeline.pairwise_distance(spiral_data)
+        manual_affinity = sparse_knn(manual_distance)
+        numpy.testing.assert_array_equal(
+            numpy.array(manual_affinity.todense()),
+            numpy.array(pipeline_affinity.todense()),
+            'The affinity matrix produces manually differs from the one produced by the pipeline.'
+        )
 
-        lap_man = lap(aff_man)
-        np.testing.assert_array_equal(np.array(lap_man.todense()),
-                                      np.array(lap_pipe.todense()),
-                                      'Laplacians are not equal!')
+        manual_laplacian = symmetric_normal_laplacian(manual_affinity)
+        numpy.testing.assert_array_equal(
+            numpy.array(manual_laplacian.todense()),
+            numpy.array(pipeline_laplacian.todense()),
+            'The laplacian produced manually differs from the one produced by the pipeline.'
+        )
 
-        eig_man = eig(lap_man)
-        np.testing.assert_array_equal(eig_man[0],
-                                      eig_pipe[0],
-                                      'Eigenvalues not equal!')
-        np.testing.assert_array_equal(eig_man[1],
-                                      eig_pipe[1],
-                                      'Eigenvectors not equal enough!')
+        manual_eigenvalues = eigen_decomposition(manual_laplacian)
+        numpy.testing.assert_array_equal(
+            manual_eigenvalues[0],
+            pipeline_eigenvalues[0],
+            'The eigenvalues produced manually differ from the one produced by the pipeline.'
+        )
+        numpy.testing.assert_array_equal(
+            manual_eigenvalues[1],
+            pipeline_eigenvalues[1],
+            'The eigenvectors produced manually differ from the one produced by the pipeline.'
+        )
 
-        label_man = kmn(eig_man[1])
-        np.testing.assert_array_equal(label_man,
-                                      label_pipe,
-                                      'Label vectors not equal!')
+        manual_labels = k_means(manual_eigenvalues[1])
+        numpy.testing.assert_array_equal(
+            manual_labels,
+            pipeline_labels,
+            'The labels produced manually differ from the one produced by the pipeline.'
+        )
 
         path = '/tmp/spectral_eigenvalues.pdf'
-        plt.figure()
-        plt.plot(eig_pipe[0][::-1], '.')
-        plt.xticks([])
-        plt.yticks([])
-        plt.savefig(path)
+        pyplot.figure()
+        pyplot.plot(pipeline_eigenvalues[0][::-1], '.')
+        pyplot.xticks([])
+        pyplot.yticks([])
+        pyplot.savefig(path)
         os.remove(path)
 
         path = '/tmp/spectral_labelling.pdf'
-        plt.figure()
-        plt.scatter(x=spiral_data[:, 0], y=spiral_data[:, 1], c=label_pipe)
-        plt.xticks([])
-        plt.yticks([])
-        plt.savefig(path)
+        pyplot.figure()
+        pyplot.scatter(x=spiral_data[:, 0], y=spiral_data[:, 1], c=pipeline_labels)
+        pyplot.xticks([])
+        pyplot.yticks([])
+        pyplot.savefig(path)
         os.remove(path)
