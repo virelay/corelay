@@ -1,8 +1,15 @@
-"""IO-related module for Processor data"""
-from .storage import Storable, NoDataSource, NoDataTarget, DataStorageBase, NoStorage, PickleStorage, HDF5Storage
+"""A sub-package containing IO-related modules for ``Processor`` data."""
+
+from corelay.io.storage import (
+    NoDataSource,
+    NoDataTarget,
+    DataStorageBase,
+    NoStorage,
+    PickleStorage,
+    HDF5Storage
+)
 
 __all__ = [
-    'Storable',
     'NoDataSource',
     'NoDataTarget',
     'DataStorageBase',

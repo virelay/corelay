@@ -1,1 +1,1 @@
-'''Base and built-in Processors.'''
+"""A sub-package containing base and built-in processors."""

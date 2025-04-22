@@ -1,67 +1,133 @@
-"""Test module for corelay/processor/preprocessing.py"""
-import numpy as np
+"""A module that contains unit tests for the ``corelay.processor.preprocessing`` module."""
+
+import numpy
 import pytest
+from numpy.typing import NDArray
 
 from corelay.processor.preprocessing import Rescale, Resize, Pooling
 
 
-@pytest.fixture
-def no_channels():
-    """Image-like array with no channel dimension."""
-    return np.ones((10, 8, 8))
+@pytest.fixture(name='no_channels', scope='module')
+def get_no_channels_fixture() -> NDArray[numpy.float64]:
+    """Generates a grayscale image-like array that contains all ones of shape `(number_of_samples, height, width)`.
+
+    Returns:
+        NDArray[numpy.float64]: Returns an image-like array of shape `(number_of_samples, height, width)`.
+    """
+
+    return numpy.ones((10, 8, 8))
 
 
-@pytest.fixture
-def channels_first():
-    """Image-like array with dimensions: N, C, H, W"""
-    return np.ones((10, 3, 8, 8))
+@pytest.fixture(name='channels_first', scope='module')
+def get_channels_first_fixture() -> NDArray[numpy.float64]:
+    """Generates an image-like array that contains all ones of shape `(number_of_samples, number_of_channels, height, width)`, where the channels come
+    before the image size.
+
+    Returns:
+        NDArray[numpy.float64]: Returns an image-like array of shape `(number_of_samples, number_of_channels, height, width)`.
+    """
+
+    return numpy.ones((10, 3, 8, 8))
 
 
-@pytest.fixture
-def channels_last():
-    """Image-like array with dimensions: N, H, W, C"""
-    return np.ones((10, 8, 8, 3))
+@pytest.fixture(name='channels_last', scope='module')
+def get_channels_last_fixture() -> NDArray[numpy.float64]:
+    """Generates an image-like array that contains all ones of shape `(number_of_samples, height, width, number_of_channels)`, where the channels come
+    last.
+
+    Returns:
+        NDArray[numpy.float64]: Returns an image-like array of shape `(number_of_samples, height, width, number_of_channels)`.
+    """
+
+    return numpy.ones((10, 8, 8, 3))
 
 
-@pytest.fixture
-def random_noise():
-    """Some normal distributed noise in an Image-like array."""
-    return np.random.normal(0, 1, (10, 8, 8))
+@pytest.fixture(name='random_noise', scope='module')
+def get_random_noise_fixture() -> NDArray[numpy.float64]:
+    """Generates a grayscale image-like array that contains all normally distributed noise of shape `(number_of_samples, height, width)`.
+
+    Returns:
+        NDArray[numpy.float64]: Returns an image-like array of shape `(number_of_samples, height, width)`.
+    """
+
+    return numpy.random.normal(0, 1, (10, 8, 8))
 
 
-@pytest.mark.parametrize('data,shape', [('random_noise', (10, 4, 4)),
-                                        ('channels_first', (10, 3, 4, 4)),
-                                        ('channels_last', (10, 4, 4, 3))])
-def test_rescaling(data, shape, request):
-    """Test for Rescaling PreProcessor"""
-    proc = Rescale(scale=0.5, channels_first=data == 'channels_first')
-    data = request.getfixturevalue(data)
-    out = proc(data)
-    assert out.shape == shape
-    assert data.max() >= out.max()
-    assert data.min() <= out.min()
+@pytest.mark.parametrize(
+    'fixture_name,shape',
+    [
+        ('random_noise', (10, 4, 4)),
+        ('channels_first', (10, 3, 4, 4)),
+        ('channels_last', (10, 4, 4, 3))
+    ]
+)
+def test_rescaling(fixture_name: str, shape: tuple[int, ...], request: pytest.FixtureRequest) -> None:
+    """Tests the rescaling pre-processing processor.
+    Args:
+        fixture_name (str): The name of the fixture that is to be used for the test.
+        shape (tuple[int, ...]): The expected shape of the output data.
+        request (pytest.FixtureRequest): The request object that is used to access the fixture.
+    """
+
+    processor = Rescale(scale=0.5, channels_first=fixture_name == 'channels_first')
+    input_data: NDArray[numpy.float64] = request.getfixturevalue(fixture_name)
+
+    output_data: NDArray[numpy.float64] = processor(input_data)
+
+    assert output_data.shape == shape
+    assert input_data.max() >= output_data.max()
+    assert input_data.min() <= output_data.min()
 
 
-@pytest.mark.parametrize('data,shape', [('random_noise', (10, 4, 16)),
-                                        ('channels_first', (10, 3, 4, 16)),
-                                        ('channels_last', (10, 4, 16, 3))])
-def test_resizing(data, shape, request):
-    """Test for Resizing PreProcessor"""
-    proc = Resize(width=16, height=4, channels_first=data == 'channels_first')
-    data = request.getfixturevalue(data)
-    out = proc(data)
-    assert out.shape == shape
-    assert data.max() >= out.max()
-    assert data.min() <= out.min()
+@pytest.mark.parametrize(
+    'fixture_name,shape',
+    [
+        ('random_noise', (10, 4, 16)),
+        ('channels_first', (10, 3, 4, 16)),
+        ('channels_last', (10, 4, 16, 3))
+    ]
+)
+def test_resizing(fixture_name: str, shape: tuple[int, ...], request: pytest.FixtureRequest) -> None:
+    """Tests the resizing pre-processing processor.
+
+    Args:
+        fixture_name (str): The name of the fixture that is to be used for the test.
+        shape (tuple[int, ...]): The expected shape of the output data.
+        request (pytest.FixtureRequest): The request object that is used to access the fixture.
+    """
+
+    processor = Resize(width=16, height=4, channels_first=fixture_name == 'channels_first')
+    input_data = request.getfixturevalue(fixture_name)
+
+    output_data = processor(input_data)
+
+    assert output_data.shape == shape
+    assert input_data.max() >= output_data.max()
+    assert input_data.min() <= output_data.min()
 
 
-@pytest.mark.parametrize('data,shape,stride', [('no_channels', (10, 4, 4), (1, 2, 2)),
-                                               ('channels_first', (10, 3, 4, 4), (1, 1, 2, 2)),
-                                               ('channels_last', (10, 4, 4, 3), (1, 2, 2, 1))])
-def test_pooling(data, shape, stride, request):
-    """Test for Pooling PreProcessor"""
-    proc = Pooling(stride=stride, pooling_function=np.sum)
-    data = request.getfixturevalue(data)
-    out = proc(data)
-    assert out.shape == shape
-    np.testing.assert_equal(out, 4 * np.ones(out.shape))
+@pytest.mark.parametrize(
+    'fixture_name,shape,stride',
+    [
+        ('no_channels', (10, 4, 4), (1, 2, 2)),
+        ('channels_first', (10, 3, 4, 4), (1, 1, 2, 2)),
+        ('channels_last', (10, 4, 4, 3), (1, 2, 2, 1))
+    ]
+)
+def test_pooling(fixture_name: str, shape: tuple[int, ...], stride: tuple[int, ...], request: pytest.FixtureRequest) -> None:
+    """Tests the pooling pre-processing processor.
+
+    Args:
+        fixture_name (str): The name of the fixture that is to be used for the test.
+        shape (tuple[int, ...]): The expected shape of the output data.
+        stride (tuple[int, ...]): The stride of the pooling operation.
+        request (pytest.FixtureRequest): The request object that is used to access the fixture.
+    """
+
+    processor = Pooling(stride=stride, pooling_function=numpy.sum)
+    input_data = request.getfixturevalue(fixture_name)
+
+    output_data = processor(input_data)
+
+    assert output_data.shape == shape
+    numpy.testing.assert_equal(output_data, 4 * numpy.ones(output_data.shape))

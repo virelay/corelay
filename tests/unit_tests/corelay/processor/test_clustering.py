@@ -1,99 +1,152 @@
-"""Test clustering processors.
-
-"""
+"""A module that contains unit tests for the ``corelay.processor.clustering`` module."""
 
 import os
+from importlib import import_module
+from typing import Any
 
+import numpy
 import pytest
-import numpy as np
+from numpy.typing import NDArray
 from sklearn.datasets import make_blobs
 from sklearn.metrics.pairwise import euclidean_distances
 
-from corelay.processor import clustering
 from corelay.base import Param
+from corelay.processor import clustering
+
+EXTRA_PROCESSORS = []
+"""Contains a list of extra clustering processors that are to be tested. The list of extra clustering processors depends on the availability of the
+respective libraries, which can optionally be installed by the user. If the library is not installed, the processor will not be available and can
+therefore not be tested.
+"""
 
 try:
-    import hdbscan  # pylint: disable=unused-import; # noqa: F401
+    import_module('hdbscan')
     EXTRA_PROCESSORS = [clustering.HDBSCAN]
 except ImportError:
-    EXTRA_PROCESSORS = []
+    pass
 
 
-@pytest.fixture
-def data():
-    """Return data with 1000 elements with 5 blobs.
+@pytest.fixture(name='data', scope='module')
+def get_data_fixture() -> NDArray[numpy.float64]:
+    """A fixture that produces tests data with 1000 elements that are split into 5 blobs.
 
+    Returns:
+        NDArray[numpy.float64]: Returns the data, which is a 2D array of shape (1000, 2), i.e., 1000 samples with 2 features.
     """
-    data, _ = make_blobs(1000, centers=5, random_state=100)  # pylint: disable=unbalanced-tuple-unpacking
-    return data
+
+    blobs = make_blobs(1000, centers=5, random_state=100)
+    blob: NDArray[numpy.float64] = blobs[0]
+    return blob
 
 
-@pytest.fixture
-def tiny_data():
-    """Return data with 50 elements with 5 blobs.
+@pytest.fixture(name='tiny_data', scope='module')
+def get_tiny_data_fixture() -> NDArray[numpy.float64]:
+    """A fixtures that produces tiny test data with 50 elements that are split into 5 blobs.
 
+    Returns:
+        NDArray[numpy.float64]: Returns the data, which is a 2D array of shape (50, 2), i.e., 50 samples with 2 features.
     """
-    data, _ = make_blobs(50, centers=5, random_state=100)  # pylint: disable=unbalanced-tuple-unpacking
-    return data
+
+    blobs = make_blobs(50, centers=5, random_state=100)
+    blob: NDArray[numpy.float64] = blobs[0]
+    return blob
 
 
-@pytest.fixture
-def distances(data):
-    """Return euclidean distances on data.
+@pytest.fixture(name='distances', scope='module')
+def get_distances_fixture(data: NDArray[numpy.float64]) -> NDArray[numpy.float64]:
+    """A fixtures that computes the euclidean distances between each pair of data points.
 
+    Args:
+        data (NDArray[numpy.float64]): The data to compute the distances for.
+
+    Returns:
+        NDArray[numpy.float64]: Returns a distance matrix, which, given input data of shape (<number_of_samples>, <number_of_features>), is a 2D array
+            of shape (<number_of_samples>, <number_of_samples>), i.e., the distances between each pair of samples.
     """
-    return euclidean_distances(data)
+
+    distance_matrix: NDArray[numpy.float64] = euclidean_distances(data)
+    return distance_matrix
 
 
-@pytest.mark.parametrize('processor', [clustering.AgglomerativeClustering, clustering.KMeans])
-def test_clustering(processor, data):
-    """Test clustering processors by checking that 5 found clusters are of similar size.
+@pytest.mark.parametrize('processor_type', [clustering.AgglomerativeClustering, clustering.KMeans])
+def test_clustering(processor_type: type[clustering.Clustering], data: NDArray[numpy.float64]) -> None:
+    """Tests the clustering processors by checking that the 5 found clusters are approximately of similar size.
 
+    Args:
+        processor_type (type[clustering.Clustering]): The clustering ``Processor`` that is to be used in the test.
+        data (NDArray[numpy.float64]): The data that is to be clustered.
     """
-    emb = processor(n_clusters=5)(data)
-    # since blobs are equal the cluster sizes should be approximately the same size
-    assert len(np.unique(emb)) == 5
-    assert (np.unique(emb, return_counts=True)[1] / 1000).std() < 0.05
+
+    processor = processor_type(n_clusters=5)
+    computed_clustering = processor(data)
+
+    # Checks that the number of unique cluster labels is equal to the number of clusters
+    assert len(numpy.unique(computed_clustering)) == 5
+
+    # Since the blobs are of equal size the cluster sizes should also be approximately the same size
+    assert (numpy.unique(computed_clustering, return_counts=True)[1] / 1000).std() < 0.05
 
 
-@pytest.mark.parametrize('processor', [clustering.DBSCAN] + EXTRA_PROCESSORS)
-def test_embedding_on_distances(processor, distances):
-    """Test clustering processors by checking that 5 found clusters calculated on precomputed distances
-    are of similar size.
+@pytest.mark.parametrize('processor_type', EXTRA_PROCESSORS + [clustering.DBSCAN])
+def test_embedding_on_distances(processor_type: type[clustering.Clustering], distances: NDArray[numpy.float64]) -> None:
+    """Tests the clustering processors by checking that the 5 found clusters that were determined from pre-computed distances are approximately of
+    similar size.
 
+    Args:
+        processor_type (type[clustering.Clustering]): The clustering ``Processor`` that is to be used in the test.
+        distances (NDArray[numpy.float64]): The pre-computed distances of the data points that are used to cluster the data.
     """
-    params = {'eps': 0.9} if 'eps' in processor.collect(Param) else {}
-    emb = processor(metric='precomputed', **params)(distances)
-    assert len(np.unique(emb)) == 5
-    assert (np.unique(emb, return_counts=True)[1] / 1000).std() < 0.13
+
+    params: dict[str, Any] = {'eps': 0.9} if 'eps' in processor_type.collect(Param) else {}
+    processor = processor_type(metric='precomputed', **params)
+    computed_clustering = processor(distances)
+
+    assert len(numpy.unique(computed_clustering)) == 5
+    assert (numpy.unique(computed_clustering, return_counts=True)[1] / 1000).std() < 0.13
 
 
-def test_embedding_on_distances_agg_clustering(distances):
-    """Test that 5 found clusters of AgglomerativeClustering on precomputed distances are of similar size.
+def test_embedding_on_distances_using_agglomerative_clustering(distances: NDArray[numpy.float64]) -> None:
+    """Tests that the 5 clusters found using the ``AgglomerativeClustering`` class that were determined from pre-computed distances are approximately
+    of similar size.
 
+    Args:
+        distances (NDArray[numpy.float64]): The pre-computed distances of the data points that are used to cluster the data.
     """
-    emb = clustering.AgglomerativeClustering(n_clusters=5, metric='precomputed', linkage='average')(distances)
-    assert (np.unique(emb, return_counts=True)[1] / 1000).std() < 0.05
+
+    computed_clustering = clustering.AgglomerativeClustering(n_clusters=5, metric='precomputed', linkage='average')(distances)
+    assert (numpy.unique(computed_clustering, return_counts=True)[1] / 1000).std() < 0.05
 
 
-def test_dendrogram_creation(tiny_data):
-    """Test dendrogram creation with a given path.
+def test_dendrogram_creation_with_file_path(tiny_data: NDArray[numpy.float64]) -> None:
+    """Tests the creation of a dendrogram for the specified data, where the dendrogram image file is specified as a path string.
 
+    Args:
+        tiny_data (NDArray[numpy.float64]): The data to create the dendrogram for.
     """
+
     output_path = '/tmp/dendrogram.png'
-    data2 = clustering.Dendrogram(output_file=output_path)(tiny_data)
-    np.testing.assert_equal(tiny_data, data2)
+    dendrogram_processor = clustering.Dendrogram(output_file=output_path)
+    output_data = dendrogram_processor(tiny_data)
+
+    numpy.testing.assert_equal(tiny_data, output_data)
     assert os.path.exists(output_path)
+
     os.remove(output_path)
 
 
-def test_dendrogram_creation_with_file_object(tiny_data):
-    """Test dendrogram creation with a given file object.
+def test_dendrogram_creation_with_file_object(tiny_data: NDArray[numpy.float64]) -> None:
+    """Tests the creation of a dendrogram for the specified data, where the dendrogram image file is specified as a file object.
 
+    Args:
+        tiny_data (NDArray[numpy.float64]): The data to create the dendrogram for.
     """
+
     output_path = '/tmp/dendrogram.png'
-    with open(output_path, 'wb') as f:
-        data2 = clustering.Dendrogram(output_file=f)(tiny_data)
-        np.testing.assert_equal(tiny_data, data2)
+    with open(output_path, 'wb') as image_file:
+        dendrogram_processor = clustering.Dendrogram(output_file=image_file)
+        output_data = dendrogram_processor(tiny_data)
+
+        numpy.testing.assert_equal(tiny_data, output_data)
         assert os.path.exists(output_path)
+
     os.remove(output_path)

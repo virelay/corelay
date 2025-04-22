@@ -1,45 +1,76 @@
-"""Test module for corelay/pipeline/base.py"""
+"""A module that contains unit tests for the ``corelay.io.base`` module."""
+
 from collections import OrderedDict
 from types import FunctionType
+from typing import Annotated, Any
 
 import pytest
 
-from corelay.processor.base import Processor, Param, FunctionProcessor
+from corelay.base import Param
 from corelay.pipeline.base import Pipeline, Task
+from corelay.processor.base import Processor, FunctionProcessor
 
 
-@pytest.fixture(scope='module')
-def processor_type():
-    """Fixture for custom Processor type"""
+@pytest.fixture(name='processor_type', scope='module')
+def get_processor_type_fixture() -> type[Processor]:
+    """A fixture that produces a custom ``Processor`` type.
+
+    Returns:
+        type[Processor]: Returns a custom ``Processor`` type.
+    """
+
     class MyProcessor(Processor):
-        """Custom Processor"""
-        param_1 = Param(object)
-        param_2 = Param(object)
+        """A custom ``Processor`` type."""
 
-        def function(self, data):
-            """Double input"""
+        param_1: Annotated[Any, Param(Any)]
+        param_2: Annotated[Any, Param(Any)]
+
+        def function(self, data: Any) -> Any:
+            """Multiplies the input data by 2.
+
+            Args:
+                data (Any): The input data that is to be processed.
+
+            Returns:
+                Any: Returns the processed data.
+            """
+
             return data * 2
 
     return MyProcessor
 
 
-@pytest.fixture(scope='module')
-def pipeline_type(processor_type):
-    """Fixture for custom Pipeline type"""
+@pytest.fixture(name='pipeline_type', scope='module')
+def get_pipeline_type_fixture(processor_type: type[Processor]) -> type[Pipeline]:
+    """A fixture that produces a custom ``Pipeline`` type.
+
+    Args:
+        processor_type (type[Processor]): The custom ``Processor`` type that is to be used in the custom ``Pipeline`` type.
+
+    Returns:
+        type[Pipeline]: Returns a custom ``Pipeline`` type.
+    """
+
     class MyPipeline(Pipeline):
-        """Custom Pipeline"""
+        """A custom ``Pipeline`` type."""
+
         task_1 = Task(FunctionProcessor, lambda self, x: x + 3, is_output=False, bind_method=True)
         task_2 = Task(processor_type, processor_type(), is_output=True)
 
     return MyPipeline
 
 
-@pytest.fixture(scope='module')
-# pylint: disable=unused-argument
-def pipeline_type_multi(processor_type):
-    """Fixture for custom Pipeline type with multiple outputs"""
+@pytest.fixture(name='pipeline_with_multiple_outputs_type', scope='module')
+def get_pipeline_with_multiple_outputs_type_fixture() -> type[Pipeline]:
+    """A fixture that produces a custom ``Pipeline`` type with multiple outputs.
+
+    Returns:
+        type[Pipeline]: Returns a custom ``Pipeline`` type with multiple outputs.
+    """
+
     class MyPipeline(Pipeline):
-        """Custom pipeline with multiple outputs"""
+        """A custom ``Pipeline`` type with multiple outputs."""
+
         task_1 = Task(FunctionProcessor, lambda self, x: x + 2, is_output=True, bind_method=True)
         task_2 = Task(FunctionProcessor, lambda self, x: x * 2, is_output=True, bind_method=True)
 
@@ -47,124 +78,209 @@ def pipeline_type_multi(processor_type):
 
 
 class TestTask:
-    """Test class for Task"""
+    """Contains unit tests for the ``Task`` class."""
+
     @staticmethod
-    def test_instantiation_default():
-        """instantiation without any arguments should succeed"""
+    def test_instantiation_default() -> None:
+        """Tests that the instantiation of a ``Task`` without any arguments succeeds."""
+
         Task()
 
     @staticmethod
-    def test_instantiation_arguments(processor_type):
-        """Instantiating with correct arguments should succeed"""
+    def test_instantiation_arguments(processor_type: type[Processor]) -> None:
+        """Tests that the instantiation of a ``Task`` with correct arguments succeeds.
+
+        Args:
+            processor_type (type[Processor]): The custom ``Processor`` type that is to be used in the ``Task``.
+        """
+
         Task(proc_type=processor_type, default=processor_type(), is_output=True)
 
     @staticmethod
-    def test_proc_type_no_proc():
-        """Instantiating with a proc_type which is not a subclass for Processor should raise a TypeError"""
+    def test_proc_type_no_proc() -> None:
+        """Tests that the instantiation of a ``Task`` with a ``proc_type`` that is not a sub-class of ``Processor`` raises a ''TypeError''."""
+
         with pytest.raises(TypeError):
-            Task(proc_type=FunctionType, default=(lambda x: x))
+            Task(proc_type=FunctionType, default=lambda x: x)  # type: ignore[arg-type]
 
     @staticmethod
-    def test_default_no_proc():
-        """Instantiating with a default value not of type Processor should fail"""
+    def test_default_no_proc() -> None:
+        """Tests that the instantiation of a ``Task`` with a default value that is not of type ``Processor`` fails."""
+
         with pytest.raises(TypeError):
-            Task(proc_type=Processor, default='bla')
+            Task(default='bla')  # type: ignore[arg-type]
 
     @staticmethod
-    def test_proc_type_default_type_mismatch(processor_type):
-        """Instantiating with a default value not of type proc_type should raise a TypeError"""
+    def test_proc_type_default_type_mismatch(processor_type: type[Processor]) -> None:
+        """Tests that the instantiation of a ``Task`` with a default value that is not of type ``proc_type`` raises a ``TypeError``.
+
+        Args:
+            processor_type (type[Processor]): The custom ``Processor`` type that is to be used in the ``Task``.
+        """
+
         with pytest.raises(TypeError):
-            Task(proc_type=processor_type, default=(lambda x: x))
+            Task(proc_type=processor_type, default=lambda x: x)
 
     @staticmethod
-    def test_default_function_identity():
-        """The default function of a FunctionProcessor should be the identity"""
+    def test_default_function_identity() -> None:
+        """Tests that the default function of a ``FunctionProcessor`` is the identity function."""
+
+        # For some reason, PyLint does not recognize that the type of the default value is Processor and/or that Processor is callable
         task = Task()
-        # pylint: disable=not-callable
-        assert task.default(42) == 42
+        assert task.default is not None
+        assert task.default(42) == 42  # pylint: disable=not-callable
 
     @staticmethod
-    def test_assigned_default(processor_type):
-        """Assigning a default Processor value should succeed"""
+    def test_assigned_default(processor_type: type[Processor]) -> None:
+        """Tests that assigning a default ``Processor`` value succeeds.
+
+        Args:
+            processor_type (type[Processor]): The custom ``Processor`` type that is to be used in the ``Task``.
+        """
+
+        # For some reason, PyLint does not recognize that the type of the default value is Processor and/or that Processor is callable
         task = Task(proc_type=processor_type, default=processor_type())
-        # pylint: disable=not-callable
-        assert task.default(5) == 10
+        assert task.default is not None
+        assert task.default(5) == 10  # pylint: disable=not-callable
 
 
 class TestPipeline:
-    """Test class for Pipeline"""
+    """Contains unit tests for the ``Pipeline`` class."""
+
     @staticmethod
-    def test_instantiation_base():
-        """instantiation of the base class without any arguments should succeed"""
+    def test_instantiation_base() -> None:
+        """Tests that the instantiation of the base class ``Pipeline`` without any arguments succeeds."""
+
         Pipeline()
 
     @staticmethod
-    def test_instantiation_default(pipeline_type):
-        """instantiation of a custom subclass without any arguments should succeed"""
+    def test_instantiation_default(pipeline_type: type[Pipeline]) -> None:
+        """Tests that the instantiation of a custom sub-class of ``Pipeline`` without any arguments succeeds.
+
+        Args:
+            pipeline_type (type[Pipeline]): The custom ``Pipeline`` type that is to be used in the test.
+        """
+
         pipeline_type()
 
     @staticmethod
-    def test_instantiation_arguments(pipeline_type, processor_type):
-        """instantiation with correct arguments should succeed"""
+    def test_instantiation_arguments(pipeline_type: type[Pipeline], processor_type: type[Processor]) -> None:
+        """Tests that the instantiation of a custom sub-class of ``Pipeline`` with the correct arguments succeeds.
+
+        Args:
+            pipeline_type (type[Pipeline]): The custom ``Pipeline`` type that is to be used in the test.
+            processor_type (type[Processor]): The custom ``Processor`` type that is to be used in the test.
+        """
+
         pipeline_type(task_1=lambda x: x + 2, task_2=processor_type())
 
     @staticmethod
-    def test_default_call(pipeline_type):
-        """Calling with all defaults in place should succeed"""
+    def test_default_call(pipeline_type: type[Pipeline]) -> None:
+        """Tests that running a pipeline with all defaults in place succeeds.
+
+        Args:
+            pipeline_type (type[Pipeline]): The custom ``Pipeline`` type that is to be used in the test.
+        """
+
         pipeline = pipeline_type()
         pipeline(0)
 
     @staticmethod
-    def test_default_call_no_input(pipeline_type):
-        """Calling without an input should raise a TypeError"""
+    def test_default_call_no_input(pipeline_type: type[Pipeline]) -> None:
+        """Tests that running a pipeline without an input raises a ``TypeError``.
+
+        Args:
+            pipeline_type (type[Pipeline]): The custom ``Pipeline`` type that is to be used in the test.
+        """
+
         pipeline = pipeline_type()
         with pytest.raises(TypeError):
-            pipeline()
+            pipeline()  # type: ignore[call-arg]
 
     @staticmethod
-    def test_default_call_output(pipeline_type):
-        """Default Processors should output correctly"""
+    def test_default_call_output(pipeline_type: type[Pipeline]) -> None:
+        """Tests that running a pipeline with the default processors returns the correct output.
+
+        Args:
+            pipeline_type (type[Pipeline]): The custom ``Pipeline`` type that is to be used in the test.
+        """
+
         pipeline = pipeline_type()
-        out = pipeline(1)
-        assert out == 8
+        output = pipeline(1)
+
+        assert output == 8
 
     @staticmethod
-    def test_default_call_output_multiple(pipeline_type_multi):
-        """Default Processors should output correctly with multiple outputs"""
-        pipeline = pipeline_type_multi()
-        out = pipeline(0)
-        assert out == (2, 4)
+    def test_default_call_output_multiple(pipeline_with_multiple_outputs_type: type[Pipeline]) -> None:
+        """Tests that processors that have multiple outputs, correctly output a tuple containing the outputs.
+
+        Args:
+            pipeline_with_multiple_outputs_type (type[Pipeline]): The custom ``Pipeline`` type that is to be used in the test.
+        """
+
+        pipeline = pipeline_with_multiple_outputs_type()
+        output = pipeline(0)
+
+        assert output == (2, 4)
 
     @staticmethod
-    def test_default_param_values(pipeline_type, processor_type):
-        """Default Parameter values should be assigned correctly"""
-        proc = processor_type(is_output=False)
-        pipeline = pipeline_type(task_2=proc)
-        assert not pipeline.task_2.is_output
+    def test_default_param_values(pipeline_type: type[Pipeline], processor_type: type[Processor]) -> None:
+        """Tests that the default parameter values are assigned correctly.
+
+        Args:
+            pipeline_type (type[Pipeline]): The custom ``Pipeline`` type that is to be used in the test.
+            processor_type (type[Processor]): The custom ``Processor`` type that is to be used in the test.
+        """
+
+        processor = processor_type(is_output=False)
+        pipeline = pipeline_type(task_2=processor)
+
+        assert not pipeline.task_2.is_output  # type: ignore[attr-defined]
 
     @staticmethod
-    def test_checkpoint_processes(pipeline_type, processor_type):
-        """Collecting all processors relevant to a checkpoint should succeed"""
-        proc_1 = FunctionProcessor(function=lambda x: x + 5, is_checkpoint=False)
-        proc_2 = processor_type(is_checkpoint=True)
-        pipeline = pipeline_type(task_1=proc_1, task_2=proc_2)
-        assert pipeline.checkpoint_processes() == OrderedDict(task_2=proc_2)
+    def test_checkpoint_processes(pipeline_type: type[Pipeline], processor_type: type[Processor]) -> None:
+        """Tests that collecting all processors relevant to a checkpoint succeeds.
+
+        Args:
+            pipeline_type (type[Pipeline]): The custom ``Pipeline`` type that is to be used in the test.
+            processor_type (type[Processor]): The custom ``Processor`` type that is to be used in the test.
+        """
+
+        first_processor = FunctionProcessor(processing_function=lambda x: x + 5, is_checkpoint=False)
+        second_processor = processor_type(is_checkpoint=True)
+        pipeline = pipeline_type(task_1=first_processor, task_2=second_processor)
+
+        assert pipeline.checkpoint_processes() == OrderedDict(task_2=second_processor)
 
     @staticmethod
-    def test_checkpoint_data(pipeline_type, processor_type):
-        """Checkpoint data should be stored correctly"""
-        proc_1 = FunctionProcessor(function=lambda x: x + 5, is_checkpoint=True)
-        proc_2 = processor_type(is_checkpoint=False)
-        pipeline = pipeline_type(task_1=proc_1, task_2=proc_2)
+    def test_checkpoint_data(pipeline_type: type[Pipeline], processor_type: type[Processor]) -> None:
+        """Tests that the checkpoint data is stored correctly.
+
+        Args:
+            pipeline_type (type[Pipeline]): The custom ``Pipeline`` type that is to be used in the test.
+            processor_type (type[Processor]): The custom ``Processor`` type that is to be used in the test.
+        """
+
+        first_processor = FunctionProcessor(processing_function=lambda x: x + 5, is_checkpoint=True)
+        second_processor = processor_type(is_checkpoint=False)
+        pipeline = pipeline_type(task_1=first_processor, task_2=second_processor)
         pipeline(0)
-        assert proc_1.checkpoint_data == 5
+
+        assert first_processor.checkpoint_data == 5
 
     @staticmethod
-    def test_from_checkpoint(pipeline_type, processor_type):
-        """Resuming from a checkpoint should succeed"""
-        proc_1 = FunctionProcessor(function=lambda x: x + 5, is_checkpoint=True)
-        proc_2 = processor_type(is_checkpoint=False)
-        pipeline = pipeline_type(task_1=proc_1, task_2=proc_2)
-        proc_1.checkpoint_data = 1
-        out = pipeline.from_checkpoint()
-        assert out == 2
+    def test_from_checkpoint(pipeline_type: type[Pipeline], processor_type: type[Processor]) -> None:
+        """Tests that resuming from a checkpoint succeeds.
+
+        Args:
+            pipeline_type (type[Pipeline]): The custom ``Pipeline`` type that is to be used in the test.
+            processor_type (type[Processor]): The custom ``Processor`` type that is to be used in the test.
+        """
+
+        first_processor = FunctionProcessor(processing_function=lambda x: x + 5, is_checkpoint=True)
+        second_processor = processor_type(is_checkpoint=False)
+        pipeline = pipeline_type(task_1=first_processor, task_2=second_processor)
+        first_processor.checkpoint_data = 1
+        output = pipeline.from_checkpoint()
+
+        assert output == 2

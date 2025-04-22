@@ -1,0 +1,19 @@
+
+# Uses the default configuration for all rules
+default: true
+
+# The line length rule is not used in this project, as breaking the lines manually takes a lot of work and always has to be redone after updating the
+# document, furthermore, many editors allow the auto-breaking of lines to fit the text inside the window, which is optimal for prose
+line-length: false
+
+# In this project, inline HTML is used to improve the style of the documents
+no-inline-html: false
+
+# The first H1 heading is usually inside a table, which formats the title of the document, therefore, the first line of a document cannot contain the
+# heading
+first-line-heading: false
+
+# In the documentation, the lines of all shell scripts are prefixed with a "$" prompt to signify that the line is being executed in the terminal; by
+# default Markdownlint only allows a "$" prompt if it is followed by console output; in this project we do not show any command output and therefore,
+# the rule is disabled
+commands-show-output: false
