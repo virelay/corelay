@@ -1,4 +1,4 @@
-"""A module that contains unit tests for the ``corelay.tracker`` module."""
+"""A module that contains unit tests for the :py:mod:`corelay.tracker` module."""
 
 import pytest
 
@@ -7,14 +7,14 @@ from corelay.tracker import Tracker
 
 @pytest.fixture(name='tracker_type', scope='module')
 def get_tracked_fixture() -> type[Tracker]:
-    """Creates a sub-class of ``Tracker`` with some attributes.
+    """Creates a sub-class of :py:class:`~corelay.tracker.Tracker` with some attributes.
 
     Returns:
-        type[Tracker]: A sub-class of ``Tracker`` with some attributes.
+        type[Tracker]: Returns a sub-class of :py:class:`~corelay.tracker.Tracker` with some attributes.
     """
 
     class SubTracked(Tracker):
-        """A sub-class of ``Tracker`` with some attributes."""
+        """A sub-class of :py:class:`~corelay.tracker.Tracker` with some attributes."""
 
         attr_1 = 42
         attr_2 = 'apple'
@@ -31,7 +31,7 @@ def get_values_fixture() -> dict[str, int | str | type]:
     """Generates a list of values, that can be used to test the collection of values.
 
     Returns:
-        dict[str, int | str | type]: Returns a dictionary with values that can be used to test the collection of values.
+        dict[str, int | str | type]: Returns a :py:class:`dict` with values that can be used to test the collection of values.
     """
 
     result: dict[str, int | str | type] = {
@@ -50,7 +50,7 @@ def get_attributes_fixture() -> dict[str, str]:
     """Generates some new values for tracked parameters.
 
     Returns:
-        dict[str, str]: Returns a dictionary with new values for tracked parameters.
+        dict[str, str]: Returns a :py:class:`dict` with new values for tracked parameters.
     """
 
     result: dict[str, str] = {
@@ -83,7 +83,7 @@ def get_instance_fixture(tracker_type: type[Tracker], attributes: dict[str, str]
 
 
 class TestTracker:
-    """Contains unit tests for the ``Tracker`` class."""
+    """Contains unit tests for the :py:class:`~corelay.tracker.Tracker` class."""
 
     @staticmethod
     def test_collect(tracker_type: type[Tracker]) -> None:

@@ -3,12 +3,12 @@
 # pylint: disable=duplicate-code
 
 import time
+import typing
 from collections.abc import Sequence
-from typing import Annotated, Any, SupportsIndex
+from typing import Annotated, SupportsIndex
 
 import h5py
 import numpy
-from numpy.typing import NDArray
 
 from corelay.base import Param
 from corelay.io.storage import HashedHDF5
@@ -20,62 +20,64 @@ from corelay.processor.flow import Sequential, Parallel
 
 
 class Flatten(Processor):
-    """Represents a CoRelAy processor, which flattens its input data."""
+    """Represents a :py:class:`~corelay.processor.base.Processor`, which flattens its input data."""
 
-    def function(self, data: Any) -> Any:
+    def function(self, data: typing.Any) -> typing.Any:
         """Applies the flattening to the input data.
 
         Args:
-            data (Any): The input data that is to be flattened.
+            data (typing.Any): The input data that is to be flattened.
 
         Returns:
-            Any: Returns the flattened data.
+            typing.Any: Returns the flattened data.
         """
 
-        input_data: NDArray[Any] = data
+        input_data: numpy.ndarray[typing.Any, typing.Any] = data
         input_data.sum()
         return input_data.reshape(input_data.shape[0], numpy.prod(input_data.shape[1:]))
 
 
 class SumChannel(Processor):
-    """Represents a CoRelAy processor, which sums its input data across channels, i.e., its second axis."""
+    """Represents a :py:class:`~corelay.processor.base.Processor`, which sums its input data across channels, i.e., its second axis."""
 
-    def function(self, data: Any) -> Any:
+    def function(self, data: typing.Any) -> typing.Any:
         """Applies the summation over the channels to the input data.
 
         Args:
-            data (Any): The input data that is to be summed over its channels.
+            data (typing.Any): The input data that is to be summed over its channels.
 
         Returns:
-            Any: Returns the data that was summed up over its channels.
+            typing.Any: Returns the data that was summed up over its channels.
         """
 
-        input_data: NDArray[Any] = data
+        input_data: numpy.ndarray[typing.Any, typing.Any] = data
         return input_data.sum(axis=1)
 
 
 class Normalize(Processor):
-    """Represents a CoRelAy processor, which normalizes its input data."""
+    """Represents a :py:class:`~corelay.processor.base.Processor`, which normalizes its input data."""
 
     axes: Annotated[SupportsIndex | Sequence[SupportsIndex], Param((SupportsIndex, Sequence), (1, 2))]
-    """A parameter of the processor, which determines the axis over which the data is to be normalized. Defaults to the second and third axes."""
+    """A parameter of the :py:class:`~corelay.processor.base.Processor`, which determines the axis over which the data is to be normalized. Defaults
+    to the second and third axes.
+    """
 
-    def function(self, data: Any) -> Any:
+    def function(self, data: typing.Any) -> typing.Any:
         """Normalizes the specified input data.
 
         Args:
-            data (Any): The input data that is to be normalized.
+            data (typing.Any): The input data that is to be normalized.
 
         Returns:
-            Any: Returns the normalized input data.
+            typing.Any: Returns the normalized input data.
         """
 
-        input_data: NDArray[Any] = data
+        input_data: numpy.ndarray[typing.Any, typing.Any] = data
         return input_data / input_data.sum(self.axes, keepdims=True)
 
 
 def main() -> None:
-    """The entrypoint to the memoize_spectral_pipeline script."""
+    """The entrypoint to the :py:mod:`memoize_spectral_pipeline` script."""
 
     # Fixes the random seed for reproducibility
     numpy.random.seed(0xDEADBEEF)
@@ -83,12 +85,12 @@ def main() -> None:
     # Opens an HDF5 file in append mode for the storing the results of the analysis and the memoization of intermediate pipeline results
     with h5py.File('test.analysis.h5', 'a') as analysis_file:
 
-        # Creates a HashedHDF5 IO object, which is an IO object that stores outputs of processors based on hashes in an HDF5 file
+        # Creates a HashedHDF5 IO object, which is storage container that stores outputs of processors based on hashes in an HDF5 file
         io_object = HashedHDF5(analysis_file.require_group('proc_data'))
 
         # Generates some exemplary data
         data = numpy.random.normal(size=(64, 3, 32, 32))
-        number_of_clusters = range(2, 20)
+        numbers_of_clusters = range(2, 20)
 
         # Creates a SpectralClustering pipeline, which is one of the pre-defined built-in pipelines
         pipeline = SpectralClustering(
@@ -100,7 +102,7 @@ def main() -> None:
             # processors; broadcast=False instead attempts to match each input to a processor
             clustering=Parallel([
                 Parallel([
-                    KMeans(n_clusters=k, io=io_object) for k in number_of_clusters
+                    KMeans(n_clusters=number_of_clusters, io=io_object) for number_of_clusters in numbers_of_clusters
                 ], broadcast=True),
 
                 # IO objects will be used during computation when supplied to processors, if a corresponding output value (here identified by hashes)

@@ -2,14 +2,14 @@
 
 # pylint: disable=duplicate-code
 
-import json
 import argparse
+import json
+import typing
 from collections.abc import Sequence
-from typing import Annotated, Any, SupportsIndex
+from typing import Annotated, SupportsIndex
 
 import h5py
 import numpy
-from numpy.typing import NDArray
 from scipy.spatial.distance import pdist, squareform
 from scipy.stats import pearsonr
 from skimage.metrics import structural_similarity  # pylint: disable=no-name-in-module
@@ -25,92 +25,92 @@ from corelay.processor.flow import Sequential, Parallel
 
 
 class Flatten(Processor):
-    """Represents a CoRelAy processor, which flattens its input data."""
+    """Represents a :py:class:`~corelay.processor.base.Processor`, which flattens its input data."""
 
-    def function(self, data: Any) -> Any:
+    def function(self, data: typing.Any) -> typing.Any:
         """Applies the flattening to the input data.
 
         Args:
-            data (Any): The input data that is to be flattened.
+            data (typing.Any): The input data that is to be flattened.
 
         Returns:
-            Any: Returns the flattened data.
+            typing.Any: Returns the flattened data.
         """
-        input_data: NDArray[Any] = data
+        input_data: numpy.ndarray[typing.Any, typing.Any] = data
         return input_data.reshape(input_data.shape[0], numpy.prod(input_data.shape[1:]))
 
 
 class SumChannel(Processor):
-    """Represents a CoRelAy processor, which sums its input data across channels, i.e., its second axis."""
+    """Represents a :py:class:`~corelay.processor.base.Processor`, which sums its input data across channels, i.e., its second axis."""
 
-    def function(self, data: Any) -> Any:
+    def function(self, data: typing.Any) -> typing.Any:
         """Applies the summation over the channels to the input data.
 
         Args:
-            data (Any): The input data that is to be summed over its channels.
+            data (typing.Any): The input data that is to be summed over its channels.
 
         Returns:
-            Any: Returns the data that was summed up over its channels.
+            typing.Any: Returns the data that was summed up over its channels.
         """
 
-        input_data: NDArray[Any] = data
+        input_data: numpy.ndarray[typing.Any, typing.Any] = data
         return input_data.sum(axis=1)
 
 
 class Absolute(Processor):
-    """Represents a CoRelAy processor, which computes the absolute value of its input data."""
+    """Represents a :py:class:`~corelay.processor.base.Processor`, which computes the absolute value of its input data."""
 
-    def function(self, data: Any) -> Any:
+    def function(self, data: typing.Any) -> typing.Any:
         """Computes the absolute value of the specified input data.
 
         Args:
-            data (Any): The input data for which the absolute value is to be computed.
+            data (typing.Any): The input data for which the absolute value is to be computed.
 
         Returns:
-            Any: Returns the absolute value of the input data.
+            typing.Any: Returns the absolute value of the input data.
         """
 
-        input_data: NDArray[Any] = data
+        input_data: numpy.ndarray[typing.Any, typing.Any] = data
         return numpy.absolute(input_data)
 
 
 class Normalize(Processor):
-    """Represents a CoRelAy processor, which normalizes its input data."""
+    """Represents a :py:class:`~corelay.processor.base.Processor`, which normalizes its input data."""
 
     axes: Annotated[SupportsIndex | Sequence[SupportsIndex], Param((SupportsIndex, Sequence), (1, 2))]
     """A parameter of the processor, which determines the axis over which the data is to be normalized. Defaults to the second and third axes."""
 
-    def function(self, data: Any) -> Any:
+    def function(self, data: typing.Any) -> typing.Any:
         """Normalizes the specified input data.
 
         Args:
-            data (Any): The input data that is to be normalized.
+            data (typing.Any): The input data that is to be normalized.
 
         Returns:
-            Any: Returns the normalized input data.
+            typing.Any: Returns the normalized input data.
         """
 
-        input_data: NDArray[Any] = data
+        input_data: numpy.ndarray[typing.Any, typing.Any] = data
         return input_data / input_data.sum(self.axes, keepdims=True)
 
 
 class Histogram(Processor):
-    """Represents a CoRelAy processor, which computes a histogram over its input data."""
+    """Represents a :py:class:`~corelay.processor.base.Processor`, which computes a histogram over its input data."""
 
     bins: Annotated[int, Param(int, 256)]
     """A parameter of the processor, which determines the number of bins that are used to compute the histogram."""
 
-    def function(self, data: Any) -> Any:
+    def function(self, data: typing.Any) -> typing.Any:
         """Computes histograms over the specified input data. One histogram is computed for each channel and each sample in a batch of input data.
 
         Args:
-            data (Any): The input data over which the histograms are to be computed.
+            data (typing.Any): The input data over which the histograms are to be computed.
 
         Returns:
-            Any: Returns the histograms that were computed over the input data.
+            typing.Any: Returns the histograms that were computed over the input data.
         """
 
-        input_data: NDArray[Any] = data
+        input_data: numpy.ndarray[typing.Any, typing.Any] = data
         return numpy.stack([
             numpy.stack([
                 numpy.histogram(
@@ -122,22 +122,22 @@ class Histogram(Processor):
 
 
 class SSIM(Processor):
-    """Represents a CoRelAy processor, which computes the structural similarity index (SSIM) of the data."""
+    """Represents a :py:class:`~corelay.processor.base.Processor`, which computes the structural similarity index (SSIM) of the data."""
 
-    def function(self, data: Any) -> Any:
+    def function(self, data: typing.Any) -> typing.Any:
         """Computes the SSIM of the specified input data.
 
         Args:
-            data (Any): The input data for which the SSIM is to be computed. Each channel of the input data is treated as a separate sample and the
-                SSIM is computed between each pair of samples. The input data is expected to have the shape `(number_of_samples, height, width)`.
+            data (typing.Any): The input data for which the SSIM is to be computed. Each channel of the input data is treated as a separate sample and
+                the SSIM is computed between each pair of samples. The input data is expected to have the shape `(number_of_samples, height, width)`.
 
         Returns:
-            Any: Returns a square distance matrix, where each element i, j contains the SSIM between the samples i and j.
+            typing.Any: Returns a square distance matrix, where each element `i`, `j` contains the SSIM between the samples `i` and `j`.
         """
 
-        input_data: NDArray[Any] = data
+        input_data: numpy.ndarray[typing.Any, typing.Any] = data
         number_of_samples, height, width = input_data.shape
-        distance_matrix: NDArray[Any] = pdist(
+        distance_matrix: numpy.ndarray[typing.Any, typing.Any] = pdist(
             input_data.reshape(number_of_samples, height * width),
             metric=lambda x, y: structural_similarity(x.reshape(height, width), y.reshape(height, width))  # type: ignore[no-untyped-call]
         )
@@ -145,41 +145,41 @@ class SSIM(Processor):
 
 
 class PCC(Processor):
-    """Represents a CoRelAy processor, which computes the Pearson correlation coefficient (PCC) of the data."""
+    """Represents a :py:class:`~corelay.processor.base.Processor`, which computes the Pearson correlation coefficient (PCC) of the data."""
 
-    def function(self, data: Any) -> Any:
+    def function(self, data: typing.Any) -> typing.Any:
         """Computes the PCC of the specified input data.
 
         Args:
-            data (Any): The input data for which the PCC is to be computed. This must be a NumPy array of samples of shape
+            data (typing.Any): The input data for which the PCC is to be computed. This must be a :py:class:`~numpy.ndarray` of samples of shape
                 `(number_of_samples, number_of_dimensions)`, in `number_of_dimensions` dimensional space.
 
         Returns:
-            Any: Returns a NumPy array, which contains a square distance matrix, where each element i, j contains the PCC between the samples i and j.
+            typing.Any: Returns a :py:class:`~numpy.ndarray`, which contains a square distance matrix, where each element `i`, `j` contains the PCC
+            between the samples `i` and `j`.
         """
 
-        def pearsonr_distance(x: NDArray[Any], y: NDArray[Any]) -> float:
+        def pearsonr_distance(x: numpy.ndarray[typing.Any, typing.Any], y: numpy.ndarray[typing.Any, typing.Any]) -> float:
             """Computes the Pearson correlation coefficient between two samples.
 
             Args:
-                x (NDArray[Any]): The first sample.
-                y (NDArray[Any]): The second sample.
+                x (numpy.ndarray[typing.Any, typing.Any]): The first sample.
+                y (numpy.ndarray[typing.Any, typing.Any]): The second sample.
 
             Returns:
-                float: The Pearson correlation coefficient between the two samples.
+                float: Returns the Pearson correlation coefficient between the two samples.
             """
 
-            p_value: NDArray[numpy.floating] | float = pearsonr(x, y).statistic
+            p_value: numpy.ndarray[typing.Any, numpy.dtype[numpy.floating]] | float = pearsonr(x, y).statistic
             if isinstance(p_value, numpy.ndarray):
                 return p_value.item()
             return p_value
 
-        input_data: NDArray[Any] = data
-        distance_matrix: NDArray[numpy.floating] = pdist(input_data, metric=pearsonr_distance)
+        input_data: numpy.ndarray[typing.Any, typing.Any] = data
+        distance_matrix: numpy.ndarray[typing.Any, numpy.dtype[numpy.floating]] = pdist(input_data, metric=pearsonr_distance)
         return squareform(distance_matrix)
 
 
-# Contains the various pre-processing method and distance metric variants that can be used to compute the analysis
 VARIANTS = {
     'absspectral': {
         'preprocessing': Sequential([
@@ -229,6 +229,7 @@ VARIANTS = {
         'distance': PCC(),
     }
 }
+"""Contains the various pre-processing method and distance metric variants that can be used in the analysis."""
 
 
 def meta_analysis(
@@ -269,16 +270,10 @@ def meta_analysis(
         affinity=SparseKNN(n_neighbors=number_of_neighbors, symmetric=True),
         embedding=EigenDecomposition(n_eigval=number_of_eigenvalues, is_output=True),
         clustering=Parallel([
-            Parallel([
-                KMeans(n_clusters=number_of_clusters) for number_of_clusters in number_of_clusters_list
-            ], broadcast=True),
-            Parallel([
-                DBSCAN(eps=number_of_clusters / 10.0) for number_of_clusters in number_of_clusters_list
-            ], broadcast=True),
+            Parallel([KMeans(n_clusters=number_of_clusters) for number_of_clusters in number_of_clusters_list], broadcast=True),
+            Parallel([DBSCAN(eps=number_of_clusters / 10.0) for number_of_clusters in number_of_clusters_list], broadcast=True),
             HDBSCAN(),
-            Parallel([
-                AgglomerativeClustering(n_clusters=number_of_clusters) for number_of_clusters in number_of_clusters_list
-            ], broadcast=True),
+            Parallel([AgglomerativeClustering(n_clusters=number_of_clusters) for number_of_clusters in number_of_clusters_list], broadcast=True),
             Parallel([
                 UMAPEmbedding(),
                 TSNEEmbedding(),
@@ -304,7 +299,7 @@ def meta_analysis(
     # Gets the indices of the classes for which the meta-analysis is to be performed, if non were specified, the meta-analysis is performed for all
     # classes
     if class_indices is None:
-        class_indices = [int(label['index']) for label in label_map]
+        class_indices = [label['index'] for label in label_map]
 
     # Truncate the analysis database
     print(f'Truncating {analysis_file_path}')
@@ -336,7 +331,7 @@ def meta_analysis(
 
             # Adds the indices of the samples in the current class to the analysis database
             analysis_group = analysis_file.require_group(analysis_name)
-            analysis_group['index'] = indices_of_samples_in_class.astype('uint32')
+            analysis_group['index'] = indices_of_samples_in_class.astype(numpy.uint32)
 
             # Adds the spectral embedding to the analysis database
             embedding_group = analysis_group.require_group('embedding')
@@ -348,7 +343,7 @@ def meta_analysis(
             embedding_group['tsne'].attrs['embedding'] = 'spectral'
             embedding_group['tsne'].attrs['index'] = numpy.array([0, 1])
 
-            # Adds the uMap embedding to the analysis database
+            # Adds the UMAP embedding to the analysis database
             embedding_group['umap'] = umap.astype(numpy.float32)
             embedding_group['umap'].attrs['embedding'] = 'spectral'
             embedding_group['umap'].attrs['index'] = numpy.array([0, 1])
@@ -401,7 +396,7 @@ def meta_analysis(
 
 
 def main() -> None:
-    """The entrypoint to the virelay_analysis script."""
+    """The entrypoint to the :py:mod:`virelay_analysis` script."""
 
     argument_parser = argparse.ArgumentParser(
         prog='virelay_analysis',

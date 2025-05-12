@@ -1,11 +1,10 @@
-"""A module that contains unit tests for the ``corelay.io.spectral`` module."""
+"""A module that contains unit tests for the :py:mod:`corelay.io.spectral` module."""
 
 import os
+import typing
 
 import numpy
 import pytest
-from numpy.typing import NDArray
-
 from matplotlib import pyplot
 
 from corelay.pipeline.spectral import SpectralEmbedding, SpectralClustering
@@ -16,14 +15,14 @@ from corelay.processor.laplacian import SymmetricNormalLaplacian
 
 
 @pytest.fixture(name='spiral_data', scope='module')
-def get_spiral_data_fixture(number_of_samples_per_class: int = 150) -> NDArray[numpy.float64]:
+def get_spiral_data_fixture(number_of_samples_per_class: int = 150) -> numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]:
     """A fixture that produces data points that has the shape of a spiral.
 
     Args:
-        number_of_samples_per_class (int, optional): Number of samples per class. Defaults to 150.
+        number_of_samples_per_class (int): Number of samples per class. Defaults to 150.
 
     Returns:
-        NDArray[numpy.float64]: Returns a NumPy array of shape (300, 2) containing the spiral data.
+        numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]: Returns a NumPy array of shape (300, 2) containing the spiral data.
     """
 
     # Fixes the seed for the random number generator to ensure reproducibility (100 random numbers are sampled uniformly as "part of the seed"; I do
@@ -46,10 +45,10 @@ def get_spiral_data_fixture(number_of_samples_per_class: int = 150) -> NDArray[n
 
 
 @pytest.fixture(name='number_of_neighbors', scope='module')
-def get_number_of_neighbors_fixture(spiral_data: NDArray[numpy.float64]) -> int:
+def get_number_of_neighbors_fixture(spiral_data: numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]) -> int:
     """A fixture that choose a suitable number of neighbors for the k-nearest neighbors algorithm.
     Args:
-        spiral_data (NDArray[numpy.float64]): The spiral test data.
+        spiral_data (numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]): The spiral test data.
 
     Returns:
         int: Returns a suitable number of neighbors for the k-nearest neighbors algorithm.
@@ -81,7 +80,9 @@ def get_number_of_clusters_fixture() -> int:
 
 
 class TestSpectralEmbeddingAndSpectralClustering:
-    """Contains unit tests for the ``SpectralEmbedding`` and ``SpectralClustering`` classes."""
+    """Contains unit tests for the :py:class:`~corelay.pipeline.spectral.SpectralEmbedding` and
+    :py:class:`~corelay.pipeline.spectral.SpectralClustering` classes.
+    """
 
     @staticmethod
     def test_spectral_embedding_instantiation() -> None:
@@ -96,22 +97,23 @@ class TestSpectralEmbeddingAndSpectralClustering:
         SpectralClustering()
 
     @staticmethod
-    def test_data_generation(spiral_data: NDArray[numpy.float64]) -> None:
+    def test_data_generation(spiral_data: numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]) -> None:
         """Performs a sanity check to make sure the data looks as expected (from the outside).
 
         Args:
-            spiral_data (NDArray[numpy.float64]): The spiral test data.
+            spiral_data (numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]): The spiral test data.
         """
 
         assert isinstance(spiral_data, numpy.ndarray), f'Expected NumPy arrays, got {type(spiral_data)}.'
         assert spiral_data.shape == (300, 2), f'Expected the spiral test data to be of shape (300, 2), got {spiral_data.shape}.'
 
     @staticmethod
-    def test_spectral_embedding_default_params(spiral_data: NDArray[numpy.float64]) -> None:
-        """Tests whether the ``SpectralEmbedding`` operates on data all the way through, using its default parameters.
+    def test_spectral_embedding_default_params(spiral_data: numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]) -> None:
+        """Tests whether the :py:class:`~corelay.pipeline.spectral.SpectralEmbedding` operates on data all the way through, using its default
+        parameters.
 
         Args:
-            spiral_data (NDArray[numpy.float64]): The spiral test data.
+            spiral_data (numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]): The spiral test data.
         """
 
         pipeline = SpectralEmbedding()
@@ -131,11 +133,12 @@ class TestSpectralEmbeddingAndSpectralClustering:
         )
 
     @staticmethod
-    def test_spectral_clustering_default_params(spiral_data: NDArray[numpy.float64]) -> None:
-        """Tests whether the ``SpectralClustering`` operates on data all the way through, using its default parameters.
+    def test_spectral_clustering_default_params(spiral_data: numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]) -> None:
+        """Tests whether the :py:class:`~corelay.pipeline.spectral.SpectralClustering` operates on data all the way through, using its default
+        parameters.
 
         Args:
-            spiral_data (NDArray[numpy.float64]): The spiral test data.
+            spiral_data (numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]): The spiral test data.
         """
 
         pipeline = SpectralClustering()
@@ -168,7 +171,7 @@ class TestSpectralEmbeddingAndSpectralClustering:
 
     @staticmethod
     def test_spectral_clustering_step_by_step_custom_params(
-        spiral_data: NDArray[numpy.float64],
+        spiral_data: numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]],
         number_of_neighbors: int,
         number_of_eigenvalues: int,
         number_of_clusters: int,
@@ -179,7 +182,7 @@ class TestSpectralEmbeddingAndSpectralClustering:
         pipeline output.
 
         Args:
-            spiral_data (NDArray[numpy.float64]): The spiral test data.
+            spiral_data (numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]): The spiral test data.
             number_of_neighbors (int): The number of neighbors for the k-nearest neighbors algorithm.
             number_of_eigenvalues (int): The number of eigenvalues to compute.
             number_of_clusters (int): The number of clusters for the k-means algorithm.

@@ -1,4 +1,4 @@
-"""A module that contains unit tests for the ``corelay.processor.flow`` module."""
+"""A module that contains unit tests for the :py:mod:`corelay.processor.flow` module."""
 
 import pytest
 
@@ -7,7 +7,7 @@ from corelay.processor.flow import Shaper, Parallel, Sequential
 
 
 class TestShaper:
-    """Contains unit tests for the ``Shaper`` class."""
+    """Contains unit tests for the :py:class:`~corelay.processor.flow.Shaper` class."""
 
     @staticmethod
     def test_extract() -> None:
@@ -46,7 +46,7 @@ class TestShaper:
 
 
 class TestParallel:
-    """Contains unit tests for the ``Parallel`` class."""
+    """Contains unit tests for the :py:class:`~corelay.processor.flow.Parallel` class."""
 
     @staticmethod
     def test_non_iterable() -> None:
@@ -83,12 +83,12 @@ class TestParallel:
 
 
 class TestSequential:
-    """Contains unit tests for the ``Sequential`` class."""
+    """Contains unit tests for the:py:class:`~corelay.processor.flow.Sequential` class."""
 
     @staticmethod
     def test_sequential() -> None:
-        """Tests that the input to the ``Sequential`` is passed sequentially through the processors as argument in the same order that the child
-        processors were specified, when the child processors were specified as a keyword argument.
+        """Tests that the input to the :py:class:`~corelay.processor.flow.Sequential` is passed sequentially through the processors as argument in the
+        same order that the child processors were specified, when the child processors were specified as a keyword argument.
         """
 
         sequential = Sequential(children=[FunctionProcessor(processing_function=lambda x, c=c: c + x) for c in 'bcde'])
@@ -96,8 +96,8 @@ class TestSequential:
 
     @staticmethod
     def test_sequential_positional() -> None:
-        """Tests that the input to the ``Sequential`` is passed sequentially through the processors as argument in the same order that the child
-        processors were specified, when the child processors were specified as a positional argument.
+        """Tests that the input to the :py:class:`~corelay.processor.flow.Sequential` is passed sequentially through the processors as argument in the
+        same order that the child processors were specified, when the child processors were specified as a positional argument.
         """
 
         sequential = Sequential([FunctionProcessor(processing_function=lambda x, c=c: c + x) for c in 'bcde'])

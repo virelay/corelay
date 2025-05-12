@@ -4,23 +4,19 @@
 
 import inspect
 import os
-import re
 import sys
+import typing
 from collections.abc import Iterator, Sequence
 from datetime import datetime
 from subprocess import run, CalledProcessError
 from types import ModuleType
-from typing import Any, Literal
 
+import h5py
 from pybtex.database import Entry
 from pybtex.plugin import register_plugin
 from pybtex.style.formatting.plain import Style as PlainStyle
 from pybtex.style.labels import BaseLabelStyle
 from sphinx.application import Sphinx
-
-
-LanguageDomain = Literal['py', 'c', 'cpp', 'javascript']
-"""Represents the different language domains for which the linkcode extension can generate links to the source in the repository."""
 
 
 class AuthorYearLabelStyle(BaseLabelStyle):
@@ -67,7 +63,7 @@ def get_latest_git_tag() -> str:
         return 'main'
 
 
-def get_object_by_name(name: str, module: ModuleType) -> ModuleType | type[Any] | None:
+def get_object_by_name(name: str, module: ModuleType) -> ModuleType | type[typing.Any] | None:
     """Retrieves the object with the specified name from the specified module. The object can be a module, a class, a method, a function, or a
     variable. If the name is not valid or the object does not exist, then None is returned.
 
@@ -76,15 +72,15 @@ def get_object_by_name(name: str, module: ModuleType) -> ModuleType | type[Any] 
         module (ModuleType): The module from which to retrieve the object.
 
     Returns:
-        ModuleType | type[Any] | None: Returns the object with the specified name from the specified module. If the object does not exist, then
-            None is returned.
+        ModuleType | type[typing.Any] | None: Returns the object with the specified name from the specified module. If the object does not exist, then
+        None is returned.
     """
 
     name_components = name.split('.')
     if not name_components:
         return None
 
-    object_to_retrieve: ModuleType | type[Any] = module
+    object_to_retrieve: ModuleType | type[typing.Any] = module
     for name_component in name_components:
         try:
             object_to_retrieve = getattr(object_to_retrieve, name_component)
@@ -103,7 +99,8 @@ def get_top_level_module(module_name_hierarchy: str) -> ModuleType | None:
         module_name_hierarchy (str): The module name hierarchy from which the top-level module is to be retrieved.
 
     Returns:
-        ModuleType | None: Returns the top-level module from the specified module name. If the module does not exist, then None is returned.
+        ModuleType | None: Returns the top-level module from the specified module name. If the module does not exist, then
+        :py:obj:`None` is returned.
     """
 
     module_hierarchy_names = module_name_hierarchy.split('.')
@@ -118,71 +115,18 @@ def get_top_level_module(module_name_hierarchy: str) -> ModuleType | None:
     return top_module
 
 
-def is_type_alias_for_literal(object_to_check: Any) -> bool:
-    """Checks if the specified object is a type alias for a Literal[...] type.
-
-    Args:
-        object_to_check (Any): The object to check.
-
-    Returns:
-        bool: Returns True if the specified object is a type alias for a Literal[...] type, otherwise False.
-    """
-
-    return type(object_to_check).__name__ == '_LiteralGenericAlias'
-
-
-def get_source_code_location_of_literal_type_alias(name: str, module: ModuleType) -> tuple[str | None, int | None, int | None]:
-    """Retrieves the path to the source code file that contains the type alias for the Literal[...] type, as well as the start and end line numbers of
-    the type alias declaration. If the type alias for the Literal[...] type does not exist, then None is returned for all three values.
-
-    Args:
-        name (str): The name of the type alias for the Literal[...] type.
-        module (ModuleType): The module that contains the type alias for the Literal[...] declaration.
-
-    Returns:
-        tuple[str | None, int | None, int | None]: Returns a tuple containing the path to the source code file that contains the type alias for the
-            Literal[...] type, as well as the start and end line numbers of the type alias declaration. If the type alias for the Literal[...] type
-            does not exist, then None is returned for all three values.
-    """
-
-    # Checks if the module's file path is available, if not, then there is no source file that we can check
-    if module.__file__ is None:
-        return None, None, None
-
-    # Loads the module's source code file into memory
-    with open(module.__file__, mode='r', encoding='utf-8') as module_file:
-        module_file_contents = module_file.read()
-
-    # Checks if the type alias declaration is present in the module's source code file, if not then we cannot generate a URL to the source code
-    match: re.Match[str] | None = re.search(
-        r'(type \s*)?' + name + r'\s* (: \s* TypeAlias)? \s* = \s* Literal \s* \[ \s* (\s* [\'"] [^\'"]* [\'"] ,?)* \s* \]',
-        module_file_contents,
-        re.VERBOSE
-    )
-    if not match:
-        return None, None, None
-
-    # Gets the start and the end line number of the type alias declaration
-    start_index, end_index = match.span()
-    start_line_number = module_file_contents.count('\n', 0, start_index) + 1
-    end_line_number = module_file_contents.count('\n', 0, end_index) + 1
-
-    # Returns the path to the source code file that contains the type alias declaration, and the start and end line numbers of the declaration
-    return module.__file__, start_line_number, end_line_number
-
-
-def get_source_code_location_of_object(object_to_get_location_for: ModuleType | type[Any]) -> tuple[str | None, int | None, int | None]:
+def get_source_code_location_of_object(object_to_get_location_for: ModuleType | type[typing.Any]) -> tuple[str | None, int | None, int | None]:
     """Retrieves the path to the source code file that contains the specified object, as well as the start and end line numbers of the object's
     definition. The object can be a module, a class, a method, a or function. If the source code file path is not available, or the object's
-    definition cannot be found, then None is returned for all three values.
+    definition cannot be found, then :py:obj:`None` is returned for all three values.
 
     Args:
-        object_to_get_location_for (ModuleType | type[Any]): The object for which the source code location is to be retrieved.
+        object_to_get_location_for (ModuleType | type[typing.Any]): The object for which the source code location is to be retrieved.
 
     Returns:
-        tuple[str | None, int | None, int | None]: Returns a tuple containing the path to the source code file that contains the specified object,
-            as well as the start and end line numbers of the object's definition. If the source code file path is not available, or the object's
-            definition cannot be found, then None is returned for all three values.
+        tuple[str | None, int | None, int | None]: Returns a :py:class:`tuple` containing the path to the source code file that contains the specified
+        object, as well as the start and end line numbers of the object's definition. If the source code file path is not available, or the object's
+        definition cannot be found, then :py:obj:`None` is returned for all three values.
     """
 
     # Gets the absolute path to the source code file that contains the object; if the object is not a module, class, method, function, traceback,
@@ -210,27 +154,28 @@ def get_source_code_location_of_object(object_to_get_location_for: ModuleType | 
         return None, None, None
 
 
-def linkcode_resolve(domain: LanguageDomain, info: dict[str, str]) -> str | None:
+def linkcode_resolve(domain: str, info: dict[str, str]) -> str | None:
     """Determines the URL to the source code corresponding to the object in the specified domain with the provided information. This function was
     adapted from https://gist.github.com/nlgranger/55ff2e7ff10c280731348a16d569cb73.
 
     Args:
-        domain (LanguageDomain): Specified the language domain the object is in. Can be one of "py", "c", "cpp", or "javascript".
-        info (dict[str, str]): A dictionary, which contains further information about the object for which the URL is to be retrieved. Depending on
-            the domain, the following keys are guaranteed to be present:
-             - domain is "py":
-               - "module", which contains the name of the module.
-               - "fullname", which contains the full name of the object.
-             - domain is "c":
-               - "names", which contains a list of names for the object.
-             - domain is "cpp":
-               - "names", which contains a list of names for the object.
-             - domain is "javascript":
-               - "object", which is the name of the object.
-               - "fullname", which is the name of the item.
+        domain (str): Specified the language domain the object is in. Can be one of "py", "c", "cpp", or "javascript".
+        info (dict[str, str]): A :py:class:`dict`, which contains further information about the object for which the URL is to be retrieved. Depending
+            on the domain, the following keys are guaranteed to be present:
+
+            * domain is "py":
+              * "module", which contains the name of the module.
+              * "fullname", which contains the full name of the object.
+            * domain is "c":
+              * "names", which contains a list of names for the object.
+            * domain is "cpp":
+              * "names", which contains a list of names for the object.
+            * domain is "javascript":
+              * "object", which is the name of the object.
+              * "fullname", which is the name of the item.
 
     Returns:
-        str | None: Returns the URL of the source code corresponding to the specified object. If no URL is available, then None is returned.
+        str | None: Returns the URL of the source code corresponding to the specified object. If no URL is available, then :py:obj:`None` is returned.
     """
 
     # We are only interested in Python source code URLs
@@ -243,19 +188,12 @@ def linkcode_resolve(domain: LanguageDomain, info: dict[str, str]) -> str | None
         return None
 
     # Gets the object for which the source code URL is to be retrieved
-    object_to_get_url_for: ModuleType | type[Any] | None = get_object_by_name(info['fullname'], module)
+    object_to_get_url_for: ModuleType | type[typing.Any] | None = get_object_by_name(info['fullname'], module)
     if object_to_get_url_for is None:
         return None
 
-    # Unfortunately, type aliases for Literal[...]'s (such as LanguageDomain) are not supported by the getsourcefile function, because they are not
-    # real types, but objects of the typing._LiteralGenericAlias class, and getsourcefile only supports modules, classes, methods, and functions;
-    # therefore, the only option we have is that we find the declaration of the type alias in the file of the module it is located in and then use
-    # the line number of the type alias declaration to generate the URL to the source code file on GitHub; otherwise, we can use the getsourcefile and
-    # getsourcelines functions to generate the URL to the source code file on GitHub
-    if is_type_alias_for_literal(object_to_get_url_for):
-        object_file_path, start_line_number, end_line_number = get_source_code_location_of_literal_type_alias(info['fullname'], module)
-    else:
-        object_file_path, start_line_number, end_line_number = get_source_code_location_of_object(object_to_get_url_for)
+    # Gets the position of the object in the source code file
+    object_file_path, start_line_number, end_line_number = get_source_code_location_of_object(object_to_get_url_for)
 
     # If the source code file path, the start line number, or the end line number is not available, then we cannot generate a URL to the source code
     if object_file_path is None or start_line_number is None or end_line_number is None:
@@ -293,6 +231,18 @@ def setup(app: Sphinx) -> None:
     )
 
 
+# Enables the reporting of all warnings as errors, which is useful to ensure that there are no hidden issues in the documentation, like missing
+# reference targets; some of the warnings cannot be avoided, so they are silenced to avoid that the build fails (when warnings are issued, but the
+# build is successful, Sphinx will still return a non-zero exit code, which would cause the CI/CD pipeline to fail)
+nitpicky = True
+nitpick_ignore = [
+    ('py:class', 'FunctionType'),
+    ('py:class', 'LambdaType'),
+    ('py:class', 'metrohash.MetroHash128'),
+    ('py:class', 'types.FunctionType'),
+    ('py:class', 'types.LambdaType')
+]
+
 # Sets the basic project information
 project = 'CoRelAy'
 project_copyright = f'{datetime.now().year}, CoRelAy'
@@ -302,6 +252,7 @@ author = 'CoRelAy Contributors'
 templates_path = ['_templates']
 html_static_path = ['_static']
 html_favicon = '_static/favicon.svg'
+html_css_files = ['custom.css']
 
 # Specifies a list of patterns, relative to source directory, that match files and directories to ignore when looking for source files, in this case,
 # nothing needs to be excluded
@@ -311,30 +262,58 @@ exclude_patterns: Sequence[str] = []
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
+    'sphinx.ext.intersphinx',
     'sphinx.ext.extlinks',
     'sphinx.ext.linkcode',
     'sphinx.ext.mathjax',
     'sphinx.ext.napoleon',
     'sphinxcontrib.bibtex',
-    'sphinxcontrib.datatemplates',
     'sphinx_copybutton',
     'sphinx_rtd_theme'
 ]
+
+# H5PY keeps the actual classes in a separate private module called _hl and re-exports it in the main module, so Sphinx AutoDoc will always raise a
+# warning that the references to the classes are not found; this is a workaround, which allows Sphinx AutoDoc to find the references correctly
+h5py.File.__module__ = 'h5py'
+h5py.Dataset.__module__ = 'h5py'
+h5py.Group.__module__ = 'h5py'
+
+# Configures the sphinx.ext.autodoc plugin, which is used to generate documentation from docstrings; this specifies that (1) classes and their
+# constructor signature are separated, i.e., the class signature only specifies the name of the class and the constructor is presented as a separate
+# method, (2) the members of a module or a class are ordered in the same way they are ordered in the source code, (3) the type hints are displayed
+# both in the signature of a function/method, as well as in the description, and (4) the default values of function/method parameters are preserved as
+# they are in the source code, instead of evaluating them to their actual values and then displaying the values in the documentation
+autodoc_class_signature = 'separated'
+autodoc_member_order = 'bysource'
+autodoc_typehints = 'both'
+autodoc_preserve_defaults = True
 
 # Registers the pybtex.style.formatting plugin, which is used to format citations of bibliography entries to the format
 # "[<first-author> et al., <year>]"
 register_plugin('pybtex.style.formatting', 'author_year_style', AuthorYearStyle)
 
-# Configures the Sphinx plugin, which adds a copy button to code blocks
+# Configures the sphinx_copybutton plugin, which adds a copy button to code blocks
 copybutton_prompt_text = r'>>> |\.\.\. |\$ |In \[\d*\]: | {2,5}\.\.\.: | {5,8}: '
 copybutton_prompt_is_regexp = True
 copybutton_line_continuation_character = '\\'
 copybutton_here_doc_delimiter = 'EOT'
 
-# Configures the theme of the HTML pages, which is set to the Read the Docs theme that was installed as a plugin
-html_theme = 'sphinx_rtd_theme'
+# Configures the sphinx.ext.intersphinx plugin, which allows the documentation to link to the Sphinx documentation of other projects; Sphinx defaults
+# to automatically resolve unresolved labels using the Intersphinx mappings; this behavior has unintended side-effects, namely that documentations
+# local references can suddenly resolve to an external location; therefore, the intersphinx_disabled_reftypes config value is set to ["*"], which
+# disables the automatic resolution of unresolved labels using the Intersphinx mappings; this is recommended by the Read the Docs documentation
+intersphinx_mapping = {
+    'python': ('https://docs.python.org/3', None),
+    'numpy': ('https://numpy.org/doc/stable', None),
+    'h5py': ('https://docs.h5py.org/en/stable', None),
+    'scipy': ('https://docs.scipy.org/doc/scipy', None),
+    'scikit-learn': ('https://scikit-learn.org/stable', None),
+    'hdbscan': ('https://hdbscan.readthedocs.io/en/latest', None),
+    'pytorch': ('https://docs.pytorch.org/docs/stable', None)
+}
 
-# Configures the Sphinx plugin, which allows us to insert external links to the GitHub repository using ":repo:`file-path`" instead of the full URL
+# Configures the sphinx.ext.extlinks plugin, which allows us to insert external links to the GitHub repository using ":repo:`file-path`" instead of
+# the full URL
 LATEST_GIT_TAG = get_latest_git_tag()
 extlinks = {
     'repo': (
@@ -343,7 +322,10 @@ extlinks = {
     )
 }
 
-# Configures the Sphinx plugin, which allows BibTeX citations to be inserted into documentation
+# Configures the sphinxcontrib.bibtex plugin, which allows BibTeX citations to be inserted into documentation
 bibtex_bibfiles = ['bibliography.bib']
 bibtex_default_style = 'author_year_style'
 bibtex_reference_style = 'author_year'
+
+# Configures the theme of the HTML pages, which is set to the Read the Docs theme that was installed via the sphinx_rtd_theme plugin
+html_theme = 'sphinx_rtd_theme'

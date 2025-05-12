@@ -1,23 +1,23 @@
-"""A module that contains unit tests for the ``corelay.io.storage`` module."""
+"""A module that contains unit tests for the :py:mod:`corelay.io.storage` module."""
 
+import typing
 from io import BytesIO
 from pathlib import Path
 
 import h5py
 import numpy
 import pytest
-from numpy.typing import NDArray
 
 from corelay import io
 from corelay.io.storage import DataStorageBase, HashedHDF5
 
 
 @pytest.fixture(name='data', scope='module')
-def get_data_fixture() -> NDArray[numpy.float64]:
+def get_data_fixture() -> numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]:
     """A fixture that produces random test data with shape (10, 2).
 
     Returns:
-        NDArray[numpy.float64]: Returns random test data with shape (10, 2).
+        numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]: Returns random test data with shape (10, 2).
     """
 
     return numpy.random.rand(10, 2)
@@ -25,21 +25,21 @@ def get_data_fixture() -> NDArray[numpy.float64]:
 
 @pytest.fixture(name='parameter_values', scope='module')
 def get_parameter_values_fixture() -> dict[str, int | str]:
-    """A fixture that produces a parameter values dictionary with param1=1 and param2='string'.
+    """A fixture that produces a parameter values :py:class:`dict` with `param1=1` and `param2='string'`.
 
     Returns:
-        dict[str, int | str]: Returns a dictionary with param1=1 and param2='string'.
+        dict[str, int | str]: Returns a :py:class:`dict` with `param1=1` and `param2='string'`.
     """
 
     return {'param1': 1, 'param2': 'string'}
 
 
 class TestHashedHDF5:
-    """Contains unit tests for the ``HashedHDF5`` class."""
+    """Contains unit tests for the :py:class:`~corelay.io.storage.HashedHDF5` class."""
 
     @staticmethod
     def test_write_array() -> None:
-        """Tests that writing a NumPy array raises no exceptions"""
+        """Tests that writing a :py:class:`~numpy.ndarray` raises no exceptions"""
 
         with BytesIO() as buffer, h5py.File(buffer, 'w') as hdf5_file:
             group = hdf5_file.require_group('hashed')
@@ -49,7 +49,7 @@ class TestHashedHDF5:
 
     @staticmethod
     def test_write_tuple() -> None:
-        """Tests that writing a tuple of NumPy arrays raises no exceptions"""
+        """Tests that writing a tuple of :py:class:`~numpy.ndarray` raises no exceptions"""
 
         with BytesIO() as buffer, h5py.File(buffer, 'w') as hdf5_file:
             group = hdf5_file.require_group('hashed')
@@ -59,7 +59,7 @@ class TestHashedHDF5:
 
     @staticmethod
     def test_write_unsupported() -> None:
-        """Tests that writing an unsupported type raises a ``TypeError``"""
+        """Tests that writing an unsupported type raises a :py:class:`TypeError`"""
 
         with BytesIO() as buffer, h5py.File(buffer, 'w') as hdf5_file:
             group = hdf5_file.require_group('hashed')
@@ -95,7 +95,9 @@ class TestHashedHDF5:
 
 @pytest.mark.parametrize('data_storage_type', [io.HDF5Storage, io.PickleStorage])
 def test_data_storage_at_functionality(data_storage_type: type[io.HDF5Storage | io.PickleStorage], tmp_path: Path) -> None:
-    """Tests the reading and writing of data from ``HDF5storage`` and ``PickleStorage`` data storage containers using the `at(data_key)` method.
+    """Tests the reading and writing of data from :py:class:`~corelay.io.storage.HDF5Storage` and :py:class:`~corelay.io.storage.PickleStorage` data
+    storage containers using the :py:meth:`HDF5Storage.at <corelay.io.storage.HDF5Storage.at>` or
+    :py:meth:`PickleStorage.at <corelay.io.storage.PickleStorage.at>` methods.
 
     Args:
         data_storage_type (type[io.HDF5Storage | io.PickleStorage]): The storage class to be tested.
@@ -125,16 +127,17 @@ def test_data_storage_at_functionality(data_storage_type: type[io.HDF5Storage | 
 def test_data_storage(
     data_storage_type: type[io.HDF5Storage | io.PickleStorage],
     tmp_path: Path,
-    data: NDArray[numpy.float64],
+    data: numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]],
     parameter_values: dict[str, int | str]
 ) -> None:
-    """Tests the reading and writing of data to and from ``HDF5storage`` and ``PickleStorage`` data storage containers.
+    """Tests the reading and writing of data to and from :py:class:`~corelay.io.storage.HDF5Storage` and :py:class:`~corelay.io.storage.PickleStorage`
+    data storage containers.
 
     Args:
         data_storage_type (type[io.HDF5Storage | io.PickleStorage]): The storage class to be tested.
         tmp_path (Path): A temporary path for testing.
-        data (NDArray[numpy.float64]): Random test data with shape (10, 2).
-        parameter_values (dict[str, int | str]): A dictionary with param1=1 and param2='string'.
+        data (numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]): Random test data with shape (10, 2).
+        parameter_values (dict[str, int | str]): A :py:class:`dict` with `param1=1` and `param2='string'`.
     """
 
     # Tests writing data
@@ -175,11 +178,12 @@ def test_data_storage(
         numpy.testing.assert_equal(returned_data, data)
 
 
-def test_no_storage(data: NDArray[numpy.float64]) -> None:
-    """Tests the reading and writing of data to and from a ``NoStorage`` data storage container that raises exceptions when reading and writing.
+def test_no_storage(data: numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]) -> None:
+    """Tests the reading and writing of data to and from a :py:class:`~corelay.io.NoStorage` data storage container that raises exceptions when
+    reading and writing.
 
     Args:
-        data (NDArray[numpy.float64]): Random test data with shape (10, 2).
+        data (numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]): Random test data with shape (10, 2).
     """
 
     data_storage = io.NoStorage()
