@@ -1,18 +1,20 @@
-"""A module that contains classes to read and write different file formats like HDF5."""
+"""A module that contains classes to read and write intermediate results of operations performed by instances of
+:class:`~corelay.processor.base.Processor` to and from different file formats like HDF5 and Python pickles.
+"""
 
+import collections
+import collections.abc
 import copy
 import json
+import pathlib
 import pickle
+import types
+import typing
 from abc import ABC, abstractmethod
-from collections import OrderedDict
-from collections.abc import KeysView
-from os import PathLike
-from types import TracebackType
-from typing import Annotated, Any, IO, Literal, NamedTuple, Protocol, runtime_checkable
+from typing import Annotated, IO, NamedTuple, Protocol, runtime_checkable
 
 import h5py
 import numpy
-from numpy.typing import NDArray
 
 from corelay.base import Param
 from corelay.io.hashing import ext_hash
@@ -21,28 +23,30 @@ from corelay.plugboard import Plugboard
 
 @runtime_checkable
 class Storable(Protocol):
-    """An abstract class that defines the interface for storable objects, i.e., objects that have a ``read`` and ``write`` method."""
+    """An abstract class that defines the interface for storable objects, i.e., objects that have a :py:meth:`~Storable.read` and
+    :py:meth:`~Storable.write` method.
+    """
 
-    def read(self, data_in: Any, meta: Any) -> Any:
-        """Retrieves the output data that was produced by the specified input data if it is available. The meta data can contain additional
+    def read(self, data_in: typing.Any, meta: typing.Any) -> typing.Any:
+        """Retrieves the output data that was produced by the specified input data if it is available. The metadata can contain additional
         identifying information about the data.
 
         Args:
-            data_in (Any): The input data to retrieve the output data for.
-            meta (Any): The meta data to retrieve the output data for, which can contain additional identifying information about the data.
+            data_in (typing.Any): The input data to retrieve the output data for.
+            meta (typing.Any): The metadata to retrieve the output data for, which can contain additional identifying information about the data.
 
         Returns:
-            Any: The output data that was produced by the specified input data if it is available.
+            typing.Any: Returns the output data that was produced by the specified input data if it is available.
         """
 
-    def write(self, data_out: Any, data_in: Any, meta: Any) -> None:
-        """Writes the specified output data to the storage container. The meta data that can be used to store additional identifying information about
+    def write(self, data_out: typing.Any, data_in: typing.Any, meta: typing.Any) -> None:
+        """Writes the specified output data to the storage container. The metadata that can be used to store additional identifying information about
         the data.
 
         Args:
-            data_out (Any): The output data to write.
-            data_in (Any): The input data that produced the output data.
-            meta (Any): The meta data that can be used to store additional identifying information about the data.
+            data_out (typing.Any): The output data to write.
+            data_in (typing.Any): The input data that produced the output data.
+            meta (typing.Any): The metadata that can be used to store additional identifying information about the data.
         """
 
 
@@ -50,10 +54,10 @@ class NoDataSource(Exception):
     """An exception, which is raised when no data source available."""
 
     def __init__(self, message: str = 'No Data Source available.') -> None:
-        """Initializes a new ``NoDataSource`` instance.
+        """Initializes a new :py:class:`NoDataSource` instance.
 
         Args:
-            message (str): The error message to be displayed. Defaults to 'No Data Source available.'.
+            message (str): The error message to be displayed. Defaults to "No Data Source available."
         """
 
         super().__init__(message)
@@ -63,33 +67,34 @@ class NoDataTarget(Exception):
     """An exception, which is raised when no target source available."""
 
     def __init__(self) -> None:
-        """Initializes a new ``NoDataTarget`` instance."""
+        """Initializes a new :py:class:`NoDataTarget` instance."""
 
         super().__init__('No Data Target available.')
 
 
-RecursiveNDArrayTuple = tuple['NDArray[Any] | RecursiveNDArrayTuple', ...]
-"""A recursive tuple of NumPy arrays, i.e., a tuple that contains NumPy arrays or other tuples of NumPy arrays, which themselves can contain other
-tuples of NumPy arrays, and so on. This is used to represent a nested structure of NumPy arrays.
+RecursiveNumPyArrayTuple = tuple['numpy.ndarray[typing.Any, typing.Any] | RecursiveNumPyArrayTuple', ...]
+"""A recursive tuple of :py:class:`~numpy.ndarray`, i.e., a tuple that contains :py:class:`~numpy.ndarray` or other tuples of
+:py:class:`~numpy.ndarray`, which themselves can contain other tuples of :py:class:`~numpy.ndarray`, and so on. This is used to represent a nested
+structure of :py:class:`~numpy.ndarray`.
 """
 
 
 RecursiveHashTuple = tuple['str | RecursiveHashTuple', ...]
 """A recursive tuple of strings, i.e., a tuple that contains strings or other tuples of strings, which themselves can contain other tuples of strings,
-and so on. This is used to represent a nested structure of hashes for the data that is stored in a ``RecursiveNDArrayTuple``.
+and so on. This is used to represent a nested structure of hashes for the data that is stored in a :py:class:`RecursiveNumPyArrayTuple`.
 """
 
 
 class HashedHDF5:
-    """A storage container, which can be used to store ``Processor`` data in HDF5 files. A hash of the input data that produced the stored data is
-    stored alongside the data, so that the data can later be retrieved based on the input data.
+    """A storage container, which can be used to store :py:class:`~corelay.processor.base.Processor` data in HDF5 files. A hash of the input data that
+    produced the stored data is stored alongside the data, so that the data can later be retrieved based on the input data.
     """
 
     base: h5py.Group
     """The HDF5 group to store the data in."""
 
     def __init__(self, h5group: h5py.Group) -> None:
-        """Initializes a new ``HashedHDF5`` instance.
+        """Initializes a new :py:class:`HashedHDF5` instance.
 
         Args:
             h5group (h5py.Group): The HDF5 group to store the data in.
@@ -97,19 +102,19 @@ class HashedHDF5:
 
         self.base = h5group
 
-    def read(self, data_in: Any, meta: Any) -> Any:
+    def read(self, data_in: typing.Any, meta: typing.Any) -> typing.Any:
         """Retrieves the output data that was produced by the specified input data if it is available. The hash is computed from the input data and
-        the meta data. The meta data can contain additional identifying information about the data.
+        the metadata. The metadata can contain additional identifying information about the data.
 
         Args:
-            data_in (Any): The input data to retrieve the output data for.
-            meta (Any): The meta data to retrieve the output data for, which can contain additional identifying information about the data.
+            data_in (typing.Any): The input data to retrieve the output data for.
+            meta (typing.Any): The metadata to retrieve the output data for, which can contain additional identifying information about the data.
 
         Raises:
             NoDataSource: The data source is not available.
 
         Returns:
-            Any: The output data that was produced by the specified input data if it is available.
+            typing.Any: Returns the output data that was produced by the specified input data if it is available.
         """
 
         hash_value = ext_hash((data_in, meta))
@@ -120,14 +125,14 @@ class HashedHDF5:
 
         return HashedHDF5._read_hdf5_content_recursively(group['data'])
 
-    def write(self, data_out: Any, data_in: Any, meta: Any) -> None:
-        """Writes the specified output data to a hashed HDF5 group. The hash is computed from the input data and the meta data. The meta data that can
+    def write(self, data_out: typing.Any, data_in: typing.Any, meta: typing.Any) -> None:
+        """Writes the specified output data to a hashed HDF5 group. The hash is computed from the input data and the metadata. The metadata that can
         be used to store additional identifying information about the data.
 
         Args:
-            data_out (Any): The output data to write.
-            data_in (Any): The input data that produced the output data. Is used to compute the hash.
-            meta (Any): The meta data that can be used to store additional identifying information about the data. Is used to compute the hash.
+            data_out (typing.Any): The output data to write.
+            data_in (typing.Any): The input data that produced the output data. Is used to compute the hash.
+            meta (typing.Any): The metadata that can be used to store additional identifying information about the data. Is used to compute the hash.
 
         Raises:
             TypeError: The data type of the input data is not supported.
@@ -149,7 +154,7 @@ class HashedHDF5:
         group['output'] = json.dumps(HashedHDF5._hash_data_recursively(data_out))
 
     @staticmethod
-    def _read_hdf5_content_recursively(base: h5py.Group | h5py.Dataset) -> NDArray[Any] | RecursiveNDArrayTuple:
+    def _read_hdf5_content_recursively(base: h5py.Group | h5py.Dataset) -> numpy.ndarray[typing.Any, typing.Any] | RecursiveNumPyArrayTuple:
         """Recursively goes through the hierarchy of HDF5 groups and converts the HDF5 datasets (which are the leaf nodes in this hierarchy) into
         a hierarchy of nested tuples. The keys of the groups are sorted to ensure that the order of the data is consistent.
 
@@ -160,32 +165,34 @@ class HashedHDF5:
             TypeError: The data type of the input data is not supported.
 
         Returns:
-            NDArray[Any] | RecursiveNDArrayTuple: Returns a tuple of NumPy arrays or other tuples of NumPy arrays, which themselves can be nested.
-                Each tuple represents an HDF5 group. Nested tuples appear in the alphabetical order of the keys of the corresponding HDF5 groups.
-                The NumPy arrays contain the data that was read from the HDF5 datasets contained as leaf nodes in the HDF5 groups. If the
-                specified ``base`` is a dataset, the data is directly returned as a NumPy array.
+            numpy.ndarray[typing.Any, typing.Any] | RecursiveNumPyArrayTuple: Returns a tuple of :py:class:`~numpy.ndarray` or other tuples of
+            :py:class:`~numpy.ndarray`, which themselves can be nested. Each tuple represents an HDF5 group. Nested tuples appear in the alphabetical
+            order of the keys of the corresponding HDF5 groups. The :py:class:`~numpy.ndarray` instances contain the data that was read from the HDF5
+            datasets contained as leaf nodes in the HDF5 groups. If the specified ``base`` is a dataset, the data is directly returned as a
+            :py:class:`~numpy.ndarray`.
         """
 
         if isinstance(base, h5py.Group):
             return tuple(HashedHDF5._read_hdf5_content_recursively(base[key]) for key in sorted(base))
         if isinstance(base, h5py.Dataset):
-            dataset_data: NDArray[Any] = base[()]
+            dataset_data: numpy.ndarray[typing.Any, typing.Any] = base[()]
             return dataset_data
         raise TypeError('Unsupported output type!')
 
     @staticmethod
-    def _write_hdf5_recursively(data: RecursiveNDArrayTuple | NDArray[Any], group: h5py.Group, key: str) -> None:
-        """Recursively writes the specified data to an HDF5 group from a tuple hierarchy of NumPy arrays. The keys of the group are generated from
-        the indices of the content in the tuples. The NumPy arrays are stored as HDF5 datasets.
+    def _write_hdf5_recursively(data: RecursiveNumPyArrayTuple | numpy.ndarray[typing.Any, typing.Any], group: h5py.Group, key: str) -> None:
+        """Recursively writes the specified data to an HDF5 group from a tuple hierarchy of :py:class:`~numpy.ndarray`. The keys of the group are
+        generated from the indices of the content in the tuples. The :py:class:`~numpy.ndarray` instances are stored as HDF5 datasets.
 
         Args:
-            data (RecursiveNDArrayTuple | NDArray[Any]): The data to write to the HDF5 group, which can either be a tuple containing NumPy arrays or
-                other tuples containing NumPy arrays or tuples of NumPy arrays, or a NumPy array.
+            data (RecursiveNumPyArrayTuple | numpy.ndarray[typing.Any, typing.Any]): The data to write to the HDF5 group, which can either be a tuple
+                containing instances of :py:class:`~numpy.ndarray` or other tuples containing instances of :py:class:`~numpy.ndarray` or tuples of
+                instances of :py:class:`~numpy.ndarray`, or a :py:class:`~numpy.ndarray`.
             group (h5py.Group): The HDF5 group to write the data to.
             key (str): The key of the HDF5 group to write the data to. If the data is a tuple, the key is used to create a new group in the HDF5
                 parent ``group``. The children of the tuple will then be written recursively to the newly created group and their key will be
-                generated using the index of the child inside of the tuple. If the data is a NumPy array, the key is used to create a new dataset
-                in the HDF5 parent ``group``.
+                generated using the index of the child inside of the tuple. If the data is a :py:class:`~numpy.ndarray`, the key is used to create a
+                new dataset in the HDF5 parent ``group``.
 
         Raises:
             TypeError: The data type of the input data is not supported.
@@ -204,17 +211,17 @@ class HashedHDF5:
             )
 
     @staticmethod
-    def _hash_data_recursively(data: tuple[Any, ...] | Any) -> str | RecursiveHashTuple:
+    def _hash_data_recursively(data: tuple[typing.Any, ...] | typing.Any) -> str | RecursiveHashTuple:
         """Hashes the specified data recursively. If the data is a tuple, then the elements of the tuple are hashed recursively and the resulting
         hashes are returned as a tuple. For all other data types, the hash is computed directly and returned.
 
         Args:
-            data (tuple[Any, ...] | Any): The data to hash. This can either be a tuple containing multiple elements, which themselves can be
-                tuples containing the data in a hierarchy, or it can be a single element.
+            data (tuple[typing.Any, ...] | typing.Any): The data to hash. This can either be a tuple containing multiple elements, which themselves
+                can be tuples containing the data in a hierarchy, or it can be a single element.
 
         Returns:
-            str | RecursiveHashTuple: The hash of the data. If the data is a tuple, then the hashes of the elements are returned as a tuple. For
-                all other data types, the hash is computed directly and returned as a string.
+            str | RecursiveHashTuple: Returns the hash of the data. If the data is a tuple, then the hashes of the elements are returned as a tuple.
+            For all other data types, the hash is computed directly and returned as a :py:class:`str`.
         """
 
         if isinstance(data, tuple):
@@ -225,45 +232,48 @@ class HashedHDF5:
 class DataStorageBase(ABC, Plugboard):
     """The abstract base class for key-value stores."""
 
-    io: Any
-    """The storage object to read and write data to. Defaults to `None`."""
+    io: typing.Any
+    """The storage object to read and write data to. Defaults to :py:obj:`None`."""
 
-    def __init__(self, **kwargs: Any) -> None:
-        """Initializes a new ``DataStorageBase`` instance.
+    def __init__(self, **kwargs: typing.Any) -> None:
+        """Initializes a new :py:class:`DataStorageBase` instance.
 
         Args:
-            **kwargs (Any): Keyword arguments that are passed to the constructor of the class one step up in the class hierarchy, i.e., ``Plugboard``.
+            **kwargs (typing.Any): Keyword arguments that are passed to the constructor of the class one step up in the class hierarchy, i.e.,
+                :py:class:`~corelay.plugboard.Plugboard`.
         """
 
         super().__init__(**kwargs)
 
-        self.io: Any = None
+        self.io: typing.Any = None
 
     @abstractmethod
-    def read(self, data_in: Any = None, meta: Any = None) -> Any:
-        """Reads the output data that was produced by the specified input data, if it is available. The meta data can contain additional identifying
+    def read(self, data_in: typing.Any = None, meta: typing.Any = None) -> typing.Any:
+        """Reads the output data that was produced by the specified input data, if it is available. The metadata can contain additional identifying
         information about the data.
 
         Args:
-            data_in (Any, optional): Input data that produces the data that is to be read. Defaults to `None`.
-            meta (Any, optional): Meta data that contains additional identifying information about the data that is to be read. Defaults to `None`.
+            data_in (typing.Any): Input data that produces the data that is to be read. Defaults to :py:obj:`None`.
+            meta (typing.Any): Meta data that contains additional identifying information about the data that is to be read. Defaults to
+                :py:obj:`None`.
 
         Raises:
             NoDataSource: The data source is not available.
 
         Returns:
-            Any: Returns the data that was produced by the specified input data if it is available.
+            typing.Any: Returns the data that was produced by the specified input data if it is available.
         """
 
     @abstractmethod
-    def write(self, data_out: Any, data_in: Any = None, meta: Any = None) -> None:
-        """Writes the specified output data to the storage. The hash is computed from the input data and the meta data. The meta data can be used to
+    def write(self, data_out: typing.Any, data_in: typing.Any = None, meta: typing.Any = None) -> None:
+        """Writes the specified output data to the storage. The hash is computed from the input data and the metadata. The metadata can be used to
         store additional identifying information about the data.
 
         Args:
-            data_out (Any): The output data to write.
-            data_in (Any, optional): The input data that produced the output data. Defaults to `None`.
-            meta (Any, optional): The meta data that can be used to store additional identifying information about the data. Defaults to `None`.
+            data_out (typing.Any): The output data to write.
+            data_in (typing.Any): The input data that produced the output data. Defaults to :py:obj:`None`.
+            meta (typing.Any): The metadata that can be used to store additional identifying information about the data. Defaults to
+                :py:obj:`None`.
         """
 
     @abstractmethod
@@ -271,15 +281,15 @@ class DataStorageBase(ABC, Plugboard):
         """Checks if the data if data exists.
 
         Returns:
-            bool: Returns `True` if the data exists and `False` otherwise.
+            bool: Returns :py:obj:`True` if the data exists and :py:obj:`False` otherwise.
         """
 
     @abstractmethod
-    def keys(self) -> KeysView[str]:
+    def keys(self) -> collections.abc.KeysView[str]:
         """Retrieves the keys of the data stored in the storage container.
 
         Returns:
-            KeysView[str]: Returns a list of keys of the io file object.
+            collections.abc.KeysView[str]: Returns a list of keys of the IO file object.
         """
 
     def __enter__(self) -> 'DataStorageBase':
@@ -288,23 +298,23 @@ class DataStorageBase(ABC, Plugboard):
         and resources are released when the context manager exits.
 
         Returns:
-            DataStorageBase: Returns this instance of the ``DataStorageBase`` class.
+            DataStorageBase: Returns this instance of the :py:class:`DataStorageBase` class.
         """
 
         return self
 
-    def __exit__(self, exception_type: type[Exception] | None, exception: Exception, traceback: TracebackType | None) -> None:
+    def __exit__(self, exception_type: type[Exception] | None, exception: Exception, traceback: types.TracebackType | None) -> None:
         """Closes the IO object. This is used to implement the context manager protocol, which allows the use of the `with` statement to automatically
         close the IO object when it is no longer needed. This is useful for ensuring that the IO object is properly closed and resources are released
         when the context manager exits.
 
         Args:
             exception_type (type[Exception] | None): When the context manager exits due to an exception, this is the type of the exception that was
-                raised, otherwise it is ``None``.
+                raised, otherwise it is :py:obj:`None`.
             exception (Exception): When the context manager exits due to an exception, this is the exception that was raised, otherwise it is
-                ``None``.
-            traceback (TracebackType | None): When the context manager exits due to an exception, this is the traceback of the exception that was
-                raised, otherwise it is ``None``.
+                :py:obj:`None`.
+            traceback (types.TracebackType | None): When the context manager exits due to an exception, this is the traceback of the exception that
+                was raised, otherwise it is :py:obj:`None`.
         """
 
         if self.io is not None:
@@ -317,10 +327,10 @@ class DataStorageBase(ABC, Plugboard):
             key (str): The key to check for existence.
 
         Raises:
-            TypeError: The key is not a string.
+            TypeError: The key is not a :py:class:`str`.
 
         Returns:
-            bool: Returns 'True' if the key exists in the storage and `False` otherwise.
+            bool: Returns 'True' if the key exists in the storage and :py:obj:`False` otherwise.
         """
 
         if not isinstance(key, str):
@@ -328,17 +338,17 @@ class DataStorageBase(ABC, Plugboard):
 
         return self.at(data_key=key).exists()
 
-    def __getitem__(self, key: str) -> Any:
-        """Get the data for a given key.
+    def __getitem__(self, key: str) -> typing.Any:
+        """Gets the data for a given key.
 
         Args:
             key (str): The key to get the data for.
 
         Raises:
-            TypeError: The key is not a string.
+            TypeError: The key is not a :py:class:`str`.
 
         Returns:
-            Any: Returns the data for the given key.
+            typing.Any: Returns the data for the given key.
         """
 
         if not isinstance(key, str):
@@ -346,15 +356,15 @@ class DataStorageBase(ABC, Plugboard):
 
         return self.at(data_key=key).read()
 
-    def __setitem__(self, key: str, value: Any) -> None:
-        """Set the data for a given key.
+    def __setitem__(self, key: str, value: typing.Any) -> None:
+        """Sets the data for a given key.
 
         Args:
             key (str): The key to set the data for.
-            value (Any): The data to set for the given key.
+            value (typing.Any): The data to set for the given key.
 
         Raises:
-            TypeError: The key is not a string.
+            TypeError: The key is not a :py:class:`str`.
         """
 
         if not isinstance(key, str):
@@ -363,33 +373,33 @@ class DataStorageBase(ABC, Plugboard):
         return self.at(data_key=key).write(value)
 
     def __bool__(self) -> bool:
-        """Converts the data storage object to a boolean value. This is used to determine if the data storage object is actually backed by a store.
+        """Converts the data storage object to a :py:class:`bool` value. This is used to determine if the data storage object is actually backed by a
+        store.
 
         Returns:
-            bool: Returns `True` if the data storage object is backed by a store and `False` otherwise.
+            bool: Returns :py:obj:`True` if the data storage object is backed by a store and :py:obj:`False` otherwise.
         """
 
         return bool(self.io)
 
     def close(self) -> None:
-        """Close opened io file object."""
+        """Close opened IO file object."""
 
         if self.io is not None:
             self.io.close()
 
-    def at(self, **kwargs: Any) -> 'DataStorageBase':
+    def at(self, **kwargs: typing.Any) -> 'DataStorageBase':
         """Returns a copy of the instance where the keyword arguments were added as attributes of the class become the attributes of the class.
 
         Args:
-            **kwargs (Any): The keyword arguments, which are added as attributes of the class.
+            **kwargs (typing.Any): The keyword arguments, which are added as attributes of the class.
 
         Raises:
             TypeError: One or more of the names in the keyword arguments are not valid attribute names.
 
         Returns:
             DataStorageBase: Returns a copy of the instance where the keyword arguments were added as attributes of the class become the attributes
-                of the class. This allows to create a new instance of the class with new or updated attributes without modifying the original
-                instance.
+            of the class. This allows to create a new instance of the class with new or updated attributes without modifying the original instance.
         """
 
         result = copy.copy(self)
@@ -407,39 +417,42 @@ class NoStorage(DataStorageBase):
     """
 
     def __bool__(self) -> bool:
-        """Converts the data storage object to a boolean value. This is used to determine if the data storage object is actually backed by a store.
+        """Converts the data storage object to a :py:class:`bool` value. This is used to determine if the data storage object is actually backed by a
+        store.
 
         Returns:
-            bool: Returns `False` since this is a placeholder data storage class and does not actually use persistent storage.
+            bool: Returns :py:obj:`False` since this is a placeholder data storage class and does not actually use persistent storage.
         """
 
         return False
 
-    def read(self, data_in: Any = None, meta: Any = None) -> Any:  # pylint: disable=unused-argument
-        """Reads the output data that was produced by the specified input data, if it is available. The meta data can contain additional identifying
+    def read(self, data_in: typing.Any = None, meta: typing.Any = None) -> typing.Any:  # pylint: disable=unused-argument
+        """Reads the output data that was produced by the specified input data, if it is available. The metadata can contain additional identifying
         information about the data.
 
         Args:
-            data_in (Any, optional): Input data that produces the data that is to be read. Defaults to `None`.
-            meta (Any, optional): Meta data that contains additional identifying information about the data that is to be read. Defaults to `None`.
+            data_in (typing.Any): Input data that produces the data that is to be read. Defaults to :py:obj:`None`.
+            meta (typing.Any): Meta data that contains additional identifying information about the data that is to be read. Defaults to
+                :py:obj:`None`.
 
         Raises:
             NoDataSource: This is a placeholder data storage class and does not actually use persistent storage and therefore always raises this
                 exception.
 
         Returns:
-            Any: The data that was produced by the specified input data if it is available.
+            typing.Any: Returns the data that was produced by the specified input data if it is available.
         """
 
         raise NoDataSource()
 
-    def write(self, data_out: Any, data_in: Any = None, meta: Any = None) -> None:  # pylint: disable=unused-argument
-        """Writes the specified output data to the storage. The meta data can be used to store additional identifying information about the data.
+    def write(self, data_out: typing.Any, data_in: typing.Any = None, meta: typing.Any = None) -> None:  # pylint: disable=unused-argument
+        """Writes the specified output data to the storage. The metadata can be used to store additional identifying information about the data.
 
         Args:
-            data_out (Any): The output data to write.
-            data_in (Any, optional): The input data that produced the output data. Defaults to `None`.
-            meta (Any, optional): The meta data that can be used to store additional identifying information about the data. Defaults to `None`.
+            data_out (typing.Any): The output data to write.
+            data_in (typing.Any): The input data that produced the output data. Defaults to :py:obj:`None`.
+            meta (typing.Any): The metadata that can be used to store additional identifying information about the data. Defaults to
+                :py:obj:`None`.
 
         Raises:
             NoDataTarget: This is a placeholder data storage class and does not actually use persistent storage and therefore always raises this
@@ -456,12 +469,12 @@ class NoStorage(DataStorageBase):
                 exception.
 
         Returns:
-            bool: Returns `False` since this is a placeholder data storage class and does not actually use persistent storage.
+            bool: Returns :py:obj:`False` since this is a placeholder data storage class and does not actually use persistent storage.
         """
 
         raise NoDataSource()
 
-    def keys(self) -> KeysView[str]:
+    def keys(self) -> collections.abc.KeysView[str]:
         """Retrieves the keys of the data stored in the storage container.
 
         Raises:
@@ -469,50 +482,42 @@ class NoStorage(DataStorageBase):
                 exception.
 
         Returns:
-            KeysView[str]: Returns never, since this is a placeholder data storage class that does not actually use persistent storage and raises an
-                exception.
+            collections.abc.KeysView[str]: Returns never, since this is a placeholder data storage class that does not actually use persistent storage
+            and raises an exception.
         """
 
         raise NoDataSource()
 
 
-FileOpenMode = Literal['w', 'r', 'a']
-"""The file open mode to use when opening a file. The options are:
-
-- "w": Write mode. The file is created if it does not exist and existing files will be overwritten.
-- "r": Read mode. The file must already exist and the data is read from the file.
-- "a": Append mode. The file is created if it does not exist and the data is appended to the end of the file if the file already exists.
-"""
-
-
 class PickleStorage(DataStorageBase):
-    """Experimental pickle storage that uses the ``pickle`` module to store data."""
+    """Experimental pickle storage that uses the :py:mod:`pickle` module to store data."""
 
-    io: IO[Any]
+    io: IO[typing.Any]
     """The file object to read data from and write data to. This is a binary file object that is used to store the pickled data."""
 
-    data: dict[str, Any]
-    """A dictionary that stores the data that is read from or written to the file. The keys of the dictionary are the keys of the data that is stored
-    in the file, and the values are the data that is stored in the file. The dictionary is used to cache the data that is read from the file, so
-    that it does not need to be read from the file again if it is already cached.
+    data: dict[str, typing.Any]
+    """A :py:class:`dict` that stores the data that is read from or written to the file. The keys of the :py:class:`dict` are the keys of the data
+    that is stored in the file, and the values are the data that is stored in the file. The :py:class:`dict` is used to cache the data that is read
+    from the file, so that it does not need to be read from the file again if it is already cached.
     """
 
-    data_key: Annotated[str, Param(str, 'data', mandatory=True)]
+    data_key: Annotated[str, Param(str, mandatory=True)]
     """The key of the data that is read from the pickle file or written to the pickle file."""
 
-    def __init__(self, path: str | PathLike[str], mode: FileOpenMode = 'r', data_key: str | None = None, **kwargs: Any) -> None:
+    def __init__(self, path: str | pathlib.Path, mode: str = 'r', data_key: str | None = None, **kwargs: typing.Any) -> None:
         """
-        Initializes a new ``PickleStorage`` instance.
+        Initializes a new :py:class:`PickleStorage` instance.
 
         Args:
-            path (str | PathLike[str]): The path to the pickle file where the data is to read from or written to.
-            mode (FileOpenMode, optional): The mode in which the file is opened. This can be either "w" for write mode, "r" for read mode or "a" for
-                append mode. In write mode, the file is created if it does not exist and the existing file is overwritten. In read mode, the file must
-                already exist and the data is read from the file. In append mode, the file is created if it does not exist and the data is appended to
-                the end of the file. Defaults to "r".
-            data_key (str | None): The key of the data that is read from the pickle file or written to the pickle file. Defaults to `None`.
-            **kwargs (Any): Keyword arguments that are passed to the constructor of the class one step up in the class hierarchy, i.e.,
-                ``DataStorageBase``.
+            path (str | pathlib.Path): The path to the pickle file where the data is to read from or written to.
+            mode (str): The mode in which the file is opened. This can be either "w" for write mode, "r" for read mode or "a" for append mode. In
+                write mode, the file is created if it does not exist and the existing file is overwritten. In read mode, the file must already exist
+                and the data is read from the file. In append mode, the file is created if it does not exist and the data is appended to the end of
+                the file. Defaults to "r".
+            data_key (str | None): The key of the data that is read from the pickle file or written to the pickle file. Defaults to
+                :py:obj:`None`.
+            **kwargs (typing.Any): Keyword arguments that are passed to the constructor of the class one step up in the class hierarchy, i.e.,
+                :py:class:`DataStorageBase`.
 
         Raises:
             ValueError: The mode is not "w", "r", or "a".
@@ -528,8 +533,8 @@ class PickleStorage(DataStorageBase):
         if mode not in ['w', 'r', 'a']:
             raise ValueError('Mode should be set to "w", "r", or "a".')
 
-        self.io: IO[Any] = open(path, mode + 'b')  # pylint: disable=unspecified-encoding, consider-using-with
-        self.data: dict[str, Any] = {}
+        self.io: IO[typing.Any] = open(path, mode + 'b')  # pylint: disable=unspecified-encoding, consider-using-with
+        self.data: dict[str, typing.Any] = {}
 
     def _load_data(self) -> None:
         """Loads the data from the pickle file into the data dictionary. This is done by reading the file until the end of the file is reached and
@@ -544,18 +549,19 @@ class PickleStorage(DataStorageBase):
         except EOFError:
             pass
 
-    def read(self, data_in: Any = None, meta: Any = None) -> Any:  # pylint: disable=unused-argument
+    def read(self, data_in: typing.Any = None, meta: typing.Any = None) -> typing.Any:  # pylint: disable=unused-argument
         """Retrieves the data for a given data key.
 
         Args:
-            data_in (Any, optional): Input data that produced the data that is to be read. Defaults to `None`.
-            meta (Any, optional): Meta data that contains additional identifying information about the data that is to be read. Defaults to `None`.
+            data_in (typing.Any): Input data that produced the data that is to be read. Defaults to :py:obj:`None`.
+            meta (typing.Any): Meta data that contains additional identifying information about the data that is to be read. Defaults to
+                :py:obj:`None`.
 
         Raises:
             NoDataSource: The data source for the given data key does not exist.
 
         Returns:
-            Any: Returns the data for the given data key.
+            typing.Any: Returns the data for the given data key.
         """
 
         # The exists method will call keys which in turn will call _load_data, this way, the data will be lazy-loaded
@@ -563,13 +569,14 @@ class PickleStorage(DataStorageBase):
             raise NoDataSource(f"Key: '{self.data_key}' does not exist.")
         return self.data[self.data_key]
 
-    def write(self, data_out: Any, data_in: Any = None, meta: Any = None) -> None:
+    def write(self, data_out: typing.Any, data_in: typing.Any = None, meta: typing.Any = None) -> None:
         """Writes the specified output data to the pickle file using the given data key as: `{'data': data_out, 'key': self.data_key}`.
 
         Args:
-            data_out (Any): The data to write to the pickle file.
-            data_in (Any, optional): The input data that produced the output data. Defaults to `None`.
-            meta (Any, optional): The meta data that can be used to store additional identifying information about the data. Defaults to `None`.
+            data_out (typing.Any): The data to write to the pickle file.
+            data_in (typing.Any): The input data that produced the output data. Defaults to :py:obj:`None`.
+            meta (typing.Any): The metadata that can be used to store additional identifying information about the data. Defaults to
+                :py:obj:`None`.
         """
 
         self.data[self.data_key] = data_out
@@ -579,17 +586,17 @@ class PickleStorage(DataStorageBase):
         """Determines if the data key exists in the data.
 
         Returns:
-            bool: Returns `True` if the data key exists and `False` otherwise.
+            bool: Returns :py:obj:`True` if the data key exists and :py:obj:`False` otherwise.
         """
 
         # The keys will call _load_data this way, the data will be lazy-loaded
         return self.data_key in self.keys()
 
-    def keys(self) -> KeysView[str]:
+    def keys(self) -> collections.abc.KeysView[str]:
         """Retrieves the keys of the data stored in the pickle file.
 
         Returns:
-            KeysView[str]: Returns a view of keys of the data that is stored in the file.
+            collections.abc.KeysView[str]: Returns a view of keys of the data that is stored in the file.
         """
 
         if not self.data:
@@ -598,15 +605,15 @@ class PickleStorage(DataStorageBase):
 
 
 class StringInfo(NamedTuple):
-    """A type for the type information that the ``h5py.check_string_dtype`` function returns. This class is, unfortunately, not exported by the
+    """A type for the type information that the :py:func:`h5py.check_string_dtype` function returns. This class is, unfortunately, not exported by the
     ``h5py`` module, so we have to define it ourselves to gain type safety.
     """
 
     encoding: str
-    """The encoding of the string, e.g., "utf-8" or "ascii"."""
+    """The encoding of the :py:class:`str`, e.g., "utf-8" or "ascii"."""
 
     length: int
-    """The length of the string."""
+    """The length of the :py:class:`str`."""
 
 
 class HDF5Storage(DataStorageBase):
@@ -618,18 +625,19 @@ class HDF5Storage(DataStorageBase):
     data_key: Annotated[str, Param(str, mandatory=True)]
     """The key of the data that is read from the HDF5 file or written to the HDF5 file."""
 
-    def __init__(self, path: str | PathLike[str], mode: FileOpenMode = 'r', data_key: str | None = None, **kwargs: Any) -> None:
-        """Initializes a new ``HDF5Storage`` instance.
+    def __init__(self, path: str | pathlib.Path, mode: str = 'r', data_key: str | None = None, **kwargs: typing.Any) -> None:
+        """Initializes a new :py:class:`HDF5Storage` instance.
 
         Args:
-            path (str | PathLike[str]): The path to the HDF5 file where the data is to read from or written to.
-            mode (FileOpenMode, optional): The mode to open the HDF5 file in. This can be either "w" for write mode, "r" for read mode or "a" for
-                append mode. In write mode, the file is created if it does not exist and existing files will be overwritten. In read mode, the file
-                must already exist and the data is read from the file. In append mode, the file is created if it does not exist and the data is
-                appended to the end of the file if the file already exists. Defaults to "r".
-            data_key (str | None): The key of the data that is read from the HDF5 file or written to the HDF5 file. Defaults to `None`.
-            **kwargs (Any): Keyword arguments that are passed to the constructor of the class one step up in the class hierarchy, i.e.,
-                ``DataStorageBase``.
+            path (str | pathlib.Path): The path to the HDF5 file where the data is to read from or written to.
+            mode (str): The mode to open the HDF5 file in. This can be either "w" for write mode, "r" for read mode or "a" for append mode. In write
+                mode, the file is created if it does not exist and existing files will be overwritten. In read mode, the file must already exist and
+                the data is read from the file. In append mode, the file is created if it does not exist and the data is appended to the end of the
+                file if the file already exists. Defaults to "r".
+            data_key (str | None): The key of the data that is read from the HDF5 file or written to the HDF5 file. Defaults to
+                :py:obj:`None`.
+            **kwargs (typing.Any): Keyword arguments that are passed to the constructor of the class one step up in the class hierarchy, i.e.,
+                :py:class:`DataStorageBase`.
         """
 
         # PyDocLint does not support the documentation of the constructor parameters both in the __init__ method and the class docstring, so we have
@@ -641,18 +649,19 @@ class HDF5Storage(DataStorageBase):
 
         self.io: h5py.File = h5py.File(path, mode=mode)
 
-    def read(self, data_in: Any = None, meta: Any = None) -> Any:  # pylint: disable=unused-argument
+    def read(self, data_in: typing.Any = None, meta: typing.Any = None) -> typing.Any:  # pylint: disable=unused-argument
         """Retrieves the data for a given data key.
 
         Args:
-            data_in (Any, optional): Input data that produced the data that is to be read. Defaults to `None`.
-            meta (Any, optional): Meta data that contains additional identifying information about the data that is to be read. Defaults to `None`.
+            data_in (typing.Any): Input data that produced the data that is to be read. Defaults to :py:obj:`None`.
+            meta (typing.Any): Meta data that contains additional identifying information about the data that is to be read. Defaults to
+                :py:obj:`None`.
 
         Raises:
             NoDataSource: The data source for the given data key does not exist.
 
         Returns:
-            Any: Returns the data for the given data key.
+            typing.Any: Returns the data for the given data key.
         """
 
         if not self.exists():
@@ -660,26 +669,33 @@ class HDF5Storage(DataStorageBase):
         _, data = self._unpack('/', self.io[self.data_key])
         return data
 
-    def write(self, data_out: dict[str, Any] | tuple[Any, ...] | Any, data_in: Any = None, meta: Any = None) -> None:
-        """Writes the specified output data to the HDF5 file. If the output data is a dictionary, then the output data is stored in an HDF5 group with
-        the name given by the data key. The key-value pairs of the dictionary will be stored in this HDF5 group with the keys of the dictionary used
-        as the names of the datasets and the values of the dictionary used as the data for the datasets. If the output data is a tuple, then the
-        output data is stored in an HDF5 group with the name given by the data key. The values of the tuple will be stored as datasets in this HDF5
-        group, with the indices of the tuple used as the names of the datasets and the values of the tuple used as the data for the datasets. If the
-        output data is neither a dictionary nor a tuple, then the output data is stored in an HDF5 dataset with the name given by the data key and the
-        output data used as the data for the dataset.
+    def write(
+        self,
+        data_out: dict[str, typing.Any] | tuple[typing.Any, ...] | typing.Any,
+        data_in: typing.Any = None,
+        meta: typing.Any = None
+    ) -> None:
+        """Writes the specified output data to the HDF5 file. If the output data is a :py:class:`dict`, then the output data is stored in an HDF5
+        group with the name given by the data key. The key-value pairs of the :py:class:`dict` will be stored in this HDF5 group with the keys of the
+        :py:class:`dict` used as the names of the datasets and the values of the :py:class:`dict` used as the data for the datasets. If the output
+        data is a tuple, then the output data is stored in an HDF5 group with the name given by the data key. The values of the tuple will be stored
+        as datasets in this HDF5 group, with the indices of the tuple used as the names of the datasets and the values of the tuple used as the data
+        for the datasets. If the output data is neither a :py:class:`dict` nor a tuple, then the output data is stored in an HDF5 dataset with the
+        name given by the data key and the output data used as the data for the dataset.
 
         Args:
-            data_out (dict[str, Any] | tuple[Any, ...] | Any): The data to write to the HDF5 file. This can either be a dataset, a tuple, or any value
-                that can be written to an HDF5 file (i.e., basic data types like ``int``, ``float``, ``bool``, or ``str``, or a NumPy array). If the
-                data is a dictionary, then it will be stored as an HDF5 group with the name given by the data key. The key-value pairs of the
-                dictionary will be stored in this HDF5 group with the keys of the dictionary used as the names of the datasets and the values of the
-                dictionary used as the data for the datasets. If the data is a tuple, then it will be stored as an HDF5 group with the name given by
-                the data key. The values of the tuple will be stored as datasets in this HDF5 group, with the indices of the tuple used as the names
-                of the datasets and the values of the tuple used as the data for the datasets. If the data is neither a dictionary nor a tuple, then
-                it will be stored in an HDF5 dataset with the name given by the data key and the data used as the data for the dataset.
-            data_in (Any, optional): The input data that produced the output data. Defaults to `None`.
-            meta (Any, optional): The meta data that can be used to store additional identifying information about the data. Defaults to `None`.
+            data_out (dict[str, typing.Any] | tuple[typing.Any, ...] | typing.Any): The data to write to the HDF5 file. This can either be a dataset,
+                a tuple, or any value that can be written to an HDF5 file (i.e., basic data types like :py:class:`int`, :py:class:`float`,
+                :py:class:`bool`, or :py:class:`str`, or a :py:class:`~numpy.ndarray`). If the data is a :py:class:`dict`, then it will be stored as
+                an HDF5 group with the name given by the data key. The key-value pairs of the :py:class:`dict` will be stored in this HDF5 group with
+                the keys of the :py:class:`dict` used as the names of the datasets and the values of the :py:class:`dict` used as the data for the
+                datasets. If the data is a tuple, then it will be stored as an HDF5 group with the name given by the data key. The values of the tuple
+                will be stored as datasets in this HDF5 group, with the indices of the tuple used as the names of the datasets and the values of the
+                tuple used as the data for the datasets. If the data is neither a :py:class:`dict` nor a tuple, then it will be stored in an HDF5
+                dataset with the name given by the data key and the data used as the data for the dataset.
+            data_in (typing.Any): The input data that produced the output data. Defaults to :py:obj:`None`.
+            meta (typing.Any): The metadata that can be used to store additional identifying information about the data. Defaults to
+                :py:obj:`None`.
         """
 
         if isinstance(data_out, dict):
@@ -698,40 +714,41 @@ class HDF5Storage(DataStorageBase):
         """Checks if the data key exists in the HDF5 file.
 
         Returns:
-            bool: Returns `True` if the data key exists and `False` otherwise.
+            bool: Returns :py:obj:`True` if the data key exists and :py:obj:`False` otherwise.
         """
 
         return self.data_key in self.io
 
-    def keys(self) -> KeysView[str]:
+    def keys(self) -> collections.abc.KeysView[str]:
         """Retrieves the keys of the data stored in the HDF5 file.
 
         Returns:
-            KeysView[str]: Returns a view of keys of the data in the HDF5 file.
+            collections.abc.KeysView[str]: Returns a view of keys of the data in the HDF5 file.
         """
 
-        key_list: KeysView[str] = self.io.keys()
+        key_list: collections.abc.KeysView[str] = self.io.keys()
         return key_list
 
     @staticmethod
-    def _unpack(key: str | int, value: h5py.Dataset | h5py.Group | Any) -> tuple[str | int, Any]:
-        """Unpacks the specified value. If the value is an HDF5 dataset, it is converted to a NumPy array or a string, depending on the data type of
-        the dataset. If the value is a group, then it is recursively unpacked into an ordered dictionary, which contains the keys and values of the
-        group. The keys of the group are sorted to ensure that the order of the data is consistent. If the key is a string and only contains numeric
-        characters, it is converted to an integer. This is done to allow the use of the dictionary as a tuple or list.
+    def _unpack(key: str | int, value: h5py.Dataset | h5py.Group | typing.Any) -> tuple[str | int, typing.Any]:
+        """Unpacks the specified value. If the value is an HDF5 dataset, it is converted to a :py:class:`~numpy.ndarray` or a :py:class:`str`,
+        depending on the data type of the dataset. If the value is a group, then it is recursively unpacked into an
+        :py:class:`collections.OrderedDict`, which contains the keys and values of the group. The keys of the group are sorted to ensure that the
+        order of the data is consistent. If the key is a :py:class:`str` and only contains numeric characters, it is converted to an :py:class:`int`.
+        This is done to allow the use of the dictionary as a tuple or list.
 
         Args:
-            key (str | int): The key of the value to unpack. This can either be a string or an integer. If the key is a string and only contains
-                numeric characters, it is converted to an integer.
-            value (h5py.Dataset | h5py.Group | Any): The value that is to be unpacked. If the value is an HDF5 dataset, it is converted to a NumPy
-                array or a string, depending on the data type of the dataset. If the value is a group, then it is recursively unpacked into an ordered
-                dictionary, which contains the keys and values of the group. The keys of the group are sorted to ensure that the order of the data is
-                consistent.
+            key (str | int): The key of the value to unpack. This can either be a :py:class:`str` or an :py:class:`int`. If the key is a
+                :py:class:`str` and only contains numeric characters, it is converted to an :py:class:`int`.
+            value (h5py.Dataset | h5py.Group | typing.Any): The value that is to be unpacked. If the value is an HDF5 dataset, it is converted to a
+                NumPy array or a :py:class:`str`, depending on the data type of the dataset. If the value is a group, then it is recursively unpacked
+                into an :py:class:`collections.OrderedDict`, which contains the keys and values of the group. The keys of the group are sorted to
+                ensure that the order of the data is consistent.
 
         Returns:
-            tuple[str | int, Any]: Returns the unpacked key and value as a tuple. The key is either a string or an integer. The value is either a
-                NumPy array, a string, or an ordered dictionary, which contains the keys and values of the group. The keys of the group are sorted to
-                ensure that the order of the data is consistent.
+            tuple[str | int, typing.Any]: Returns the unpacked key and value as a tuple. The key is either a :py:class:`str` or an :py:class:`int`.
+            The value is either a :py:class:`~numpy.ndarray`, a :py:class:`str`, or an :py:class:`collections.OrderedDict`, which contains the keys
+            and values of the group. The keys of the group are sorted to ensure that the order of the data is consistent.
         """
 
         # Converts the key to an integer if it is a string and only contains numeric characters
@@ -749,23 +766,23 @@ class HDF5Storage(DataStorageBase):
         # If the value is a group, it is converted to an ordered dictionary, which contains the keys and values of the group; since the numeric keys
         # are converted to an integer, the dictionary can be accessed like a tuple or list
         elif isinstance(value, h5py.Group):
-            value = OrderedDict((HDF5Storage._unpack(k, v) for k, v in value.items()))
+            value = collections.OrderedDict((HDF5Storage._unpack(k, v) for k, v in value.items()))
 
         # Returns the key and value as a tuple
         return key, value
 
     @staticmethod
-    def _get_shape_and_dtype(value: NDArray[Any] | str | int | float) -> tuple[tuple[int, ...], numpy.dtype[Any]]:
+    def _get_shape_and_dtype(value: numpy.ndarray[typing.Any, typing.Any] | str | int | float) -> tuple[tuple[int, ...], numpy.dtype[typing.Any]]:
         """Infers the shape and data type of the specified value.
 
         Args:
-            value (NDArray[Any] | str | int | float): The value for which to infer the shape and data type. This can be a NumPy array, a string, an
-                integer, or a float.
+            value (numpy.ndarray[typing.Any, typing.Any] | str | int | float): The value for which to infer the shape and data type. This can be a
+                :py:class:`~numpy.ndarray`, a :py:class:`str`, an :py:class:`int`, or a :py:class:`float`.
 
         Returns:
-            tuple[tuple[int, ...], numpy.dtype[Any]]: Returns a tuple containing the shape and data type of the specified value. The shape is a tuple
-                of integers representing the dimensions of the value. If the value is a NumPy array, the shape is the shape of the array. If the value
-                is of any other data type, the shape will be an empty tuple.
+            tuple[tuple[int, ...], numpy.dtype[typing.Any]]: Returns a tuple containing the shape and data type of the specified value. The shape is a
+            tuple of integers representing the dimensions of the value. If the value is a :py:class:`~numpy.ndarray`, the shape is the shape of the
+            array. If the value is of any other data type, the shape will be an empty tuple.
         """
 
         if isinstance(value, numpy.ndarray):

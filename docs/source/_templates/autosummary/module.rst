@@ -1,70 +1,72 @@
-{{ fullname | escape | underline}}
+{{ fullname | escape | underline }}
 
 .. automodule:: {{ fullname }}
-   :members:
    :show-inheritance:
+   :members:
+   :special-members: __bool__, __call__, __delete__, __delete_attr__, __dir__, __enter__, __exit__, __get__, __get_attr__, __getitem__, __new__, __prepare__, __repr__, __set__, __set_attr__, __set_name__, __setitem__, __tracked__
 
    {% block attributes %}
-   {% if attributes %}
-   .. rubric:: {{ _('Module Attributes') }}
+   {%- if attributes %}
+   .. rubric:: Module Attributes
 
    .. autosummary::
-      :nosignatures:
+      :signatures: none
 
    {% for item in attributes %}
       {{ item }}
    {%- endfor %}
    {% endif %}
-   {% endblock %}
+   {%- endblock %}
 
-   {% block functions %}
-   {% if functions %}
-   .. rubric:: {{ _('Functions') }}
+   {%- block functions %}
+   {%- if functions %}
+   .. rubric:: Functions
 
    .. autosummary::
-      :nosignatures:
+      :signatures: none
 
    {% for item in functions %}
       {{ item }}
    {%- endfor %}
    {% endif %}
-   {% endblock %}
+   {%- endblock %}
 
-   {% block classes %}
-   {% if classes %}
-   .. rubric:: {{ _('Classes') }}
+   {%- block classes %}
+   {%- if classes %}
+   .. rubric:: Classes
 
    .. autosummary::
-      :nosignatures:
+      :signatures: none
 
    {% for item in classes %}
       {{ item }}
    {%- endfor %}
    {% endif %}
-   {% endblock %}
+   {%- endblock %}
 
-   {% block exceptions %}
-   {% if exceptions %}
-   .. rubric:: {{ _('Exceptions') }}
+   {%- block exceptions %}
+   {%- if exceptions %}
+   .. rubric:: Exceptions
 
    .. autosummary::
-      :nosignatures:
+      :signatures: none
 
    {% for item in exceptions %}
       {{ item }}
    {%- endfor %}
    {% endif %}
-   {% endblock %}
+   {%- endblock %}
 
-{% block modules %}
-{% if modules %}
+{%- block modules %}
+{%- if modules %}
 .. rubric:: Modules
 
 .. autosummary::
    :toctree:
    :recursive:
+
 {% for item in modules %}
    {{ item }}
 {%- endfor %}
 {% endif %}
-{% endblock %}
+{%- endblock %}

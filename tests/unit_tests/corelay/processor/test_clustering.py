@@ -1,12 +1,11 @@
-"""A module that contains unit tests for the ``corelay.processor.clustering`` module."""
+"""A module that contains unit tests for the :py:mod:`corelay.processor.clustering` module."""
 
 import os
+import typing
 from importlib import import_module
-from typing import Any
 
 import numpy
 import pytest
-from numpy.typing import NDArray
 from sklearn.datasets import make_blobs
 from sklearn.metrics.pairwise import euclidean_distances
 
@@ -27,54 +26,57 @@ except ImportError:
 
 
 @pytest.fixture(name='data', scope='module')
-def get_data_fixture() -> NDArray[numpy.float64]:
+def get_data_fixture() -> numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]:
     """A fixture that produces tests data with 1000 elements that are split into 5 blobs.
 
     Returns:
-        NDArray[numpy.float64]: Returns the data, which is a 2D array of shape (1000, 2), i.e., 1000 samples with 2 features.
+        numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]: Returns the data, which is a 2D array of shape `(1000, 2)`, i.e., 1000 samples with 2
+        features.
     """
 
     blobs = make_blobs(1000, centers=5, random_state=100)
-    blob: NDArray[numpy.float64] = blobs[0]
+    blob: numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]] = blobs[0]
     return blob
 
 
 @pytest.fixture(name='tiny_data', scope='module')
-def get_tiny_data_fixture() -> NDArray[numpy.float64]:
+def get_tiny_data_fixture() -> numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]:
     """A fixtures that produces tiny test data with 50 elements that are split into 5 blobs.
 
     Returns:
-        NDArray[numpy.float64]: Returns the data, which is a 2D array of shape (50, 2), i.e., 50 samples with 2 features.
+        numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]: Returns the data, which is a 2D array of shape `(50, 2)`, i.e., 50 samples with 2
+        features.
     """
 
     blobs = make_blobs(50, centers=5, random_state=100)
-    blob: NDArray[numpy.float64] = blobs[0]
+    blob: numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]] = blobs[0]
     return blob
 
 
 @pytest.fixture(name='distances', scope='module')
-def get_distances_fixture(data: NDArray[numpy.float64]) -> NDArray[numpy.float64]:
+def get_distances_fixture(data: numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]) -> numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]:
     """A fixtures that computes the euclidean distances between each pair of data points.
 
     Args:
-        data (NDArray[numpy.float64]): The data to compute the distances for.
+        data (numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]): The data to compute the distances for.
 
     Returns:
-        NDArray[numpy.float64]: Returns a distance matrix, which, given input data of shape (<number_of_samples>, <number_of_features>), is a 2D array
-            of shape (<number_of_samples>, <number_of_samples>), i.e., the distances between each pair of samples.
+        numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]: Returns a distance matrix, which, given input data of shape
+        `(<number_of_samples>, <number_of_features>)`, is a 2D array of shape `(<number_of_samples>, <number_of_samples>)`, i.e., the distances
+        between each pair of samples.
     """
 
-    distance_matrix: NDArray[numpy.float64] = euclidean_distances(data)
+    distance_matrix: numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]] = euclidean_distances(data)
     return distance_matrix
 
 
 @pytest.mark.parametrize('processor_type', [clustering.AgglomerativeClustering, clustering.KMeans])
-def test_clustering(processor_type: type[clustering.Clustering], data: NDArray[numpy.float64]) -> None:
+def test_clustering(processor_type: type[clustering.Clustering], data: numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]) -> None:
     """Tests the clustering processors by checking that the 5 found clusters are approximately of similar size.
 
     Args:
-        processor_type (type[clustering.Clustering]): The clustering ``Processor`` that is to be used in the test.
-        data (NDArray[numpy.float64]): The data that is to be clustered.
+        processor_type (type[clustering.Clustering]): The clustering :py:class:`~corelay.processor.base.Processor` that is to be used in the test.
+        data (numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]): The data that is to be clustered.
     """
 
     processor = processor_type(n_clusters=5)
@@ -88,16 +90,20 @@ def test_clustering(processor_type: type[clustering.Clustering], data: NDArray[n
 
 
 @pytest.mark.parametrize('processor_type', EXTRA_PROCESSORS + [clustering.DBSCAN])
-def test_embedding_on_distances(processor_type: type[clustering.Clustering], distances: NDArray[numpy.float64]) -> None:
+def test_embedding_on_distances(
+    processor_type: type[clustering.Clustering],
+    distances: numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]
+) -> None:
     """Tests the clustering processors by checking that the 5 found clusters that were determined from pre-computed distances are approximately of
     similar size.
 
     Args:
-        processor_type (type[clustering.Clustering]): The clustering ``Processor`` that is to be used in the test.
-        distances (NDArray[numpy.float64]): The pre-computed distances of the data points that are used to cluster the data.
+        processor_type (type[clustering.Clustering]): The clustering :py:class:`~corelay.processor.base.Processor` that is to be used in the test.
+        distances (numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]): The pre-computed distances of the data points that are used to cluster the
+            data.
     """
 
-    params: dict[str, Any] = {'eps': 0.9} if 'eps' in processor_type.collect(Param) else {}
+    params: dict[str, typing.Any] = {'eps': 0.9} if 'eps' in processor_type.collect(Param) else {}
     processor = processor_type(metric='precomputed', **params)
     computed_clustering = processor(distances)
 
@@ -105,23 +111,24 @@ def test_embedding_on_distances(processor_type: type[clustering.Clustering], dis
     assert (numpy.unique(computed_clustering, return_counts=True)[1] / 1000).std() < 0.13
 
 
-def test_embedding_on_distances_using_agglomerative_clustering(distances: NDArray[numpy.float64]) -> None:
-    """Tests that the 5 clusters found using the ``AgglomerativeClustering`` class that were determined from pre-computed distances are approximately
-    of similar size.
+def test_embedding_on_distances_using_agglomerative_clustering(distances: numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]) -> None:
+    """Tests that the 5 clusters found using the :py:class:`~corelay.clustering.AgglomerativeClustering` class that were determined from pre-computed
+    distances are approximately of similar size.
 
     Args:
-        distances (NDArray[numpy.float64]): The pre-computed distances of the data points that are used to cluster the data.
+        distances (numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]): The pre-computed distances of the data points that are used to cluster the
+            data.
     """
 
     computed_clustering = clustering.AgglomerativeClustering(n_clusters=5, metric='precomputed', linkage='average')(distances)
     assert (numpy.unique(computed_clustering, return_counts=True)[1] / 1000).std() < 0.05
 
 
-def test_dendrogram_creation_with_file_path(tiny_data: NDArray[numpy.float64]) -> None:
-    """Tests the creation of a dendrogram for the specified data, where the dendrogram image file is specified as a path string.
+def test_dendrogram_creation_with_file_path(tiny_data: numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]) -> None:
+    """Tests the creation of a dendrogram for the specified data, where the dendrogram image file is specified as a path :py:class:`str`.
 
     Args:
-        tiny_data (NDArray[numpy.float64]): The data to create the dendrogram for.
+        tiny_data (numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]): The data to create the dendrogram for.
     """
 
     output_path = '/tmp/dendrogram.png'
@@ -134,11 +141,11 @@ def test_dendrogram_creation_with_file_path(tiny_data: NDArray[numpy.float64]) -
     os.remove(output_path)
 
 
-def test_dendrogram_creation_with_file_object(tiny_data: NDArray[numpy.float64]) -> None:
+def test_dendrogram_creation_with_file_object(tiny_data: numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]) -> None:
     """Tests the creation of a dendrogram for the specified data, where the dendrogram image file is specified as a file object.
 
     Args:
-        tiny_data (NDArray[numpy.float64]): The data to create the dendrogram for.
+        tiny_data (numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]): The data to create the dendrogram for.
     """
 
     output_path = '/tmp/dendrogram.png'

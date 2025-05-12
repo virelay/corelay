@@ -39,8 +39,8 @@ npm-debug.log
 docs/build/
 docs/doctree/
 docs/source/_generated/
-docs/source/reference/*
-!docs/source/reference/index.rst
+docs/source/api-reference/*
+!docs/source/api-reference/index.rst
 
 # Trained models and datasets/attributions/analyses
 *.h5

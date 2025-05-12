@@ -1,1 +1,1 @@
-"""A sub-package that contains unit tests for the ``corelay.processor`` sub-package."""
+"""A sub-package that contains unit tests for the :py:mod:`corelay.processor` sub-package."""
