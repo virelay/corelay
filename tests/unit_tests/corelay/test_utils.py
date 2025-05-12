@@ -1,4 +1,4 @@
-"""A module that contains unit tests for the ``corelay.utils`` module."""
+"""A module that contains unit tests for the :py:mod:`corelay.utils` module."""
 
 import pytest
 
@@ -46,7 +46,7 @@ def test_conditional_import_of_multiple_functions() -> None:
 
 
 class TestZipEqual:
-    """Contains unit tests for the ``zip_equal`` function."""
+    """Contains unit tests for the :py:func:`~corelay.utils.zip_equal` function."""
 
     @staticmethod
     def test_equal_length() -> None:

@@ -1,8 +1,10 @@
-"""Includes MetaTracker to track definition order of class attributes."""
+"""A module that contains the :py:class:`~corelay.tracker.Tracker`, which is used to track :py:class:`~corelay.plugboard.Slot` definitions in classes
+that inherit from :py:class:`~corelay.plugboard.Plugboard`.
+"""
 
+import collections
+import typing
 from abc import ABCMeta
-from collections import OrderedDict
-from typing import Any
 
 
 class MetaTracker(ABCMeta):
@@ -10,32 +12,37 @@ class MetaTracker(ABCMeta):
 
     Note:
         This is used to track the slots of a class. In CoRelAy, slots are declared as class attributes, and during instantiation, the class attributes
-        are converted to respective instance attributes of the data type declared in the slot. For example, a ``Param`` slot is used to declare
-        parameters of processors. When a processor has a class attribute that is a ``Param`` with a data type of ``int``, then when the processor is
-        instantiated, an instance attribute of the same name is created with the data type of ``int``. There are two ways a slot can be declared:
+        are converted to respective instance attributes of the data type declared in the slot. For example, a :py:class:`~corelay.base.Param` slot is
+        used to declare parameters of processors. When a processor has a class attribute that is a :py:class:`~corelay.base.Param` with a data type of
+        :py:class:`int`, then when the processor is instantiated, an instance attribute of the same name is created with the data type of
+        :py:class:`int`.
 
-        1) The old way of declaring a slot, which is to declare it as a class attribute and assign it a ``Slot`` instance, e.g.,
-           ``param = Param(int, 0)``. This is not the recommended way of declaring a slot anymore, because it causes problems with static type
+        There are two ways a slot can be declared:
+
+        1) The old way of declaring a slot, which is to declare it as a class attribute and assign it a :py:class:`~corelay.plugboard.Slot` instance,
+           e.g., `param = Param(int, 0)`. This is not the recommended way of declaring a slot anymore, because it causes problems with static type
            checkers, like MyPy. In Python, class attributes can be accessed using the class or using the instance. For example, if a class ``Test``
-           has a class attribute ``a = 5``, then ``Test.a`` and ``Test().a`` will both return ``5``. Static type checkers, like MyPy, do not know that
-           we are converting the class attribute ``a`` to an instance attribute of type ``int`` during instantiation, so they will assume that when a
+           has a class attribute `a = 5`, then `Test.a` and `Test().a` will both return `5`. Static type checkers, like MyPy, do not know that we are
+           converting the class attribute ``a`` to an instance attribute of type :py:class:`int` during instantiation, so they will assume that when a
            slot is accessed using the instance, it will have the same type as the class attribute. This means that the static type checker will show
-           an error when the slot is accessed using the instance, because the type of the class attribute is ``Slot`` and not ``int``.
-        2) The new way of declaring a slot, which is to declare it as a class attribute of type ``Annotated``. The ``Annotated`` type is a special
-           type that allows us to add metadata to a type hint. The first argument of ``Annotated`` is the actual type of the attribute, and then any
-           number of additional arguments can be passed, which are used as metadata. So, for example, a parameter slot can be declared as
-           ``param: Annotated[float, Param(float, 0.0)]``. Since the static type checker knows that the actual type of the attribute is ``float``, it
-           will not show an error when the slot is accessed using the instance. The metadata is used to store the instance of the slot, which contains
-           the information about the data type, the default value, etc. Unfortunately, this is only a declaration, which has no effect on the runtime.
-           This means, that no actual class attribute is created. But ``Annotated`` will add a special ``__annotations__`` attribute to the class,
-           which contains a dictionary with the names of the declared class attributes and their metadata.
+           an error when the slot is accessed using the instance, because the type of the class attribute is :py:class:`~corelay.plugboard.Slot` and
+           not :py:class:`int`.
+        2) The new way of declaring a slot, which is to declare it as a class attribute of type :py:class:`typing.Annotated`. The
+           :py:class:`typing.Annotated` type is a special type that allows us to add metadata to a type hint. The first argument of
+           :py:class:`typing.Annotated` is the actual type of the attribute, and then any number of additional arguments can be passed, which are used
+           as metadata. So, for example, a parameter slot can be declared as `param: Annotated[float, Param(float, 0.0)]`. Since the static type
+           checker knows that the actual type of the attribute is :py:class:`float`, it will not show an error when the slot is accessed using the
+           instance. The metadata is used to store the instance of the slot, which contains the information about the data type, the default value,
+           etc. Unfortunately, this is only a declaration, which has no effect on the runtime. This means, that no actual class attribute is created.
+           But :py:class:`typing.Annotated` will add a special ``__annotations__`` attribute to the class, which contains a :py:class:`dict` with the
+           names of the declared class attributes and their metadata.
 
-        The ``MetaTracker`` meta class is used to track the class attributes of a class that are not special "dunder" attributes like ``__class__``,
-        as well as the declared class attributes from the ``__annotations__`` attribute. The tracked class attributes are stored in an ``OrderedDict``
-        called ``__tracked__``. The ``Tracker`` class uses the ``MetaTracker`` meta class and allows users to access the tracked class attributes. The
-        class attributes are tracked in the order they were declared in the class, with the caveat that first, all class attributes come in the order
-        of declaration, and then all declared class attributes come in the order of declaration. As long as only one method of declaring a slot is
-        used, the order of declaration will be preserved.
+        The :py:class:`MetaTracker` meta class is used to track the class attributes of a class that are not special "dunder" attributes like
+        ``__class__``, as well as the declared class attributes from the ``__annotations__`` attribute. The tracked class attributes are stored in an
+        :py:class:`collections.OrderedDict` called :py:attr:`Tracker.__tracked__`. The :py:class:`Tracker` class uses the :py:class:`MetaTracker` meta
+        class and allows users to access the tracked class attributes. The class attributes are tracked in the order they were declared in the class,
+        with the caveat that first, all class attributes come in the order of declaration, and then all declared class attributes come in the order of
+        declaration. As long as only one method of declaring a slot is used, the order of declaration will be preserved.
 
         For more information on meta classes, please refer to `PEP 3115 <https://peps.python.org/pep-3115/>`_.
 
@@ -45,7 +52,7 @@ class MetaTracker(ABCMeta):
         ...     b = 21
         ...     c = 42
         ... OrderedInts(a=0).__tracked__
-        OrderedDict([('a', 0), ('b', 21), ('c', 42)])
+        collections.OrderedDict([('a', 0), ('b', 21), ('c', 42)])
     """
 
     @classmethod
@@ -54,46 +61,48 @@ class MetaTracker(ABCMeta):
         class_name: str,
         base_classes: tuple[type, ...],
         /,
-        **kwargs: Any
-    ) -> OrderedDict[str, Any]:
-        """Prepare the class dict to be an ``OrderedDict``. This is done to preserve the order of declaration of the class attributes.
+        **kwargs: typing.Any
+    ) -> collections.OrderedDict[str, typing.Any]:
+        """Prepare the class dict to be an :py:class:`collections.OrderedDict`. This is done to preserve the order of declaration of the class
+        attributes.
 
         Args:
             class_name (str): The name of the class.
             base_classes (tuple[type, ...]): The base classes of the class.
-            **kwargs (Any): Additional keyword arguments.
+            **kwargs (typing.Any): Additional keyword arguments.
 
         Returns:
-            OrderedDict[str, Any]: Returns a ``OrderedDict``, which will be used as the dictionary for the class attributes.
+            collections.OrderedDict[str, typing.Any]: Returns a :py:class:`collections.OrderedDict`, which will be used as the dictionary for the
+            class attributes.
         """
 
-        return OrderedDict()
+        return collections.OrderedDict()
 
-    def __new__(mcs, class_name: str, base_classes: tuple[type, ...], class_attributes: OrderedDict[str, Any]) -> 'MetaTracker':
-        """Is called when a new class is created with the ``MetaTracker`` as its metaclass. Attaches a new ``__tracked__`` attribute to the class,
-        which is a dictionary with all public attributes of the class, i.e., those not enclosed in double underscores. If the class that is being
-        created already has a ``__tracked__`` attribute, the new attributes are appended to it.
+    def __new__(mcs, class_name: str, base_classes: tuple[type, ...], class_attributes: collections.OrderedDict[str, typing.Any]) -> 'MetaTracker':
+        """Is called when a new class is created with the :py:class:`MetaTracker` as its metaclass. Attaches a new :py:attr:`Tracker.__tracked__`
+        attribute to the class, which is a :py:class:`dict` with all public attributes of the class, i.e., those not enclosed in double underscores.
+        If the class that is being created already has a :py:attr:`Tracker.__tracked__` attribute, the new attributes are appended to it.
 
         Args:
             class_name (str): The name of the class.
             base_classes (tuple[type, ...]): The base classes of the class.
-            class_attributes (OrderedDict[str, Any]): A dictionary with the attributes of the class. In this case, with the addition of tracker
-                attributes.
+            class_attributes (collections.OrderedDict[str, typing.Any]): A :py:class:`dict` with the attributes of the class. In this case, with the
+                addition of tracker attributes.
 
         Returns:
-            MetaTracker: Returns the new class with the ``__tracked__`` attribute.
+            MetaTracker: Returns the new class with the :py:attr:`Tracker.__tracked__` attribute.
         """
 
         # Retrieves the class attributes that are not special "dunder" attributes, like __class__, i.e., any class attributes that is not enclosed in
         # double underscores (this is the classical way in which slots can be declared)
-        tracked_class_attributes: OrderedDict[str, Any] = OrderedDict(
+        tracked_class_attributes: collections.OrderedDict[str, typing.Any] = collections.OrderedDict(
             (attribute_name, attribute_value)
             for attribute_name, attribute_value in class_attributes.items()
             if not (attribute_name[:2] + attribute_name[-2:]) == '____'
         )
 
         # Retrieves the declared class attributes, which were declared using Annotated (this is the new way in which slots can be declared)
-        tracked_declared_class_attributes: OrderedDict[str, Any] = OrderedDict()
+        tracked_declared_class_attributes: collections.OrderedDict[str, typing.Any] = collections.OrderedDict()
         if '__annotations__' in class_attributes:
             for attribute_name, attribute_value in class_attributes['__annotations__'].items():
                 if (attribute_name[:2] + attribute_name[-2:]) == '____':
@@ -111,12 +120,12 @@ class MetaTracker(ABCMeta):
         class_attributes.update(tracked_declared_class_attributes)
 
         # Creates a new class with the given name, bases, and class attributes
-        new_class: Any = super().__new__(mcs, class_name, base_classes, dict(class_attributes))
+        new_class: typing.Any = super().__new__(mcs, class_name, base_classes, dict(class_attributes))
 
         # Checks if the class or one of its base classes already has a __tracked__ attribute, if not, a new __tracked__ attribute is created,
         # otherwise, the __tracked__ attribute is copied
-        tracked_attributes: OrderedDict[str, Any] = OrderedDict()
-        if hasattr(new_class, '__tracked__') and isinstance(new_class.__tracked__, OrderedDict):
+        tracked_attributes: collections.OrderedDict[str, typing.Any] = collections.OrderedDict()
+        if hasattr(new_class, '__tracked__') and isinstance(new_class.__tracked__, collections.OrderedDict):
             tracked_attributes = new_class.__tracked__.copy()
 
         # Adds the class attributes and the declared class attributes that were retrieved above
@@ -130,33 +139,37 @@ class MetaTracker(ABCMeta):
 
 
 class Tracker(metaclass=MetaTracker):
-    """Tracks all public class attributes, i.e., all class attributes not enclosed int double underscores. This makes them available in a class
-    attribute ``__tracked__`` using the meta class ``MetaTracker``.
+    """Tracks all public class attributes, i.e., all class attributes not enclosed in double underscores. This makes them available in a class
+    attribute :py:attr:`Tracker.__tracked__` using the meta class :py:class:`MetaTracker`.
     """
 
-    __tracked__: OrderedDict[str, Any]
-    """An ``OrderedDict`` with all public class attributes, i.e., all class attributes not enclosed with double underscores."""
+    __tracked__: collections.OrderedDict[str, typing.Any]
+    """An :py:class:`collections.OrderedDict` with all public class attributes, i.e., all class attributes not enclosed with double underscores.
+
+    :meta hide-value:
+    """
 
     @classmethod
-    def collect(cls, dtype: type | tuple[type, ...]) -> OrderedDict[str, Any]:
+    def collect(cls, dtype: type | tuple[type, ...]) -> collections.OrderedDict[str, typing.Any]:
         """Retrieves all tracked class attributes of a certain type.
 
         Args:
             dtype (type | tuple[type, ...]): The type or types of the class attributes to retrieve.
 
         Returns:
-            OrderedDict[str, Any]: Returns an ``OrderedDict`` that contains the public class attributes, i.e., all class attributes not enclosed in
-                double underscores, of the given type or types. The keys are the attribute names and the values are the attribute values.
+            collections.OrderedDict[str, typing.Any]: Returns an :py:class:`collections.OrderedDict` that contains the public class attributes, i.e.,
+            all class attributes not enclosed in double underscores, of the given type or types. The keys are the attribute names and the values are
+            the attribute values.
         """
 
-        return OrderedDict(
+        return collections.OrderedDict(
             (attribute_name, attribute_value)
             for attribute_name, attribute_value in cls.__tracked__.items()
             if isinstance(attribute_value, dtype)
         )
 
     @classmethod
-    def get(cls, attribute_name: str) -> Any:
+    def get(cls, attribute_name: str) -> typing.Any:
         """Retrieves a tracked class attribute by name.
 
         Args:
@@ -166,31 +179,33 @@ class Tracker(metaclass=MetaTracker):
             AttributeError: The class attribute does not exist.
 
         Returns:
-            Any: Returns the value of the class attribute with the given name. If the class attribute does not exist `None` is returned.
+            typing.Any: Returns the value of the class attribute with the given name. If the class attribute does not exist :py:obj:`None` is
+            returned.
         """
 
         if attribute_name not in cls.__tracked__:
             raise AttributeError(f"Class attribute '{attribute_name}' does not exist.")
         return cls.__tracked__.get(attribute_name)
 
-    def collect_attr(self, dtype: type | tuple[type, ...]) -> OrderedDict[str, Any]:
+    def collect_attr(self, dtype: type | tuple[type, ...]) -> collections.OrderedDict[str, typing.Any]:
         """Retrieves all instance attributes, corresponding to tracked class attributes of a certain type.
 
         Args:
             dtype (type | tuple[type, ...]): The type or types of the instance attributes to retrieve.
 
         Returns:
-            OrderedDict[str, Any]: Returns an ``OrderedDict`` that contains the instance attributes, corresponding to tracked class attributes, of the
-                given type or types. The keys are the attribute names and the values are the attribute values.
+            collections.OrderedDict[str, typing.Any]: Returns an :py:class:`collections.OrderedDict` that contains the instance attributes,
+            corresponding to tracked class attributes, of the given type or types. The keys are the attribute names and the values are the attribute
+            values.
         """
 
-        return OrderedDict(
+        return collections.OrderedDict(
             (attribute_name, getattr(self, attribute_name, None))
             for attribute_name, attribute_value in self.__tracked__.items()
             if isinstance(attribute_value, dtype)
         )
 
-    def get_attr(self, attribute_name: str) -> Any:
+    def get_attr(self, attribute_name: str) -> typing.Any:
         """Retrieves an instance attribute, corresponding to a tracked class attribute, by name.
 
         Args:
@@ -200,7 +215,8 @@ class Tracker(metaclass=MetaTracker):
             AttributeError: The instance attribute does not exist.
 
         Returns:
-            Any: Returns the value of the instance attribute with the given name. If the instance attribute does not exist `None` is returned.
+            typing.Any: Returns the value of the instance attribute with the given name. If the instance attribute does not exist
+            :py:obj:`None` is returned.
         """
 
         if attribute_name not in self.__tracked__:

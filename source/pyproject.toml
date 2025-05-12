@@ -101,7 +101,7 @@ dev = [
 
 # Dependencies required for testing
 testing = [
-    "tox>=4.25.0,<5.0.0",
+    "tox>=4.26.0,<5.0.0",
     "tox-uv>=1.25.0,<2.0.0",
     "pytest>=8.3.5,<9.0.0",
     "coverage>=7.8.0,<8.0.0",
@@ -110,11 +110,11 @@ testing = [
 
 # Dependencies required for linting
 linting = [
-    "pylint>=3.3.6,<4.0.0",
+    "pylint>=3.3.7,<4.0.0",
     "pycodestyle>=2.13.0,<3.0.0",
     "pydoclint>=0.6.6,<1.0.0",
     "mypy>=1.15.0,<2.0.0",
-    "scipy-stubs>=1.15.2.2,<2.0.0",
+    "scipy-stubs>=1.15.3.0,<2.0.0",
     "pytest-mypy>=1.0.1,<2.0.0"
 ]
 
@@ -132,7 +132,7 @@ docs = [
 requires = [
     "hatchling>=1.27.0,<2.0.0",
     "hatch-vcs>=0.4.0,<1.0.0",
-    "hatch-fancy-pypi-readme>=24.1.0,<25.0.0"
+    "hatch-fancy-pypi-readme>=25.1.0,<26.0.0"
 ]
 build-backend = "hatchling.build"
 

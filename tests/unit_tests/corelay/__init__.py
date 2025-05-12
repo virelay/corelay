@@ -1,1 +1,1 @@
-"""A package that contains unit tests for the ``corelay`` package."""
+"""A package that contains unit tests for the :py:mod:`corelay` package."""

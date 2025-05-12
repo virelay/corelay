@@ -1,53 +1,56 @@
-"""A module that contains unit tests for the ``corelay.processor.preprocessing`` module."""
+"""A module that contains unit tests for the :py:mod:`corelay.processor.preprocessing` module."""
+
+import typing
 
 import numpy
 import pytest
-from numpy.typing import NDArray
 
 from corelay.processor.preprocessing import Rescale, Resize, Pooling
 
 
 @pytest.fixture(name='no_channels', scope='module')
-def get_no_channels_fixture() -> NDArray[numpy.float64]:
+def get_no_channels_fixture() -> numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]:
     """Generates a grayscale image-like array that contains all ones of shape `(number_of_samples, height, width)`.
 
     Returns:
-        NDArray[numpy.float64]: Returns an image-like array of shape `(number_of_samples, height, width)`.
+        numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]: Returns an image-like array of shape `(number_of_samples, height, width)`.
     """
 
     return numpy.ones((10, 8, 8))
 
 
 @pytest.fixture(name='channels_first', scope='module')
-def get_channels_first_fixture() -> NDArray[numpy.float64]:
+def get_channels_first_fixture() -> numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]:
     """Generates an image-like array that contains all ones of shape `(number_of_samples, number_of_channels, height, width)`, where the channels come
     before the image size.
 
     Returns:
-        NDArray[numpy.float64]: Returns an image-like array of shape `(number_of_samples, number_of_channels, height, width)`.
+        numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]: Returns an image-like array of shape
+        `(number_of_samples, number_of_channels, height, width)`.
     """
 
     return numpy.ones((10, 3, 8, 8))
 
 
 @pytest.fixture(name='channels_last', scope='module')
-def get_channels_last_fixture() -> NDArray[numpy.float64]:
+def get_channels_last_fixture() -> numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]:
     """Generates an image-like array that contains all ones of shape `(number_of_samples, height, width, number_of_channels)`, where the channels come
     last.
 
     Returns:
-        NDArray[numpy.float64]: Returns an image-like array of shape `(number_of_samples, height, width, number_of_channels)`.
+        numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]: Returns an image-like array of shape
+        `(number_of_samples, height, width, number_of_channels)`.
     """
 
     return numpy.ones((10, 8, 8, 3))
 
 
 @pytest.fixture(name='random_noise', scope='module')
-def get_random_noise_fixture() -> NDArray[numpy.float64]:
+def get_random_noise_fixture() -> numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]:
     """Generates a grayscale image-like array that contains all normally distributed noise of shape `(number_of_samples, height, width)`.
 
     Returns:
-        NDArray[numpy.float64]: Returns an image-like array of shape `(number_of_samples, height, width)`.
+        numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]: Returns an image-like array of shape `(number_of_samples, height, width)`.
     """
 
     return numpy.random.normal(0, 1, (10, 8, 8))
@@ -63,6 +66,7 @@ def get_random_noise_fixture() -> NDArray[numpy.float64]:
 )
 def test_rescaling(fixture_name: str, shape: tuple[int, ...], request: pytest.FixtureRequest) -> None:
     """Tests the rescaling pre-processing processor.
+
     Args:
         fixture_name (str): The name of the fixture that is to be used for the test.
         shape (tuple[int, ...]): The expected shape of the output data.
@@ -70,9 +74,9 @@ def test_rescaling(fixture_name: str, shape: tuple[int, ...], request: pytest.Fi
     """
 
     processor = Rescale(scale=0.5, channels_first=fixture_name == 'channels_first')
-    input_data: NDArray[numpy.float64] = request.getfixturevalue(fixture_name)
+    input_data: numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]] = request.getfixturevalue(fixture_name)
 
-    output_data: NDArray[numpy.float64] = processor(input_data)
+    output_data: numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]] = processor(input_data)
 
     assert output_data.shape == shape
     assert input_data.max() >= output_data.max()

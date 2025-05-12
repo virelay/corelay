@@ -229,9 +229,9 @@ def make_dataset_example() -> None:
 
 
 def main() -> None:
-    """The entrypoint to the hdf5_structure script, which generates two sets of sample HDF5 databases, one were the dataset samples and their
-    corresponding attributions are stored in HDF5 groups, and one were the dataset samples and their corresponding attributions are stored in HDF5
-    datasets.
+    """The entrypoint to the :py:mod:`hdf5_structure` script, which generates two sets of sample HDF5 databases, one were the dataset samples and
+    their corresponding attributions are stored in HDF5 groups, and one were the dataset samples and their corresponding attributions are stored in
+    HDF5 datasets.
     """
 
     make_group_example()

@@ -1,7 +1,8 @@
-"""A module that contains unit tests for the ``corelay.processor.base`` module."""
+"""A module that contains unit tests for the :py:mod:`corelay.processor.base` module."""
 
+import typing
 from collections.abc import Callable
-from typing import Annotated, Any
+from typing import Annotated
 
 import pytest
 
@@ -12,14 +13,14 @@ from corelay.processor.base import Processor, FunctionProcessor, ensure_processo
 
 @pytest.fixture(name='processor_type', scope='module')
 def get_processor_type_fixture() -> type[Processor]:
-    """A fixture that produces a custom ``Processor`` type.
+    """A fixture that produces a custom :py:class:`~corelay.processor.base.Processor` type.
 
     Returns:
-        type[Processor]: Returns a custom ``Processor`` type.
+        type[Processor]: Returns a custom :py:class:`~corelay.processor.base.Processor` type.
     """
 
     class MyProcessor(Processor):
-        """A custom ``Processor`` type."""
+        """A custom :py:class:`~corelay.processor.base.Processor` type."""
 
         param_1: Annotated[str, Param(str, mandatory=True)]
         param_2: Annotated[int, Param(int, -25, positional=True)]
@@ -27,14 +28,14 @@ def get_processor_type_fixture() -> type[Processor]:
         value = 42
         text = 'apple'
 
-        def function(self, data: Any) -> Any:  # pylint: disable=unused-argument
-            """An example function that implements the logic of the custom ``Processor``.
+        def function(self, data: typing.Any) -> typing.Any:  # pylint: disable=unused-argument
+            """An example function that implements the logic of the custom :py:class:`~corelay.processor.base.Processor`.
 
             Args:
-                data (Any): The input data, which is not used.
+                data (typing.Any): The input data, which is not used.
 
             Returns:
-                Any: Returns a fixed value of 21.
+                typing.Any: Returns a fixed value of 21.
             """
 
             return 21
@@ -43,11 +44,13 @@ def get_processor_type_fixture() -> type[Processor]:
 
 
 @pytest.fixture(name='kwargs', scope='module')
-def get_kwargs_fixture() -> dict[str, Any]:
-    """A fixture that produces a dictionary with valid ``Param`` values for a ``Processor``.
+def get_kwargs_fixture() -> dict[str, typing.Any]:
+    """A fixture that produces a :py:class:`dict` with valid :py:class:`~corelay.base.Param` values for a
+    :py:class:`~corelay.processor.base.Processor`.
 
     Returns:
-        dict[str, Any]: Returns a dictionary with valid ``Param`` values for a ``Processor``.
+        dict[str, typing.Any]: Returns a :py:class:`dict` with valid :py:class:`~corelay.base.Param` values for a
+        :py:class:`~corelay.processor.base.Processor`.
     """
 
     return {
@@ -108,14 +111,14 @@ def get_unbound_function_fixture() -> Callable[[int], int]:
 
 
 class TestProcessor:
-    """Contains unit tests for the ``Processor`` class."""
+    """Contains unit tests for the :py:class:`~corelay.processor.base.Processor` class."""
 
     @staticmethod
     def test_params_tracked(processor_type: type[Processor]) -> None:
         """Tests that processors track parameters correctly.
 
         Args:
-            processor_type (type[Processor]): The custom ``Processor`` type that is to be used in the test.
+            processor_type (type[Processor]): The custom :py:class:`~corelay.processor.base.Processor` type that is to be used in the test.
         """
 
         assert (
@@ -127,18 +130,19 @@ class TestProcessor:
         """Tests that processors instantiate properly in all cases.
 
         Args:
-            processor_type (type[Processor]): The custom ``Processor`` type that is to be used in the test.
+            processor_type (type[Processor]): The custom :py:class:`~corelay.processor.base.Processor` type that is to be used in the test.
         """
 
         processor_type()
 
     @staticmethod
-    def test_instance_assign(processor_type: type[Processor], kwargs: dict[str, Any]) -> None:
+    def test_instance_assign(processor_type: type[Processor], kwargs: dict[str, typing.Any]) -> None:
         """Tests that the parameter values passed as keyword arguments during instantiation are properly set.
 
         Args:
-            processor_type (type[Processor]): The custom ``Processor`` type that is to be used in the test.
-            kwargs (dict[str, Any]): A dictionary with valid ``Param`` values for a ``Processor``.
+            processor_type (type[Processor]): The custom :py:class:`~corelay.processor.base.Processor` type that is to be used in the test.
+            kwargs (dict[str, typing.Any]): A :py:class:`dict` with valid :py:class:`~corelay.base.Param` values for a
+                :py:class:`~corelay.processor.base.Processor`.
         """
 
         processor = processor_type(**kwargs)
@@ -149,7 +153,7 @@ class TestProcessor:
         """Tests that the default values are be properly.
 
         Args:
-            processor_type (type[Processor]): The custom ``Processor`` type that is to be used in the test.
+            processor_type (type[Processor]): The custom :py:class:`~corelay.processor.base.Processor` type that is to be used in the test.
         """
 
         processor = processor_type(param_1='bacon')
@@ -162,7 +166,7 @@ class TestProcessor:
         """Tests that the positional values are properly assigned.
 
         Args:
-            processor_type (type[Processor]): The custom ``Processor`` type that is to be used in the test.
+            processor_type (type[Processor]): The custom :py:class:`~corelay.processor.base.Processor` type that is to be used in the test.
         """
 
         processor = processor_type(44)
@@ -175,7 +179,7 @@ class TestProcessor:
         """Tests that unknown parameters raise an exception.
 
         Args:
-            processor_type (type[Processor]): The custom ``Processor`` type that is to be used in the test.
+            processor_type (type[Processor]): The custom :py:class:`~corelay.processor.base.Processor` type that is to be used in the test.
         """
 
         with pytest.raises(TypeError):
@@ -183,7 +187,7 @@ class TestProcessor:
 
     @staticmethod
     def test_abstract_func() -> None:
-        """Tests that the ``Processor`` class is abstract and thus fails to instantiate."""
+        """Tests that the :py:class:`~corelay.processor.base.Processor` class is abstract and thus fails to instantiate."""
 
         with pytest.raises(TypeError):
             Processor()  # type: ignore[abstract] # pylint: disable=abstract-class-instantiated
@@ -193,7 +197,7 @@ class TestProcessor:
         """Tests that checkpoints properly store data.
 
         Args:
-            processor_type (type[Processor]): The custom ``Processor`` type that is to be used in the test.
+            processor_type (type[Processor]): The custom :py:class:`~corelay.processor.base.Processor` type that is to be used in the test.
         """
 
         processor = processor_type(param_1='bacon', is_checkpoint=True)
@@ -202,23 +206,25 @@ class TestProcessor:
         assert processor.checkpoint_data == output
 
     @staticmethod
-    def test_param_values(processor_type: type[Processor], kwargs: dict[str, Any]) -> None:
+    def test_param_values(processor_type: type[Processor], kwargs: dict[str, typing.Any]) -> None:
         """Tests that the parameters are correctly set in the constructor.
         Args:
-            processor_type (type[Processor]): The custom ``Processor`` type that is to be used in the test.
-            kwargs (dict[str, Any]): A dictionary with valid ``Param`` values for a ``Processor``.
+            processor_type (type[Processor]): The custom :py:class:`~corelay.processor.base.Processor` type that is to be used in the test.
+            kwargs (dict[str, typing.Any]): A :py:class:`dict` with valid :py:class:`~corelay.base.Param` values for a
+                :py:class:`~corelay.processor.base.Processor`.
         """
 
         processor = processor_type(**kwargs)
         assert processor.param_values() == kwargs
 
     @staticmethod
-    def test_copy_param_values(processor_type: type[Processor], kwargs: dict[str, Any]) -> None:
+    def test_copy_param_values(processor_type: type[Processor], kwargs: dict[str, typing.Any]) -> None:
         """Tests that copies of processors have identical Param values.
 
         Args:
-            processor_type (type[Processor]): The custom ``Processor`` type that is to be used in the test.
-            kwargs (dict[str, Any]): A dictionary with valid ``Param`` values for a ``Processor``.
+            processor_type (type[Processor]): The custom :py:class:`~corelay.processor.base.Processor` type that is to be used in the test.
+            kwargs (dict[str, typing.Any]): A :py:class:`dict` with valid :py:class:`~corelay.base.Param` values for a
+                :py:class:`~corelay.processor.base.Processor`.
         """
 
         processor = processor_type(**kwargs)
@@ -228,10 +234,10 @@ class TestProcessor:
 
     @staticmethod
     def test_multiple_dtype(processor_type: type[Processor]) -> None:
-        """Tests that a ``Parameter`` can be of multiple types.
+        """Tests that a :py:class:`~corelay.base.Param` can be of multiple types.
 
         Args:
-            processor_type (type[Processor]): The custom ``Processor`` type that is to be used in the test.
+            processor_type (type[Processor]): The custom :py:class:`~corelay.processor.base.Processor` type that is to be used in the test.
         """
 
         processor_type(param_1='soup', param_3=21)
@@ -242,7 +248,7 @@ class TestProcessor:
         """Tests that mandatory parameters raise an exception when accessed without being set.
 
         Args:
-            processor_type (type[Processor]): The custom ``Processor`` type that is to be used in the test.
+            processor_type (type[Processor]): The custom :py:class:`~corelay.processor.base.Processor` type that is to be used in the test.
         """
 
         processor = processor_type()
@@ -252,10 +258,10 @@ class TestProcessor:
 
     @staticmethod
     def test_wrong_type_param(processor_type: type[Processor]) -> None:
-        """Tests that passing a value with wrong the type raises a ``TypeError``.
+        """Tests that passing a value with wrong the type raises a :py:class:`TypeError`.
 
         Args:
-            processor_type (type[Processor]): The custom ``Processor`` type that is to be used in the test.
+            processor_type (type[Processor]): The custom :py:class:`~corelay.processor.base.Processor` type that is to be used in the test.
         """
 
         with pytest.raises(TypeError):
@@ -263,23 +269,25 @@ class TestProcessor:
 
     @staticmethod
     def test_bad_dtype() -> None:
-        """Tests that the the ``dtype`` only accepts types, i.e., non-type values cannot be passed as argument for the ``dtype`` parameter."""
+        """Tests that the the :py:attr:`~corelay.plugboard.Slot.dtype` only accepts types, i.e., non-type values cannot be passed as argument for the
+        ``dtype`` parameter.
+        """
 
         with pytest.raises(TypeError):
             class TestProcessorWithWrongParam(Processor):
-                """A custom ``Processor`` with wrong a Param."""
+                """A custom :py:class:`~corelay.processor.base.Processor` with wrong a Param."""
 
                 param: Annotated[int, Param(2)]
-                """A wrong ``Param`` with a non-type value as dtype."""
+                """A wrong :py:class:`~corelay.base.Param` with a non-type value as dtype."""
 
-                def function(self, data: Any) -> Any:
-                    """An example function that implements the logic of the custom ``Processor``.
+                def function(self, data: typing.Any) -> typing.Any:
+                    """An example function that implements the logic of the custom :py:class:`~corelay.processor.base.Processor`.
 
                     Args:
-                        data (Any): The input data.
+                        data (typing.Any): The input data.
 
                     Returns:
-                        Any: Returns the input data.
+                        typing.Any: Returns the input data.
                     """
 
                     return data
@@ -288,10 +296,10 @@ class TestProcessor:
 
     @staticmethod
     def test_update_defaults(processor_type: type[Processor]) -> None:
-        """Tests that the default values of a ``Parameter`` instance can be updated.
+        """Tests that the default values of a :py:class:`~corelay.base.Param` instance can be updated.
 
         Args:
-            processor_type (type[Processor]): The custom ``Processor`` type that is to be used in the test.
+            processor_type (type[Processor]): The custom :py:class:`~corelay.processor.base.Processor` type that is to be used in the test.
         """
 
         processor = processor_type(param_1='soup')
@@ -303,10 +311,10 @@ class TestProcessor:
 
     @staticmethod
     def test_reset_defaults(processor_type: type[Processor]) -> None:
-        """Tests that the default values of a ``Parameter`` instance can be reset.
+        """Tests that the default values of a :py:class:`~corelay.base.Param` instance can be reset.
 
         Args:
-            processor_type (type[Processor]): The custom ``Processor`` type that is to be used in the test.
+            processor_type (type[Processor]): The custom :py:class:`~corelay.processor.base.Processor` type that is to be used in the test.
         """
 
         processor = processor_type(param_1='soup')
@@ -318,10 +326,11 @@ class TestProcessor:
 
     @staticmethod
     def test_reset_defaults_assigned(processor_type: type[Processor]) -> None:
-        """Tests that resetting the default values of ``Param`` instances go back to returning instantiation-time default values.
+        """Tests that resetting the default values of :py:class:`~corelay.base.Param` instances go back to returning instantiation-time default
+        values.
 
         Args:
-            processor_type (type[Processor]): The custom ``Processor`` type that is to be used in the test.
+            processor_type (type[Processor]): The custom :py:class:`~corelay.processor.base.Processor` type that is to be used in the test.
         """
 
         processor = processor_type(param_1='soup', param_2=2)
@@ -333,10 +342,10 @@ class TestProcessor:
 
     @staticmethod
     def test_update_defaults_wrong_dtype(processor_type: type[Processor]) -> None:
-        """Tests that updating the default values of ``Param`` instances with the wrong type raises a ``TypeError``.
+        """Tests that updating the default values of :py:class:`~corelay.base.Param` instances with the wrong type raises a :py:class:`TypeError`.
 
         Args:
-            processor_type (type[Processor]): The custom ``Processor`` type that is to be used in the test.
+            processor_type (type[Processor]): The custom :py:class:`~corelay.processor.base.Processor` type that is to be used in the test.
         """
 
         processor = processor_type(param_1='soup')
@@ -346,11 +355,12 @@ class TestProcessor:
 
 
 class TestFunctionProcessor:
-    """Contains unit tests for the ``FunctionProcessor`` class."""
+    """Contains unit tests for the :py:class:`~corelay.processor.base.FunctionProcessor` class."""
 
     @staticmethod
     def test_instantiation(unbound_function: Callable[[int], int]) -> None:
-        """Tests that the instantiation of a ``FunctionProcessor`` with an unbound function as a keyword argument should work.
+        """Tests that the instantiation of a :py:class:`~corelay.processor.base.FunctionProcessor` with an unbound function as a keyword argument
+        should work.
 
         Args:
             unbound_function (Callable[[int], int]): The unbound function that is to be used in the test.
@@ -360,8 +370,8 @@ class TestFunctionProcessor:
 
     @staticmethod
     def test_instance_call(unbound_function: Callable[[int], int]) -> None:
-        """Tests that calling a ``FunctionProcessor`` instance, that was constructed with a function that was passed as a keyword argument, results in
-        the same output as calling the function directly.
+        """Tests that calling a :py:class:`~corelay.processor.base.FunctionProcessor` instance, that was constructed with a function that was passed
+        as a keyword argument, results in the same output as calling the function directly.
 
         Args:
             unbound_function (Callable[[int], int]): The unbound function that is to be used in the test.
@@ -372,8 +382,8 @@ class TestFunctionProcessor:
 
     @staticmethod
     def test_instance_call_positional(unbound_function: Callable[[int], int]) -> None:
-        """Tests that calling a ``FunctionProcessor`` instance, that was constructed with a function that was passed as a positional argument, results
-        in the same output as calling the function directly.
+        """Tests that calling a :py:class:`~corelay.processor.base.FunctionProcessor` instance, that was constructed with a function that was passed
+        as a positional argument, results in the same output as calling the function directly.
 
         Args:
             unbound_function (Callable[[int], int]): The unbound function that is to be used in the test.
@@ -395,8 +405,8 @@ class TestFunctionProcessor:
 
     @staticmethod
     def test_non_callable() -> None:
-        """Tests that passing a non-callable object as an argument for the ``function`` parameter of the ``FunctionProcessor`` constructor raises a
-        ``TypeError``.
+        """Tests that passing a non-callable object as an argument for the ``processing_function`` parameter of the
+        :py:class:`~corelay.processor.base.FunctionProcessor` constructor raises a :py:class:`TypeError`.
         """
 
         with pytest.raises(TypeError):
@@ -404,15 +414,15 @@ class TestFunctionProcessor:
 
 
 class TestEnsureProcessor:
-    """Contains unit tests for the ``ensure_processor`` function."""
+    """Contains unit tests for the :py:func:`~corelay.processor.base.ensure_processor` function."""
 
     @staticmethod
     def test_processor(processor_type: type[Processor]) -> None:
-        """Tests that passing an existing ``Processor`` to the ``ensure_processor`` function returns the original ``Processor`` instead of creating a
-        new one.
+        """Tests that passing an existing :py:class:`~corelay.processor.base.Processor` to the :py:func:`~corelay.processor.base.ensure_processor`
+        function returns the original :py:class:`~corelay.processor.base.Processor` instead of creating a new one.
 
         Args:
-            processor_type (type[Processor]): The custom ``Processor`` type that is to be used in the test.
+            processor_type (type[Processor]): The custom :py:class:`~corelay.processor.base.Processor` type that is to be used in the test.
         """
 
         processor = processor_type(param_1='giraffe')
@@ -422,7 +432,9 @@ class TestEnsureProcessor:
 
     @staticmethod
     def test_function(unbound_function: Callable[[int], int]) -> None:
-        """Tests that passing a function to the ``ensure_processor`` function returns a new ``FunctionProcessor`` instance that wraps the function.
+        """Tests that passing a function to the :py:func:`~corelay.processor.base.ensure_processor` function returns a new
+        :py:class:`~corelay.processor.base.FunctionProcessor` instance that wraps the function.
+
         Args:
             unbound_function (Callable[[int], int]): The unbound function that is to be used in the test.
         """
@@ -432,18 +444,20 @@ class TestEnsureProcessor:
 
     @staticmethod
     def test_invalid() -> None:
-        """Tests that passing a non-callable object that is not of type ``Processor`` to the ``ensure_processor`` function raises a ''TypeError''."""
+        """Tests that passing a non-callable object that is not of type :py:class:`~corelay.processor.base.Processor` to the
+        :py:func:`~corelay.processor.base.ensure_processor` function raises a :py:class:`TypeError`.
+        """
 
         with pytest.raises(TypeError):
             ensure_processor('mummy')  # type: ignore[arg-type]
 
     @staticmethod
     def test_default_param_omitted(processor_type: type[Processor]) -> None:
-        """Tests that passing a ``Param`` value as a keyword argument to the ``ensure_processor`` function sets the value of the ``Param`` in the
-        returned ``Processor`` instance.
+        """Tests that passing a :py:class:`~corelay.base.Param` value as a keyword argument to the :py:func:`~corelay.processor.base.ensure_processor`
+        function sets the value of the :py:class:`~corelay.base.Param` in the returned :py:class:`~corelay.processor.base.Processor` instance.
 
         Args:
-            processor_type (type[Processor]): The custom ``Processor`` type that is to be used in the test.
+            processor_type (type[Processor]): The custom :py:class:`~corelay.processor.base.Processor` type that is to be used in the test.
         """
 
         processor = processor_type(param_1='giraffe')
@@ -453,11 +467,12 @@ class TestEnsureProcessor:
 
     @staticmethod
     def test_default_param_assigned(processor_type: type[Processor]) -> None:
-        """Tests that passing a ``Param`` value as a keyword argument the the ``ensure_processor`` function has a lower priority than explicitly set
-        ``Param`` values and should not overwrite them.
+        """Tests that passing a :py:class:`~corelay.base.Param` value as a keyword argument the the
+        :py:func:`~corelay.processor.base.ensure_processor` function has a lower priority than explicitly set :py:class:`~corelay.base.Param` values
+        and should not overwrite them.
 
         Args:
-            processor_type (type[Processor]): The custom ``Processor`` type that is to be used in the test.
+            processor_type (type[Processor]): The custom :py:class:`~corelay.processor.base.Processor` type that is to be used in the test.
         """
 
         processor = processor_type(param_1='giraffe', is_output=False)

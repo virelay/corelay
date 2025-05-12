@@ -1,0 +1,16 @@
+
+/* Justifies the text in the documentation articles, which makes them easier to read; words are automatically hyphenated */
+section > p,
+section > ol > li > p,
+section > ul > li > p,
+section > .admonition > p:not(.admonition-title),
+#bibliography .citation p {
+    text-align: justify;
+    hyphens: auto;
+}
+
+/* Sets the width of the labels in the bibliography to a fixed size, because otherwise, the labels are all different sizes, which makes the
+   bibliography look ragged and messy */
+#bibliography .citation .label {
+    width: 10rem;
+}
