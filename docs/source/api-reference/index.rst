@@ -6,7 +6,7 @@ The following section provides an exhaustive documentation of CoRelAy's constitu
 
 .. autosummary::
     :toctree:
-    :nosignatures:
+    :signatures: none
     :recursive:
 
     corelay.base
