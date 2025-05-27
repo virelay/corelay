@@ -66,6 +66,7 @@
     - Slots are now defined by declaring a class attribute with a type hint using the `Annotated` type. This is a type that allows to specify a type and additional metadata. For example, a string `Param` can be defined as follows: `param: Annotated[str, Param(str, 'Default value')]`.
     - This way, MyPy can infer the runtime type of the attribute and the metadata is used to define the `Slot`.
     - The old syntax is still supported, but it is no longer recommended and may be removed in the future.
+    - A deprecation warning is raised when using the old syntax, so that users can easily find and fix the code that uses the old syntax.
 
 ### CI/CD Updates in v0.3.0
 
