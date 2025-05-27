@@ -5,6 +5,7 @@ that inherit from :py:class:`~corelay.plugboard.Plugboard`.
 import collections
 import typing
 from abc import ABCMeta
+from warnings import warn
 
 
 class MetaTracker(ABCMeta):
@@ -93,7 +94,7 @@ class MetaTracker(ABCMeta):
             MetaTracker: Returns the new class with the :py:attr:`Tracker.__tracked__` attribute.
         """
 
-        # Retrieves the class attributes that are not special "dunder" attributes, like __class__, i.e., any class attributes that is not enclosed in
+        # Retrieves the class attributes that are not special "dunder" attributes, like __class__, i.e., any class attributes that are not enclosed in
         # double underscores (this is the classical way in which slots can be declared)
         tracked_class_attributes: collections.OrderedDict[str, typing.Any] = collections.OrderedDict(
             (attribute_name, attribute_value)
@@ -101,7 +102,52 @@ class MetaTracker(ABCMeta):
             if not (attribute_name[:2] + attribute_name[-2:]) == '____'
         )
 
-        # Retrieves the declared class attributes, which were declared using Annotated (this is the new way in which slots can be declared)
+        def is_slot(object_to_check: typing.Any) -> bool:
+            """Checks if the given object is either a :py:class:`~corelay.plugboard.Slot` or of a type that directly or indirectly derives from it.
+            This function is needed, because the module containing the :py:class:`~corelay.plugboard.Slot` class imports
+            :py:class:`~corelay.tracker.Tracker`. Therefore, directly importing the :py:class:`~corelay.plugboard.Slot` class here would cause a
+            circular import.
+
+            Args:
+                object_to_check (typing.Any): The object to check if it is a :py:class:`~corelay.plugboard.Slot`.
+
+            Returns:
+                bool: Returns :py:obj:`True` if the given object is either a :py:class:`~corelay.plugboard.Slot` or derives directly or indirectly
+                from it. Otherwise :py:obj:`False` is returned.
+            """
+
+            if object_to_check is None:
+                return False
+
+            classes_to_check: list[type] = [object_to_check.__class__]
+            classes_checked: list[type] = []
+            while classes_to_check:
+                current_class: type = classes_to_check.pop(0)
+
+                if current_class.__name__ == 'Slot':
+                    return True
+                classes_checked.append(current_class)
+
+                if hasattr(current_class, '__bases__'):
+                    for base_class in current_class.__bases__:
+                        if base_class not in classes_checked and base_class not in classes_to_check:
+                            classes_to_check.append(base_class)
+
+            return False
+
+        # Since the old syntax of declaring slots is deprecated, but still supported for the time being, a deprecation warning is issued
+        for attribute_name, attribute_value in tracked_class_attributes.items():
+            if is_slot(attribute_value):
+                warn(
+                    f'The {attribute_value.__class__.__name__} "{attribute_name}" was declared using the old syntax of declaring slots, which is '
+                    'deprecated. This syntax is currently still supported, but it will be removed in a future version of CoRelAy. Please refer to '
+                    'the migration guide to find out why this syntax was deprecated and how to update your code: '
+                    'https://corelay.readthedocs.io/en/latest/migration-guide/migrating-from-v0.2-to-v0.3.html.',
+                    DeprecationWarning
+                )
+
+        # Retrieves the declared class attributes, which were declared using Annotated and are are not special "dunder" attributes, like __class__,
+        # i.e., any class attributes that are not enclosed in double underscores (this is the new way in which slots can be declared)
         tracked_declared_class_attributes: collections.OrderedDict[str, typing.Any] = collections.OrderedDict()
         if '__annotations__' in class_attributes:
             for attribute_name, attribute_value in class_attributes['__annotations__'].items():
