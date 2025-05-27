@@ -77,6 +77,7 @@
 - Removed the GitHub Actions workflow matrix configurations for Python 3.7, as it is no longer supported by the project.
 - Added a job to the GitHub Actions workflow, which spell-checks the repository.
 - The GitHub Actions workflow now runs on pull requests and merges to the `main` and the `develop` branches. The workflow was previously only ran on pull requests and merges to the `main` branch. This was changed, because every feature branch that is to be merged into `develop` should be tested and linted before it is merged. Otherwise, build, test, and linting errors would only be detected just before the release of a new version, when the `develop` branch is merged into `main`.
+- Added a new GitHub Actions workflow, which builds the project and publishes it to PyPI. This workflow is triggered when GitHub release for a new version is created.
 - The configuration for the GitLab CI, which was stored in the `.gitlab-ci.yml` file, was removed. The project is no longer being hosted on GitLab, and the CI configuration is no longer needed.
 
 ### Documentation Updates in v0.3.0
