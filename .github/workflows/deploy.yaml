@@ -53,7 +53,7 @@ jobs:
         with:
           node-version: '22.14.0'
       - name: Install CoRelAy and its Dependencies
-        run: uv --directory source/backend sync --all-extras
+        run: uv --directory source/backend sync
       - name: Build the CoRelAy Project
         run: uv --directory source/backend build
       - name: Publish the CoRelAy Project to PyPI

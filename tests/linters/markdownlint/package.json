@@ -9,8 +9,8 @@
   "license": "AGPL-3.0-or-later",
   "private": true,
   "dependencies": {
-    "markdownlint": "^0.37.4",
-    "markdownlint-cli2": "^0.17.2"
+    "markdownlint": "^0.38.0",
+    "markdownlint-cli2": "^0.18.1"
   },
   "scripts": {
     "markdownlint": "npx markdownlint-cli2 --config .markdownlint.yaml '../../../**/*.md' '#../../../**/node_modules' '#../../../**/.venv' '#../../../**/.tox' '#../../../**/.pytest_cache'"

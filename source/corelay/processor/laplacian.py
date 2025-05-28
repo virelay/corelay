@@ -87,5 +87,5 @@ class RandomWalkNormalLaplacian(Laplacian):
             typing.Any: Returns the random walk normal graph Laplacian, which is a sparse representation of the random walk graph Laplacian matrix.
         """
 
-        degree = scipy.sparse.diags(a1ifmat(data.sum(1))**-1., 0)
+        degree = scipy.sparse.diags(a1ifmat(data.sum(axis=1))**-1.0, 0)
         return degree @ data

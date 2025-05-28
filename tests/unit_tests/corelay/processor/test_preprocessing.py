@@ -5,7 +5,7 @@ import typing
 import numpy
 import pytest
 
-from corelay.processor.preprocessing import Rescale, Resize, Pooling
+from corelay.processor.preprocessing import Histogram, Rescale, Resize, Pooling
 
 
 @pytest.fixture(name='no_channels', scope='module')
@@ -135,3 +135,68 @@ def test_pooling(fixture_name: str, shape: tuple[int, ...], stride: tuple[int, .
 
     assert output_data.shape == shape
     numpy.testing.assert_equal(output_data, 4 * numpy.ones(output_data.shape))
+
+
+def test_histogram() -> None:
+    """Tests the histogram pre-processing processor."""
+
+    processor = Histogram(bins=2)
+    input_data = numpy.array([[
+        [[1, 2],
+         [3, 4]],
+        [[1, 2],
+         [3, 4]],
+        [[1, 2],
+         [3, 4]]
+    ]])
+
+    output_data = processor(input_data)
+    assert output_data.shape == (1, 3, 2)
+
+    expected_histogram = numpy.array([[
+        [1.0 / 3.0, 1.0 / 3.0],
+        [1.0 / 3.0, 1.0 / 3.0],
+        [1.0 / 3.0, 1.0 / 3.0]
+    ]])
+    numpy.testing.assert_equal(output_data, expected_histogram)
+
+
+def test_histogram_with_channel_last_input() -> None:
+    """Tests the histogram pre-processing processor with images were the channel dimension comes last."""
+
+    processor = Histogram(bins=2, channels_first=False)
+    input_data = numpy.array([[[
+        [1, 1, 1],
+        [2, 2, 2]
+    ], [
+        [3, 3, 3],
+        [4, 4, 4]
+    ]]])
+
+    output_data = processor(input_data)
+    assert output_data.shape == (1, 3, 2)
+
+    expected_histogram = numpy.array([[
+        [1.0 / 3.0, 1.0 / 3.0],
+        [1.0 / 3.0, 1.0 / 3.0],
+        [1.0 / 3.0, 1.0 / 3.0]
+    ]])
+    numpy.testing.assert_equal(output_data, expected_histogram)
+
+
+def test_histogram_with_grayscale_input() -> None:
+    """Tests the histogram pre-processing processor with grayscale images."""
+
+    processor = Histogram(bins=2)
+    input_data = numpy.array([[
+        [1, 2],
+        [3, 4]
+    ]])
+
+    output_data = processor(input_data)
+    assert output_data.shape == (1, 1, 2)
+
+    expected_histogram = numpy.array([[
+        [1.0 / 3.0, 1.0 / 3.0]
+    ]])
+    numpy.testing.assert_equal(output_data, expected_histogram)

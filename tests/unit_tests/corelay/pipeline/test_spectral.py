@@ -47,6 +47,7 @@ def get_spiral_data_fixture(number_of_samples_per_class: int = 150) -> numpy.nda
 @pytest.fixture(name='number_of_neighbors', scope='module')
 def get_number_of_neighbors_fixture(spiral_data: numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]) -> int:
     """A fixture that choose a suitable number of neighbors for the k-nearest neighbors algorithm.
+
     Args:
         spiral_data (numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]): The spiral test data.
 

@@ -1,5 +1,7 @@
 """A module that contains unit tests for the :py:mod:`corelay.plugboard` module."""
 
+from typing import Annotated
+
 import pytest
 
 from corelay.plugboard import Slot, Plug, Plugboard
@@ -38,12 +40,13 @@ class TestSlot:
     def test_init_class_name() -> None:
         """Tests that when instantiating a class, the __name__ parameter of a contained :py:class:`~corelay.plugboard.Slot` is set accordingly."""
 
-        class SlotHolder:
+        class SlotHolder(Plugboard):
             """A test class that holds a single :py:class:`~corelay.plugboard.Slot`."""
 
-            my_slot = Slot()
+            my_slot: Annotated[object, Slot()]
             """A test slot."""
 
+        assert isinstance(SlotHolder.my_slot, Slot)
         assert SlotHolder.my_slot.__name__ == 'my_slot'
 
     @staticmethod
@@ -52,10 +55,10 @@ class TestSlot:
         returned.
         """
 
-        class SlotHolder:
+        class SlotHolder(Plugboard):
             """A test class that holds a single :py:class:`~corelay.plugboard.Slot`."""
 
-            my_slot = Slot(default=42)
+            my_slot: Annotated[int, Slot(int, default=42)]
             """A test slot."""
 
         slot_holder = SlotHolder()
@@ -65,10 +68,10 @@ class TestSlot:
     def test_instance_get() -> None:
         """Tests that getting a value after setting it succeeds."""
 
-        class SlotHolder:
+        class SlotHolder(Plugboard):
             """A test class that holds a single :py:class:`~corelay.plugboard.Slot`."""
 
-            my_slot = Slot(dtype=int)
+            my_slot: Annotated[int, Slot(dtype=int)]
             """A test slot."""
 
         slot_holder = SlotHolder()
@@ -79,10 +82,10 @@ class TestSlot:
     def test_instance_get_no_default() -> None:
         """Tests that when accessing a :py:class:`~corelay.plugboard.Slot` in an instance, where nothing is set, an exception is raised."""
 
-        class SlotHolder:
+        class SlotHolder(Plugboard):
             """A test class that holds a single :py:class:`~corelay.plugboard.Slot`."""
 
-            my_slot = Slot()
+            my_slot: Annotated[object, Slot()]
             """A test slot."""
 
         slot_holder = SlotHolder()
@@ -94,10 +97,10 @@ class TestSlot:
     def test_instance_set() -> None:
         """Tests that everything works alright when not setting a default value, but then setting the value of the object before accessing it."""
 
-        class SlotHolder:
+        class SlotHolder(Plugboard):
             """A test class that holds a single :py:class:`~corelay.plugboard.Slot`."""
 
-            my_slot = Slot(dtype=int)
+            my_slot: Annotated[int, Slot(dtype=int)]
             """A test slot."""
 
         slot_holder = SlotHolder()
@@ -109,25 +112,25 @@ class TestSlot:
     def test_instance_set_wrong_dtype() -> None:
         """Tests that setting a value with the wrong data type raises an exception."""
 
-        class SlotHolder:
+        class SlotHolder(Plugboard):
             """A test class that holds a single :py:class:`~corelay.plugboard.Slot`."""
 
-            my_slot = Slot(str)
+            my_slot: Annotated[str, Slot(str)]
             """A test slot."""
 
         slot_holder = SlotHolder()
 
         with pytest.raises(TypeError):
-            slot_holder.my_slot = 15
+            slot_holder.my_slot = 15  # type: ignore[assignment]
 
     @staticmethod
     def test_instance_delete_unchanged() -> None:
         """Tests that setting a value and deleting it afterwards with a set default value returns the default value"""
 
-        class SlotHolder:
+        class SlotHolder(Plugboard):
             """A test class that holds a single :py:class:`~corelay.plugboard.Slot`."""
 
-            my_slot = Slot(int, 42)
+            my_slot: Annotated[int, Slot(int, 42)]
             """A test slot."""
 
         slot_holder = SlotHolder()
@@ -140,10 +143,10 @@ class TestSlot:
     def test_instance_delete_without_default() -> None:
         """Tests that setting a value and deleting it afterwards without a default value raises an exception."""
 
-        class SlotHolder:
+        class SlotHolder(Plugboard):
             """A test class that holds a single :py:class:`~corelay.plugboard.Slot`."""
 
-            my_slot = Slot(int)
+            my_slot: Annotated[int, Slot(int)]
             """A test slot."""
 
         slot_holder = SlotHolder()
@@ -156,24 +159,26 @@ class TestSlot:
     def test_class_set_dtype() -> None:
         """Tests that setting a new data type that is consistent with the data type of the already existing default value succeeds."""
 
-        class SlotHolder:
+        class SlotHolder(Plugboard):
             """A test class that holds a single :py:class:`~corelay.plugboard.Slot`."""
 
-            my_slot = Slot(dtype=object, default=15)
+            my_slot: Annotated[object, Slot(dtype=object, default=15)]
             """A test slot."""
 
+        assert isinstance(SlotHolder.my_slot, Slot)
         SlotHolder.my_slot.dtype = int
 
     @staticmethod
     def test_class_set_dtype_inconsistent() -> None:
         """Tests that setting an new data type that is not consistent with the already existing default value fails."""
 
-        class SlotHolder:
+        class SlotHolder(Plugboard):
             """A test class that holds a single :py:class:`~corelay.plugboard.Slot`."""
 
-            my_slot = Slot(dtype=object, default=15)
+            my_slot: Annotated[object, Slot(dtype=object, default=15)]
             """A test slot."""
 
+        assert isinstance(SlotHolder.my_slot, Slot)
         with pytest.raises(TypeError):
             SlotHolder.my_slot.dtype = str
 
@@ -181,24 +186,26 @@ class TestSlot:
     def test_class_optional() -> None:
         """Tests that slots with default values are optional."""
 
-        class SlotHolder:
+        class SlotHolder(Plugboard):
             """A test class that holds a single :py:class:`~corelay.plugboard.Slot`."""
 
-            my_slot = Slot(dtype=int, default=15)
+            my_slot: Annotated[int, Slot(dtype=int, default=15)]
             """A test slot."""
 
+        assert isinstance(SlotHolder.my_slot, Slot)
         assert SlotHolder.my_slot.optional
 
     @staticmethod
     def test_class_not_optional() -> None:
         """Tests that slots without default values are not optional."""
 
-        class SlotHolder:
+        class SlotHolder(Plugboard):
             """A test class that holds a single :py:class:`~corelay.plugboard.Slot`."""
 
-            my_slot = Slot(dtype=int)
+            my_slot: Annotated[int, Slot(dtype=int)]
             """A test slot."""
 
+        assert isinstance(SlotHolder.my_slot, Slot)
         assert not SlotHolder.my_slot.optional
 
     @staticmethod
@@ -207,12 +214,13 @@ class TestSlot:
         :py:class:`~corelay.plugboard.Slot`.
         """
 
-        class SlotHolder:
+        class SlotHolder(Plugboard):
             """A test class that holds a single :py:class:`~corelay.plugboard.Slot`."""
 
-            my_slot = Slot(dtype=int, default=15)
+            my_slot: Annotated[int, Slot(dtype=int, default=15)]
             """A test slot."""
 
+        assert isinstance(SlotHolder.my_slot, Slot)
         assert SlotHolder.my_slot is SlotHolder.my_slot().slot
 
     @staticmethod
@@ -221,12 +229,13 @@ class TestSlot:
         :py:attr:`~corelay.plugboard.Plug.obj` property set to that value.
         """
 
-        class SlotHolder:
+        class SlotHolder(Plugboard):
             """A test class that holds a single :py:class:`~corelay.plugboard.Slot`."""
 
-            my_slot = Slot(dtype=int)
+            my_slot: Annotated[int, Slot(dtype=int)]
             """A test slot."""
 
+        assert isinstance(SlotHolder.my_slot, Slot)
         assert SlotHolder.my_slot(obj=15).obj == 15
 
     @staticmethod
@@ -235,13 +244,56 @@ class TestSlot:
         :py:attr:`~corelay.plugboard.Plug.default` property set.
         """
 
-        class SlotHolder:
+        class SlotHolder(Plugboard):
             """A test class that holds a single :py:class:`~corelay.plugboard.Slot`."""
 
-            my_slot = Slot(dtype=int)
+            my_slot: Annotated[int, Slot(dtype=int)]
             """A test slot."""
 
+        assert isinstance(SlotHolder.my_slot, Slot)
         assert SlotHolder.my_slot(default=15).default == 15
+
+    @staticmethod
+    def test_default_set() -> None:
+        """Tests that setting the :py:attr:`~corelay.plugboard.Slot.default` property of a :py:class:`~corelay.plugboard.Slot` to a value that is
+        consistent with the data type of the :py:class:`~corelay.plugboard.Slot` succeeds.
+        """
+
+        slot = Slot(dtype=str, default='fallback')
+        slot.default = 'default'
+
+    @staticmethod
+    def test_default_set_inconsistent() -> None:
+        """Tests that setting the :py:attr:`~corelay.plugboard.Slot.default` property of a :py:class:`~corelay.plugboard.Slot` to a value that is not
+        consistent with the data type of the :py:class:`~corelay.plugboard.Slot` fails.
+        """
+
+        slot = Slot(dtype=str, default='fallback')
+
+        with pytest.raises(TypeError):
+            slot.default = 15
+
+    @staticmethod
+    def test_default_del() -> None:
+        """Tests that deleting the value of the :py:attr:`~corelay.plugboard.Plug.default` property of a :py:class:`~corelay.plugboard.Plug` that is
+        associated with a :py:class:`~corelay.plugboard.Slot` that has a :py:attr:`~corelay.plugboard.Plug.default` value succeeds.
+        """
+
+        slot = Slot(dtype=str, default='fallback')
+        del slot.default
+
+    @staticmethod
+    def test_string_representation_of_slot() -> None:
+        """Tests that the string representation of a :py:class:`~corelay.base.Param` instance is correct. Sphinx AutoDoc uses :py:func:`repr` when it
+        encounters :py:class:`typing.Annotated`, which in turn uses :py:func:`repr` to get a string representation of its metadata. This is a
+        reasonable thing to do, but then Intersphinx tries to resolve the resulting string as types for cross-referencing, which is not possible with
+        the default implementation of :py:meth:`object.__repr__`. To be able to get proper documentation, the fully-qualified name of the class needs
+        to be returned, because this enable Sphinx AutoDoc to reference the class in the documentation. The tilde in front is interpreted by AutoDoc
+        to mean that only the last part of the fully-qualified name should be displayed in the documentation.
+        """
+
+        slot = Slot()
+        assert repr(slot) == '~corelay.plugboard.Slot'
 
 
 class TestPlug:
@@ -618,7 +670,7 @@ class TestPlugboard:
         class MyPlugboard(Plugboard):
             """A test plugboard that holds a single :py:class:`~corelay.plugboard.Slot`."""
 
-            my_slot = Slot(dtype=int, default=15)
+            my_slot: Annotated[int, Slot(dtype=int, default=15)]
             """A test slot."""
 
         plugboard = MyPlugboard(my_slot=19)
@@ -634,7 +686,7 @@ class TestPlugboard:
         class MyPlugboard(Plugboard):
             """A test plugboard that holds a single :py:class:`~corelay.plugboard.Slot`."""
 
-            my_slot = Slot(dtype=int, default=15)
+            my_slot: Annotated[int, Slot(dtype=int, default=15)]
             """A test slot."""
 
         plugboard = MyPlugboard(my_slot=19)
@@ -650,7 +702,7 @@ class TestPlugboard:
         class MyPlugboard(Plugboard):
             """A test plugboard that holds a single :py:class:`~corelay.plugboard.Slot`."""
 
-            my_slot = Slot(dtype=int, default=15)
+            my_slot: Annotated[int, Slot(dtype=int, default=15)]
             """A test slot."""
 
         plugboard = MyPlugboard()
@@ -667,7 +719,7 @@ class TestPlugboard:
         class MyPlugboard(Plugboard):
             """A test plugboard that holds a single :py:class:`~corelay.plugboard.Slot`."""
 
-            my_slot = Slot(dtype=int, default=15)
+            my_slot: Annotated[int, Slot(dtype=int, default=15)]
             """A test slot."""
 
         plugboard = MyPlugboard()
@@ -684,7 +736,7 @@ class TestPlugboard:
         class MyPlugboard(Plugboard):
             """A test plugboard that holds a single :py:class:`~corelay.plugboard.Slot`."""
 
-            my_slot = Slot(dtype=int, default=15)
+            my_slot: Annotated[int, Slot(dtype=int, default=15)]
             """A test slot."""
 
         plugboard = MyPlugboard()
@@ -701,7 +753,7 @@ class TestPlugboard:
         class MyPlugboard(Plugboard):
             """A test plugboard that holds a single :py:class:`~corelay.plugboard.Slot`."""
 
-            my_slot = Slot(dtype=int, default=15)
+            my_slot: Annotated[int, Slot(dtype=int, default=15)]
             """A test slot."""
 
         plugboard = MyPlugboard()
@@ -709,6 +761,20 @@ class TestPlugboard:
         del plugboard.default.my_slot
 
         assert plugboard.my_slot == 15
+
+    @staticmethod
+    def test_default_del_non_existing_attribute() -> None:
+        """Tests that deleting the default value of a :py:class:`~corelay.plugboard.Slot` in a :py:class:`~corelay.plugboard.Plugboard` fails, if the
+        attribute does not exist in the :py:class:`~corelay.plugboard.Plugboard`.
+        """
+
+        class MyPlugboard(Plugboard):
+            """A test plugboard that holds a single :py:class:`~corelay.plugboard.Slot`."""
+
+        plugboard = MyPlugboard()
+
+        with pytest.raises(AttributeError):
+            del plugboard.default.non_existing_slot
 
     @staticmethod
     def test_default_set_influence_obj() -> None:
@@ -719,7 +785,7 @@ class TestPlugboard:
         class MyPlugboard(Plugboard):
             """A test plugboard that holds a single :py:class:`~corelay.plugboard.Slot`."""
 
-            my_slot = Slot(dtype=int, default=15)
+            my_slot: Annotated[int, Slot(dtype=int, default=15)]
             """A test slot."""
 
         plugboard = MyPlugboard(my_slot=19)
@@ -735,7 +801,7 @@ class TestPlugboard:
         class MyPlugboard(Plugboard):
             """A test plugboard that holds a single :py:class:`~corelay.plugboard.Slot`."""
 
-            my_slot = Slot(dtype=int, default=15)
+            my_slot: Annotated[int, Slot(dtype=int, default=15)]
             """A test slot."""
 
         plugboard = MyPlugboard()
@@ -752,13 +818,18 @@ class TestPlugboard:
         class MyPlugboard(Plugboard):
             """A test plugboard that holds a single :py:class:`~corelay.plugboard.Slot`."""
 
-            my_slot = Slot(dtype=int, default=15)
+            my_slot: Annotated[int, Slot(dtype=int, default=15)]
             """A test slot."""
+
+            non_slot: str = 'This is not a slot.'
+            """A non-slot attribute for testing what happens when a non-slot's default is updated."""
 
         plugboard = MyPlugboard()
         plugboard.update_defaults(my_slot=17)
-
         assert plugboard.my_slot == 17
+
+        with pytest.raises(AttributeError):
+            plugboard.update_defaults(non_slot='This will fail.')
 
     @staticmethod
     def test_reset_defaults() -> None:
@@ -767,7 +838,7 @@ class TestPlugboard:
         class MyPlugboard(Plugboard):
             """A test plugboard that holds a single :py:class:`~corelay.plugboard.Slot`."""
 
-            my_slot = Slot(dtype=int, default=15)
+            my_slot: Annotated[int, Slot(dtype=int, default=15)]
             """A test slot."""
 
         plugboard = MyPlugboard()

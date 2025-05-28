@@ -11,7 +11,18 @@ import types
 import typing
 from collections.abc import Callable, Iterable, Iterator
 from importlib import import_module
-from types import BuiltinFunctionType, BuiltinMethodType, FunctionType, LambdaType, MethodType, ModuleType
+from types import (
+    BuiltinFunctionType,
+    BuiltinMethodType,
+    ClassMethodDescriptorType,
+    FunctionType,
+    LambdaType,
+    MethodDescriptorType,
+    MethodType,
+    MethodWrapperType,
+    ModuleType,
+    WrapperDescriptorType
+)
 from typing import NoReturn, overload
 
 import numpy
@@ -52,26 +63,24 @@ def zip_equal(*args: Iterable[typing.Any]) -> Iterator[tuple[typing.Any, ...]]:
             yield tuple(zipped_element)
 
 
-def get_lambda_expression_source_code(lambda_expression: LambdaType) -> str:
+def get_lambda_expression_source_code(lambda_expression: Callable[..., typing.Any]) -> str:
     """Returns the source code of the specified lambda expression if possible. This is done by retrieving the source code of the lambda expression and
     parsing it into an abstract syntax tree (AST). The AST node that represents the lambda expression is then used to retrieve the source code of the
-    lambda expression by repeatedly removing the trailing junk from the source code until the source code can be compiled without errors, is at least
-    as long as the shortest possible lambda expression, and the length of the compiled byte code is the same as the length as the byte code of the
-    original lambda expression.
+    lambda expression.
 
     Note:
         This function was adapted from the original implementation by Karol Kuczmarski, outline in their blog post
         `Source code of a Python lambda <http://xion.io/post/code/python-get-lambda-code.html>`_. The code was published as a
         `Gist on GitHub <https://gist.github.com/Xion/617c1496ff45f3673a5692c3b0e3f75a>`_ and was published under the
         `Creative Commons Attribution-ShareAlike 4.0 International License <https://creativecommons.org/licenses/by-sa/4.0/>`_. The original code
-        was modified to fit the coding style of this project and to return "<lambda expression>" instead of :py:obj:`None` if the source
-        code cannot be retrieved.
+        was modified to fit the coding style of this project and to return the representation of the passed object instead of :py:obj:`None` if the
+        source code cannot be retrieved.
 
     Args:
-        lambda_expression (LambdaType): The lambda expression for which the source code is to be returned.
+        lambda_expression (Callable[..., typing.Any]): The lambda expression for which the source code is to be returned.
 
     Returns:
-        str: Returns the source code of the lambda expression if possible, otherwise "<lambda expression>" is returned.
+        str: Returns the source code of the lambda expression if possible, otherwise the representation of the object is returned.
     """
 
     # Retrieves the line of the source code that contains the lambda expression, if the lambda expression is defined over multiple lines, then they
@@ -79,53 +88,73 @@ def get_lambda_expression_source_code(lambda_expression: LambdaType) -> str:
     try:
         source_lines, _ = inspect.getsourcelines(lambda_expression)
     except (IOError, TypeError):
-        return '<lambda expression>'
-    if len(source_lines) != 1:
-        return '<lambda expression>'
+        return repr(lambda_expression)
     source_code = os.linesep.join(source_lines).strip()
 
-    # Parses the source code into an AST and retrieves the AST node that represents the lambda expression
+    # Parses the source code into an AST and retrieves the AST nodes that represent lambda expressions; if none were found, then "<lambda>" is
+    # returned; if only a single lambda expression was found, then its code segment is returned
     source_ast = ast.parse(source_code)
-    lambda_ast_node = next((node for node in ast.walk(source_ast) if isinstance(node, ast.Lambda)), None)
-    if lambda_ast_node is None:
-        return '<lambda expression>'
+    lambda_expression_source_segments: list[str] = [
+        source_segment for source_segment in {
+            ast.get_source_segment(source_code, node) for node in ast.walk(source_ast) if isinstance(node, ast.Lambda)
+        } if source_segment is not None
+    ]
+    if not lambda_expression_source_segments:
+        return repr(lambda_expression)
+    if len(lambda_expression_source_segments) == 1:
+        return lambda_expression_source_segments[0]
 
-    # Since we can (and most likely will) get source lines where the lambda expression is just a part of bigger expressions, they will have some
-    # trailing junk after their definition; unfortunately, AST nodes only keep their _starting_ offsets from the original source, so we have to
-    # determine the end ourselves; this is done by gradually shaving extra junk from after the definition while ensuring that the code is still valid,
-    # is at least as long as the shortest possible lambda expression, and that the length of the compiled byte code is the same as the length of the
-    # byte code of the original lambda expression
-    lambda_source_code = source_code[lambda_ast_node.col_offset:]
-    lambda_body_source_code = source_code[lambda_ast_node.body.col_offset:]
-    length_of_smallest_valid_lambda_expression = len('lambda:_')
-    while len(lambda_source_code) > length_of_smallest_valid_lambda_expression:
+    # If there are multiple lambda expressions in the source code, then we need to compile the lambda functions to further compare them; if none of
+    # them could be compiled, then "<lambda>" is returned; if only a single one could be compiled, then its source code is returned
+    compiled_lambda_expressions: dict[str, LambdaType] = {}
+    for source_segment in lambda_expression_source_segments:
         try:
+            compiled_lambda_expressions[source_segment] = eval(compile(source_segment, '<filename>', 'eval'))  # pylint: disable=eval-used
+        except SyntaxError:  # pragma: no cover
+            continue
+    if not compiled_lambda_expressions:  # pragma: no cover
+        return repr(lambda_expression)
+    if len(compiled_lambda_expressions) == 1:  # pragma: no cover
+        return next(iter(compiled_lambda_expressions.keys()))
 
-            # What's annoying is that sometimes the junk even parses, but results in a different lambda; You'd probably have to be deliberately
-            # malicious to exploit it but here's one way:
-            #
-            #     lambda_expression_tuple = lambda x: False, lambda x: True
-            #     get_lambda_expression_source_code(lambda_expression_tuple[0])
-            #
-            # Ideally, we'd just keep shaving until we get the same code, but that most likely won't happen because we can't replicate the exact
-            # closure environment; thus the next best thing is to assume some divergence due to, e.g., LOAD_GLOBAL in original code being LOAD_FAST in
-            # the one compiled above, or vice versa; But the resulting code should at least be the same length, if otherwise the same operations are
-            # performed in it
-            code = compile(lambda_body_source_code, '<unused filename>', 'eval')
-            if len(code.co_code) == len(lambda_expression.__code__.co_code):
-                return lambda_source_code
+    # First we check if which of the lambda expressions that were compiled match the parameters of the specified lambda expression; if none of them
+    # match, then we return "<lambda>"; if only one matches, then we return its source code
+    lambda_expressions_with_matching_parameters: dict[str, LambdaType] = {}
+    for lambda_expression_source_segment, compiled_lambda_expression in compiled_lambda_expressions.items():
+        if compiled_lambda_expression.__code__.co_varnames == lambda_expression.__code__.co_varnames:
+            lambda_expressions_with_matching_parameters[lambda_expression_source_segment] = compiled_lambda_expression
+    if not lambda_expressions_with_matching_parameters:  # pragma: no cover
+        return repr(lambda_expression)
+    if len(lambda_expressions_with_matching_parameters) == 1:
+        return next(iter(lambda_expressions_with_matching_parameters.keys()))
 
-        # Syntax errors are expected, so we just ignore them; they are most likely caused by the trailing junk in the source code that has not, yet,
-        # been removed
-        except SyntaxError:
-            pass
+    # If there are multiple lambda expressions with matching parameters, then we need to compare their byte code; since we cannot replicate the exact
+    # closure environment, there may be some divergence in the byte codes, but if they do not use any global variables, then the byte codes should be
+    # identical and we can use the byte code to determine which lambda expression is the correct one
+    for lambda_expression_source_segment, compiled_lambda_expression in lambda_expressions_with_matching_parameters.items():
+        if compiled_lambda_expression.__code__.co_code == lambda_expression.__code__.co_code:
+            return lambda_expression_source_segment
 
-        # Shaves off the last character of the source code of the lambda expression and the body of the lambda expression
-        lambda_source_code = lambda_source_code[:-1]
-        lambda_body_source_code = lambda_body_source_code[:-1]
-
-    # If the source code cannot be retrieved, then "<lambda expression>" is returned
-    return '<lambda expression>'
+    # Finally, if none of the lambda expressions are an exact byte code match, we can compare their byte code lengths; maybe, the lambda expressions
+    # differ in their complexity and the byte code of the correct lambda expression only differs in some minor way, for example, the LOAD_GLOBAL
+    # instruction was used in the original code, but was compiled as a LOAD_FAST instruction, due to the closure environment being different; in such
+    # a case, the byte code lengths should be similar, so we can use the difference in the byte code lengths to determine which lambda expression is
+    # the correct one; since it is unlikely that the candidate lambda expressions will be smaller than the actual lambda expression, we can directly
+    # dismiss candidates whose difference in byte code length is negative; in case the byte code lengths between the candidate lambda expressions does
+    # not differ, i.e., there are multiple lambda expressions with the same byte code length, then we cannot determine which one is the correct one,
+    # so we return the object representation instead
+    lambda_expression_byte_code_length_differences: dict[str, int] = {}
+    for lambda_expression_source_segment, compiled_lambda_expression in lambda_expressions_with_matching_parameters.items():
+        byte_code_length_difference = len(compiled_lambda_expression.__code__.co_code) - len(lambda_expression.__code__.co_code)
+        if byte_code_length_difference >= 0:
+            lambda_expression_byte_code_length_differences[lambda_expression_source_segment] = byte_code_length_difference
+    sorted_byte_code_length_differences = list(sorted(lambda_expression_byte_code_length_differences.values()))
+    if len(sorted_byte_code_length_differences) > 1 and sorted_byte_code_length_differences[0] == sorted_byte_code_length_differences[1]:
+        return repr(lambda_expression)
+    return min(
+        lambda_expression_byte_code_length_differences,
+        key=lambda source_segment: lambda_expression_byte_code_length_differences[source_segment]
+    )
 
 
 def get_object_representation(obj: typing.Any) -> str:
@@ -140,10 +169,24 @@ def get_object_representation(obj: typing.Any) -> str:
         str: Returns a :py:class:`str` representation of the object.
     """
 
-    if isinstance(obj, LambdaType):
+    if isinstance(obj, LambdaType) and '<lambda>' in str(obj):
         return get_lambda_expression_source_code(obj)
 
-    if isinstance(obj, (type, ModuleType, FunctionType, MethodType, BuiltinFunctionType, BuiltinMethodType, numpy.ufunc, type(numpy.max))):
+    if isinstance(obj, (
+        type,
+        BuiltinFunctionType,
+        BuiltinMethodType,
+        ClassMethodDescriptorType,
+        FunctionType,
+        LambdaType,
+        MethodDescriptorType,
+        MethodType,
+        MethodWrapperType,
+        ModuleType,
+        WrapperDescriptorType,
+        numpy.ufunc,
+        type(numpy.max))
+    ):
         return get_fully_qualified_name(obj)
 
     return repr(obj)
@@ -153,17 +196,36 @@ def get_fully_qualified_name(obj: typing.Any) -> str:
     """Returns the fully qualified name of the object, which is the module name and the name of the object.
 
     Args:
-        obj (typing.Any): The object for which the fully qualified name is to be returned.
+        obj (typing.Any): The object for which the fully qualified name is to be returned. If the object is a :py:class:`type`, then the
+            fully-qualified name of the type is returned, otherwise the fully-qualified name of the class of the object is returned.
 
     Returns:
         str: Returns the fully qualified name of the object.
     """
 
-    object_class: type = obj.__class__
-    object_module = object_class.__module__
-    if object_module == 'builtins':
-        return object_class.__qualname__
-    return object_module + '.' + object_class.__qualname__
+    if obj is None:
+        return 'None'
+
+    if isinstance(obj, (BuiltinFunctionType, BuiltinMethodType, FunctionType, LambdaType, numpy.ufunc, type(numpy.max))):
+        if obj.__module__ is None or obj.__module__ in ('builtins', '__main__'):
+            return obj.__qualname__
+        return f'{obj.__module__}.{obj.__qualname__}'
+
+    if isinstance(obj, MethodType):
+        if obj.__self__.__class__.__module__ == '__main__':
+            return obj.__func__.__qualname__
+        return f'{obj.__self__.__class__.__module__}.{obj.__qualname__}'
+
+    if isinstance(obj, (ClassMethodDescriptorType, MethodDescriptorType, MethodWrapperType, WrapperDescriptorType)):
+        return obj.__qualname__
+
+    if isinstance(obj, ModuleType):
+        return obj.__name__
+
+    object_type = obj if isinstance(obj, type) else type(obj)
+    if object_type.__module__ in ('builtins', '__main__'):
+        return object_type.__qualname__
+    return f'{object_type.__module__}.{object_type.__qualname__}'
 
 
 def dummy_from_module_import(module_name: str) -> Callable[..., typing.Any]:
@@ -267,7 +329,7 @@ def import_or_stub(module_name: str) -> types.ModuleType:
 
 
 @overload
-def import_or_stub(module_name: str, type_and_function_names: str) -> Callable[..., typing.Any]:
+def import_or_stub(module_name: str, type_and_function_names: str) -> type[typing.Any] | Callable[..., typing.Any]:
     """Tries to import a type or a function from a module. If the import fails, the requested type or function is replaced with a dummy that will
     raise an exception when used. This is useful for optional dependencies of a package, because the retrieved type or function will raise an
     exception that tells the user how to install the missing dependencies for the functionality to work.
@@ -277,13 +339,13 @@ def import_or_stub(module_name: str, type_and_function_names: str) -> Callable[.
         type_and_function_names (str): The name of the type or function that is to be imported from the module.
 
     Returns:
-        Callable[..., typing.Any]: Returns the imported type or function. If the import of the module fails, a dummy is returned that will raise an
-        exception when used, telling the user how to install the missing dependencies.
+        type[typing.Any] | Callable[..., typing.Any]: Returns the imported type or function. If the import of the module fails, a dummy is returned
+        that will raise an exception when used, telling the user how to install the missing dependencies.
     """
 
 
 @overload
-def import_or_stub(module_name: str, type_and_function_names: tuple[str, ...]) -> list[types.ModuleType | Callable[..., typing.Any]]:
+def import_or_stub(module_name: str, type_and_function_names: tuple[str, ...]) -> list[type | Callable[..., typing.Any]]:
     """Tries to import types and/or functions from a module. If the import fails, the requested types and/or functions are replaced with dummies that
     will raise an exception when used. This is useful for optional dependencies of a package, because the retrieved types and/or functions will raise
     an exception that tells the user how to install the missing dependencies for the functionality to work.
@@ -293,15 +355,15 @@ def import_or_stub(module_name: str, type_and_function_names: tuple[str, ...]) -
         type_and_function_names (tuple[str, ...]): The names of the types and/or functions that are to be imported from the module.
 
     Returns:
-        list[types.ModuleType | Callable[..., typing.Any]]: Returns a list of the imported modules, types and/or functions. If the import of
-        the module fails, dummies are returned that will raise an exception when used, telling the user how to install the missing dependencies.
+        list[type | Callable[..., typing.Any]]: Returns a list of the imported modules, types and/or functions. If the import of the module fails,
+        dummies are returned that will raise an exception when used, telling the user how to install the missing dependencies.
     """
 
 
 def import_or_stub(
     module_name: str,
     type_and_function_names: str | tuple[str, ...] | None = None
-) -> list[types.ModuleType | Callable[..., typing.Any]] | types.ModuleType | Callable[..., typing.Any]:
+) -> types.ModuleType | type[typing.Any] | Callable[..., typing.Any] | list[type | Callable[..., typing.Any]]:
     """Tries to import a module, or types and/or functions from a module. If the import fails, the requested module, or types and/or functions are
     replaced with dummies that will raise an exception when used. This is useful for optional dependencies of a package, because the retrieved module,
     or types and/or functions will raise an exception that tells the user how to install the missing dependencies for the functionality to work.
@@ -319,22 +381,20 @@ def import_or_stub(
             installing a missing dependency.
 
     Returns:
-        list[types.ModuleType | Callable[..., typing.Any]] | types.ModuleType | Callable[..., typing.Any]: Returns the imported
-        module, or types and/or functions that were imported from the module. If the import of the module fails, dummies for the module, or types
-        and/or functions are returned that will raise an exception when used, telling the user how to install the missing dependencies.
+        types.ModuleType | type[typing.Any] | Callable[..., typing.Any] | list[type | Callable[..., typing.Any]]: Returns the imported module, or
+        types and/or functions that were imported from the module. If the import of the module fails, dummies for the module, or types and/or
+        functions are returned that will raise an exception when used, telling the user how to install the missing dependencies.
     """
 
-    # Creates a list of the modules, types, and functions that were imported
-    modules_types_and_functions: list[types.ModuleType | type | Callable[..., typing.Any]] = []
-
-    # If a list of types and functions to import was provided, then they are imported (or replaced by dummies) and added to the list
+    # If a list of types and functions to import was provided, then they are imported from the specified module(or replaced by dummies)
     if type_and_function_names is not None:
         type_and_function_names = (type_and_function_names, ) if isinstance(type_and_function_names, str) else type_and_function_names
 
+        types_and_functions: list[type | Callable[..., typing.Any]] = []
         try:
             imported_module = import_module(module_name)
         except ImportError:
-            modules_types_and_functions = [dummy_from_module_import(module_name) for _ in type_and_function_names]
+            types_and_functions = [dummy_from_module_import(module_name) for _ in type_and_function_names]
         else:
             for type_or_function_name in type_and_function_names:
                 try:
@@ -344,18 +404,15 @@ def import_or_stub(
                         f'Cannot import name "{type_or_function_name}" from "{module_name}" ({imported_module.__file__}).'
                     ) from exception
 
-                modules_types_and_functions.append(type_or_function)
+                types_and_functions.append(type_or_function)
 
-    # If, however, no list of types and functions to import was provided, then the entire module is imported (or replaced by a stub) and added to the
-    # list
-    else:
-        try:
-            modules_types_and_functions = [import_module(module_name)]
-        except ImportError:
-            modules_types_and_functions = [dummy_import_module(module_name)]
+        if len(types_and_functions) == 1:
+            return types_and_functions[0]
+        return types_and_functions
 
-    # If only a single module/type/function was imported, then it is returned directly, otherwise a list of the imported modules/types/functions is
-    # returned
-    if len(modules_types_and_functions) == 1:
-        return modules_types_and_functions[0]
-    return modules_types_and_functions
+    # If no list of types and functions to import was provided, then the entire module is imported (or replaced by a stub) and returned
+    try:
+        return import_module(module_name)
+    except ImportError:
+        module: ModuleType = dummy_import_module(module_name)
+        return module

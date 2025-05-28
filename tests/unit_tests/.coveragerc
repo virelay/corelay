@@ -22,6 +22,9 @@ skip_covered = true
 # Specifies that the report should include a list of the lines that were not covered by the unit tests
 show_missing = true
 
+# Excludes lines that raise a NotImplementedError from the coverage report; which we use in abstract methods
+exclude_also = raise NotImplementedError
+
 
 # Since the coverage data can be collected from multiple different installations of CoRelAy, the Coverage tool needs to know which files are
 # equivalent; this configuration section contains named lists (in our case only a single list called "source"), where two file paths are considered

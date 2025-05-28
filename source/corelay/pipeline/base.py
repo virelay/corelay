@@ -34,10 +34,10 @@ class TaskPlug(Plug):
                 the inheritance hierarchy.
         """
 
-        if default is not None:
-            default = ensure_processor(default, **kwargs)
         if obj is not None:
             obj = ensure_processor(obj)
+        if default is not None:
+            default = ensure_processor(default, **kwargs)
 
         super().__init__(slot, obj=obj, default=default, **kwargs)
 
@@ -78,27 +78,25 @@ class TaskPlug(Plug):
 
         if value is not None:
             value = ensure_processor(value)
-        self._obj = value
-
         try:
-            self._consistent()
+            Plug.obj.fset(self, value)  # type: ignore[attr-defined]
         except TypeError as exception:
-            raise TypeError('The processor is not consistent with the dtype.') from exception
+            raise TypeError(f'The data type of the processor of the "{type(self).__name__}" object is not of type "{self.dtype}".') from exception
 
     @obj.deleter
     def obj(self) -> None:
         """Deletes the :py:class:`~corelay.processor.base.Processor` contained in the :py:class:`TaskPlug` by setting it to :py:obj:`None`."""
 
-        self.obj = None
+        Plug.obj.fset(self, None)  # type: ignore[attr-defined]
 
     @property
-    def default(self) -> typing.Any:
+    def default(self) -> Processor | None:
         """Gets or sets the default :py:class:`~corelay.processor.base.Processor` of the :py:class:`TaskPlug`. If the :py:attr:`~TaskPlug.default`
         :py:class:`~corelay.processor.base.Processor` is not set, then the :py:attr:`~corelay.plugboard.Plug.fallback`
         :py:class:`~corelay.processor.base.Processor` is retrieved instead.
 
         Returns:
-            typing.Any: Returns the default :py:class:`~corelay.processor.base.Processor` of the :py:class:`TaskPlug`. If not set,
+            Processor | None: Returns the default :py:class:`~corelay.processor.base.Processor` of the :py:class:`TaskPlug`. If not set,
             :py:attr:`~corelay.plugboard.Plug.fallback` is returned.
         """
 
@@ -109,16 +107,17 @@ class TaskPlug(Plug):
         # have tested it, only in the getter, super().default can be used, as it is not, yet, overridden, but in the setter and deleter, the complete
         # function must be re-implemented; also, when the getter is overridden, not only the setter, but also the deleter must be overridden, as
         # otherwise, it will not be available anymore
-        return super().default
+        processor: Processor | None = super().default
+        return processor
 
     @default.setter
-    def default(self, value: typing.Any) -> None:
+    def default(self, value: Processor | Callable[..., typing.Any] | None) -> None:
         """Gets or sets the default :py:class:`~corelay.processor.base.Processor` of the :py:class:`TaskPlug` and checks for consistency. It is
         ensured first, that the new default value is a :py:class:`~corelay.processor.base.Processor`. If not, it is converted to a
         :py:class:`~corelay.processor.base.Processor` using the py:func:`ensure_processor` function.
 
         Args:
-            value (typing.Any): The new default :py:class:`~corelay.processor.base.Processor` to set.
+            value (Processor | Callable[..., typing.Any] | None): The new default :py:class:`~corelay.processor.base.Processor` to set.
 
         Raises:
             TypeError: The default :py:class:`~corelay.processor.base.Processor` is not consistent with the :py:attr:`~corelay.plugboard.Plug.dtype`,
@@ -128,18 +127,17 @@ class TaskPlug(Plug):
 
         if value is not None:
             value = ensure_processor(value)
-        self._default = value
-
         try:
-            self._consistent()
+            Plug.default.fset(self, value)  # type: ignore[attr-defined]
         except TypeError as exception:
-            raise TypeError('The default processor is not consistent with the dtype.') from exception
+            raise TypeError(
+                f'The data type of the default processor of the "{type(self).__name__}" object is not of type "{self.dtype}".') from exception
 
     @default.deleter
     def default(self) -> None:
         """Deletes the default :py:class:`~corelay.processor.base.Processor` of the :py:class:`TaskPlug` by setting it to :py:obj:`None`."""
 
-        self.default = None
+        Plug.default.fset(self, None)  # type: ignore[attr-defined]
 
 
 class Task(Slot):
@@ -150,7 +148,7 @@ class Task(Slot):
     def __init__(
         self,
         proc_type: type[Processor] = Processor,
-        default: Processor | Callable[..., typing.Any] = lambda data: data,
+        default: Processor | Callable[..., typing.Any] | None = lambda data: data,
         **kwargs: typing.Any
     ) -> None:
         """Initializes a new :py:class:`Task` instance.
@@ -158,8 +156,9 @@ class Task(Slot):
         Args:
             proc_type (type[Processor]): The type of :py:class:`~corelay.processor.base.Processor` allowed for this :py:class:`Task`. Defaults to
                 :py:class:`~corelay.processor.base.Processor`.
-            default (Processor | Callable[..., typing.Any]): The default :py:class:`~corelay.processor.base.Processor` for the :py:class:`Task`, which
-                must either be a :py:class:`~corelay.processor.base.Processor` or a function. Defaults to the identity function.
+            default (Processor | Callable[..., typing.Any] | None): The default :py:class:`~corelay.processor.base.Processor` for the
+                :py:class:`Task`, which must either be a :py:class:`~corelay.processor.base.Processor` or a function. Defaults to the identity
+                function.
             **kwargs (typing.Any): Keyword arguments that are passed to the constructor of the class one step up in the class hierarchy, i.e.,
                 :py:class:`~corelay.plugboard.Slot`.
 
@@ -181,10 +180,11 @@ class Task(Slot):
             str: Returns a :py:class:`str` representation of the :py:class:`Task` instance.
         """
 
-        # Sphinx AutoDoc uses __repr__ when it encounters the metadata of typing.Annotated; this is a reasonable thing to do, but then it tries to
-        # resolve the resulting string as types for cross-referencing, which is not possible with the default implementation of __repr__; to be able
-        # to get proper documentation, the fully-qualified name of the class is returned, because this enable Sphinx AutoDoc to reference the class in
-        # the documentation
+        # Sphinx AutoDoc uses repr when it encounters typing.Annotated, which in turn uses repr to get a string representation of its metadata; this
+        # is a reasonable thing to do, but then Intersphinx tries to resolve the resulting string as types for cross-referencing, which is not
+        # possible with the default implementation of __repr__; to be able to get proper documentation, the fully-qualified name of the class is
+        # returned, because this enable Sphinx AutoDoc to reference the class in the documentation; the tilde in front is interpreted by AutoDoc to
+        # mean that only the last part of the fully-qualified name should be displayed in the documentation
         return f'~{get_fully_qualified_name(self)}'
 
     @property
@@ -276,7 +276,8 @@ class Pipeline(Processor):
             checkpoint :py:class:`~corelay.processor.base.Processor` to the output :py:class:`~corelay.processor.base.Processor`.
         """
 
-        checkpoint_processor_list = []
+        processor: Processor
+        checkpoint_processor_list: list[tuple[str, Processor]] = []
         for key, processor in reversed(self.collect_attr(Task).items()):
             checkpoint_processor_list.append((key, processor))
             if processor.is_checkpoint:

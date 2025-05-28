@@ -44,6 +44,40 @@ class TestShaper:
         shaper = Shaper(indices=(0, (1, (2,))))
         assert shaper([1, 2, 3]) == (1, (2, (3,)))
 
+    @staticmethod
+    def test_non_sequence_data() -> None:
+        """Tests that non-sequence data is handled as if it were a sequence of length 1."""
+
+        shaper = Shaper(indices=(0,))
+        assert shaper(1) == (1,)
+
+    @staticmethod
+    def test_out_of_bounds_indices() -> None:
+        """Tests that out-of-bounds indices raise a :py:class:`~corelay.processor.base.ProcessorError`."""
+
+        shaper = Shaper(indices=(1, 2, 3))
+        with pytest.raises(TypeError):
+            shaper([1, 2])
+
+    @staticmethod
+    def test_invalid_indices() -> None:
+        """Tests that invalid indices raise a :py:class:`~corelay.processor.base.ProcessorError`."""
+
+        shaper = Shaper(indices=('one', 'two', 'three'))
+        with pytest.raises(TypeError):
+            shaper([1, 2, 3, 4])
+
+    @staticmethod
+    def test_invalid_indices_dictionary() -> None:
+        """Tests that invalid indices for a dictionary raise a :py:class:`~corelay.processor.base.ProcessorError`."""
+
+        shaper = Shaper(indices=('one', 'two', 'three'))
+        with pytest.raises(TypeError):
+            shaper({
+                'one': 1,
+                'two': 2
+            })
+
 
 class TestParallel:
     """Contains unit tests for the :py:class:`~corelay.processor.flow.Parallel` class."""

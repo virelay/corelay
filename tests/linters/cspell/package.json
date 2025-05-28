@@ -9,9 +9,9 @@
   "license": "AGPL-3.0-or-later",
   "private": true,
   "dependencies": {
-    "cspell": "^8.16.1"
+    "cspell": "^9.0.2"
   },
   "scripts": {
-    "cspell": "npx cspell lint --config .cspell.json --root ../.. '**'"
+    "cspell": "npx cspell lint --config .cspell.json --root ../../.. '**'"
   }
 }
