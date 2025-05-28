@@ -3,7 +3,7 @@
 """
 
 import typing
-from collections.abc import Iterable, Iterator, Sequence
+from collections.abc import Iterable, Iterator, Mapping, Sequence
 from typing import Annotated
 
 from corelay.base import Param
@@ -50,11 +50,14 @@ class Shaper(Processor):
             as the indices.
         """
 
-        def extract_elements_from_indices(iterable: Sequence[typing.Any], indices: tuple[int | tuple[int], ...]) -> tuple[typing.Any, ...]:
+        def extract_elements_from_indices(
+            iterable: Sequence[typing.Any] | Mapping[typing.Any, typing.Any],
+            indices: tuple[int | tuple[int], ...]
+        ) -> tuple[typing.Any, ...]:
             """Recursively extracts the elements of the specified ``iterable`` based on the specified ``indices``.
 
             Args:
-                iterable (Sequence[typing.Any]): The iterable from which to extract the elements.
+                iterable (Sequence[typing.Any] | Mapping[typing.Any, typing.Any]): The iterable from which to extract the elements.
                 indices (tuple[int | tuple[int], ...]): The indices to extract. This can be a tuple of integers or other tuples of integers.
 
             Raises:
@@ -66,17 +69,19 @@ class Shaper(Processor):
 
             results = []
             for index in indices:
-                if isinstance(index, Iterable):
+                if isinstance(index, Sequence) and not isinstance(index, str):
                     extracted_element = extract_elements_from_indices(iterable, index)
                 else:
                     try:
                         extracted_element = iterable[index]
-                    except KeyError as err:
-                        raise TypeError(f'The "{index}" is not a valid index for "{iterable}".') from err
+                    except KeyError as exception:
+                        raise TypeError(f'The "{index}" is not a valid index for "{iterable}".') from exception
+                    except IndexError as exception:
+                        raise TypeError(f'The "{index}" is out of bounds for "{iterable}".') from exception
                 results.append(extracted_element)
             return tuple(results)
 
-        if not isinstance(data, Sequence):
+        if not isinstance(data, (Sequence, Mapping)):
             data = (data,)
         try:
             return extract_elements_from_indices(data, self.indices)

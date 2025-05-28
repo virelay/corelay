@@ -46,3 +46,16 @@ class TestParam:
 
         param = Param(object)
         assert param.dtype == (object,)
+
+    @staticmethod
+    def test_string_representation_of_param() -> None:
+        """Tests that the string representation of a :py:class:`~corelay.base.Param` instance is correct. Sphinx AutoDoc uses :py:func:`repr` when it
+        encounters :py:class:`typing.Annotated`, which in turn uses :py:func:`repr` to get a string representation of its metadata. This is a
+        reasonable thing to do, but then Intersphinx tries to resolve the resulting string as types for cross-referencing, which is not possible with
+        the default implementation of :py:meth:`object.__repr__`. To be able to get proper documentation, the fully-qualified name of the class needs
+        to be returned, because this enable Sphinx AutoDoc to reference the class in the documentation. The tilde in front is interpreted by AutoDoc
+        to mean that only the last part of the fully-qualified name should be displayed in the documentation.
+        """
+
+        param = Param(object)
+        assert repr(param) == '~corelay.base.Param'

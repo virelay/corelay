@@ -29,4 +29,4 @@ If you'd like to try out the bleeding-edge development version or experiment wit
    $ git clone https://github.com/virelay/corelay.git
    $ cd corelay
    $ uv --directory source python install
-   $ uv --directory source sync --all-extras
+   $ uv --directory source sync

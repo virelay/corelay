@@ -186,6 +186,28 @@ class TestProcessor:
             processor_type(param_1='bacon', parma_0='monkey')
 
     @staticmethod
+    def test_too_many_positional_params(processor_type: type[Processor]) -> None:
+        """Tests that passing too many positional arguments raises an exception.
+
+        Args:
+            processor_type (type[Processor]): The custom :py:class:`~corelay.processor.base.Processor` type that is to be used in the test.
+        """
+
+        with pytest.raises(TypeError):
+            processor_type(44, 21, param1='test', param3=1)
+
+    @staticmethod
+    def test_positional_param_also_supplied_as_keyword_argument(processor_type: type[Processor]) -> None:
+        """Tests that passing a positional parameter as a keyword argument raises an exception.
+
+        Args:
+            processor_type (type[Processor]): The custom :py:class:`~corelay.processor.base.Processor` type that is to be used in the test.
+        """
+
+        with pytest.raises(TypeError):
+            processor_type(44, param1='test', param_2=22, param3='bacon')
+
+    @staticmethod
     def test_abstract_func() -> None:
         """Tests that the :py:class:`~corelay.processor.base.Processor` class is abstract and thus fails to instantiate."""
 

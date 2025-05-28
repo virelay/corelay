@@ -54,10 +54,11 @@ class Param(Slot):
             str: Returns a :py:class:`str` representation of the :py:class:`Param` instance.
         """
 
-        # Sphinx AutoDoc uses __repr__ when it encounters the metadata of typing.Annotated; this is a reasonable thing to do, but then it tries to
-        # resolve the resulting string as types for cross-referencing, which is not possible with the default implementation of __repr__; to be able
-        # to get proper documentation, the fully-qualified name of the class is returned, because this enable Sphinx AutoDoc to reference the class in
-        # the documentation
+        # Sphinx AutoDoc uses repr when it encounters typing.Annotated, which in turn uses repr to get a string representation of its metadata; this
+        # is a reasonable thing to do, but then Intersphinx tries to resolve the resulting string as types for cross-referencing, which is not
+        # possible with the default implementation of __repr__; to be able to get proper documentation, the fully-qualified name of the class is
+        # returned, because this enable Sphinx AutoDoc to reference the class in the documentation; the tilde in front is interpreted by AutoDoc to
+        # mean that only the last part of the fully-qualified name should be displayed in the documentation
         return f'~{get_fully_qualified_name(self)}'
 
     @property

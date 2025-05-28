@@ -145,8 +145,8 @@ class HashedHDF5:
             HashedHDF5._write_hdf5_recursively(data_out, group, 'data')
         except TypeError as exception:
             raise TypeError(
-                f'The data type of the output data "{type(data_out)}" is not supported. The must either be a NumPy array or a hierarchy of tuples '
-                'containing NumPy arrays and tuples of NumPy arrays.'
+                f'The data type of the output data "{type(data_out)}" is not supported. The data must either be a NumPy array or a hierarchy of '
+                'tuples containing NumPy arrays and tuples of NumPy arrays.'
             ) from exception
 
         group['meta'] = json.dumps(meta)
@@ -161,9 +161,6 @@ class HashedHDF5:
         Args:
             base (h5py.Group | h5py.Dataset): The HDF5 group or dataset to read.
 
-        Raises:
-            TypeError: The data type of the input data is not supported.
-
         Returns:
             numpy.ndarray[typing.Any, typing.Any] | RecursiveNumPyArrayTuple: Returns a tuple of :py:class:`~numpy.ndarray` or other tuples of
             :py:class:`~numpy.ndarray`, which themselves can be nested. Each tuple represents an HDF5 group. Nested tuples appear in the alphabetical
@@ -174,10 +171,8 @@ class HashedHDF5:
 
         if isinstance(base, h5py.Group):
             return tuple(HashedHDF5._read_hdf5_content_recursively(base[key]) for key in sorted(base))
-        if isinstance(base, h5py.Dataset):
-            dataset_data: numpy.ndarray[typing.Any, typing.Any] = base[()]
-            return dataset_data
-        raise TypeError('Unsupported output type!')
+        dataset_data: numpy.ndarray[typing.Any, typing.Any] = base[()]
+        return dataset_data
 
     @staticmethod
     def _write_hdf5_recursively(data: RecursiveNumPyArrayTuple | numpy.ndarray[typing.Any, typing.Any], group: h5py.Group, key: str) -> None:
@@ -317,8 +312,7 @@ class DataStorageBase(ABC, Plugboard):
                 was raised, otherwise it is :py:obj:`None`.
         """
 
-        if self.io is not None:
-            self.io.close()
+        self.close()
 
     def __contains__(self, key: str) -> bool:
         """Check if the key exists in the storage.
@@ -638,6 +632,9 @@ class HDF5Storage(DataStorageBase):
                 :py:obj:`None`.
             **kwargs (typing.Any): Keyword arguments that are passed to the constructor of the class one step up in the class hierarchy, i.e.,
                 :py:class:`DataStorageBase`.
+
+        Raises:
+            ValueError: The mode is not "w", "r", or "a".
         """
 
         # PyDocLint does not support the documentation of the constructor parameters both in the __init__ method and the class docstring, so we have
@@ -646,6 +643,9 @@ class HDF5Storage(DataStorageBase):
         if data_key is not None:
             kwargs['data_key'] = data_key
         super().__init__(**kwargs)
+
+        if mode not in ['w', 'r', 'a']:
+            raise ValueError('Mode should be set to "w", "r", or "a".')
 
         self.io: h5py.File = h5py.File(path, mode=mode)
 
@@ -730,7 +730,7 @@ class HDF5Storage(DataStorageBase):
         return key_list
 
     @staticmethod
-    def _unpack(key: str | int, value: h5py.Dataset | h5py.Group | typing.Any) -> tuple[str | int, typing.Any]:
+    def _unpack(key: str | int, value: h5py.Dataset | h5py.Group) -> tuple[str | int, typing.Any]:
         """Unpacks the specified value. If the value is an HDF5 dataset, it is converted to a :py:class:`~numpy.ndarray` or a :py:class:`str`,
         depending on the data type of the dataset. If the value is a group, then it is recursively unpacked into an
         :py:class:`collections.OrderedDict`, which contains the keys and values of the group. The keys of the group are sorted to ensure that the
@@ -740,10 +740,10 @@ class HDF5Storage(DataStorageBase):
         Args:
             key (str | int): The key of the value to unpack. This can either be a :py:class:`str` or an :py:class:`int`. If the key is a
                 :py:class:`str` and only contains numeric characters, it is converted to an :py:class:`int`.
-            value (h5py.Dataset | h5py.Group | typing.Any): The value that is to be unpacked. If the value is an HDF5 dataset, it is converted to a
-                NumPy array or a :py:class:`str`, depending on the data type of the dataset. If the value is a group, then it is recursively unpacked
-                into an :py:class:`collections.OrderedDict`, which contains the keys and values of the group. The keys of the group are sorted to
-                ensure that the order of the data is consistent.
+            value (h5py.Dataset | h5py.Group): The value that is to be unpacked. If the value is an HDF5 dataset, it is converted to a NumPy array or
+                a :py:class:`str`, depending on the data type of the dataset. If the value is a group, then it is recursively unpacked into an
+                :py:class:`collections.OrderedDict`, which contains the keys and values of the group. The keys of the group are sorted to ensure that
+                the order of the data is consistent.
 
         Returns:
             tuple[str | int, typing.Any]: Returns the unpacked key and value as a tuple. The key is either a :py:class:`str` or an :py:class:`int`.
@@ -762,13 +762,11 @@ class HDF5Storage(DataStorageBase):
             value = value[()]
             if string_info is not None:
                 value = value.decode(string_info.encoding)
+            return key, value
 
-        # If the value is a group, it is converted to an ordered dictionary, which contains the keys and values of the group; since the numeric keys
-        # are converted to an integer, the dictionary can be accessed like a tuple or list
-        elif isinstance(value, h5py.Group):
-            value = collections.OrderedDict((HDF5Storage._unpack(k, v) for k, v in value.items()))
-
-        # Returns the key and value as a tuple
+        # Since the value is not a dataset, it must be a group; groups are converted to an ordered dictionary, which contains the keys and values of
+        # the group; since the numeric keys are converted to an integer, the dictionary can be accessed like a tuple or list
+        value = collections.OrderedDict((HDF5Storage._unpack(k, v) for k, v in value.items()))
         return key, value
 
     @staticmethod

@@ -27,7 +27,7 @@ Upon installing the supported Python versions, dependencies must be installed vi
 
 .. code-block:: console
 
-    $ uv --directory source sync --all-extras
+    $ uv --directory source sync
 
 To start your work, please create a new branch specifically for your feature or bug fix. When naming your branch, we recommend using kebab-case (lowercase words separated by hyphens) to clearly describe its purpose, e.g., ``my-new-feature``.
 
