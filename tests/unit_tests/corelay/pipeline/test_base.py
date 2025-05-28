@@ -23,8 +23,8 @@ def get_processor_type_fixture() -> type[Processor]:
     class MyProcessor(Processor):
         """A custom :py:class:`~corelay.processor.base.Processor` type."""
 
-        param_1: Annotated[typing.Any, Param(typing.Any)]
-        param_2: Annotated[typing.Any, Param(typing.Any)]
+        param_1: Annotated[str, Param(str, 'default_value')]
+        param_2: Annotated[int, Param(int, 42)]
 
         def function(self, data: typing.Any) -> typing.Any:
             """Multiplies the input data by 2.
@@ -83,13 +83,13 @@ class TestTask:
     """Contains unit tests for the :py:class:`~corelay.pipeline.base.Task` class."""
 
     @staticmethod
-    def test_instantiation_default() -> None:
+    def test_init() -> None:
         """Tests that the instantiation of a :py:class:`~corelay.pipeline.base.Task` without any arguments succeeds."""
 
         Task()
 
     @staticmethod
-    def test_instantiation_arguments(processor_type: type[Processor]) -> None:
+    def test_init_consistent_args(processor_type: type[Processor]) -> None:
         """Tests that the instantiation of a :py:class:`~corelay.pipeline.base.Task` with correct arguments succeeds.
 
         Args:
@@ -100,7 +100,7 @@ class TestTask:
         Task(proc_type=processor_type, default=processor_type(), is_output=True)
 
     @staticmethod
-    def test_proc_type_no_proc() -> None:
+    def test_init_with_invalid_proc_type() -> None:
         """Tests that the instantiation of a :py:class:`~corelay.pipeline.base.Task` with a ``proc_type`` that is not a sub-class of
         :py:class:`~corelay.processor.base.Processor` raises a :py:class:`TypeError`.
         """
@@ -109,7 +109,7 @@ class TestTask:
             Task(proc_type=FunctionType, default=lambda x: x)  # type: ignore[arg-type]
 
     @staticmethod
-    def test_default_no_proc() -> None:
+    def test_init_without_proc_type() -> None:
         """Tests that the instantiation of a :py:class:`~corelay.pipeline.base.Task` with a default value that is not of type
         :py:class:`~corelay.processor.base.Processor` fails.
         """
@@ -118,7 +118,7 @@ class TestTask:
             Task(default='bla')  # type: ignore[arg-type]
 
     @staticmethod
-    def test_proc_type_default_type_mismatch(processor_type: type[Processor]) -> None:
+    def test_init_inconsistent_args(processor_type: type[Processor]) -> None:
         """Tests that the instantiation of a :py:class:`~corelay.pipeline.base.Task` with a default value that is not of type ``proc_type`` raises a
         :py:class:`TypeError`.
 
@@ -129,6 +129,11 @@ class TestTask:
 
         with pytest.raises(TypeError):
             Task(proc_type=processor_type, default=lambda x: x)
+
+    def test_init_without_default(self) -> None:
+        """Tests that the instantiation of a :py:class:`~corelay.pipeline.base.Task` without a default value succeeds."""
+
+        Task(proc_type=Processor, default=None)
 
     @staticmethod
     def test_default_function_identity() -> None:
@@ -152,6 +157,163 @@ class TestTask:
         task = Task(proc_type=processor_type, default=processor_type())
         assert task.default is not None
         assert task.default(5) == 10  # pylint: disable=not-callable
+
+    @staticmethod
+    def test_class_call() -> None:
+        """Tests that calling a :py:class:`~corelay.pipeline.base.Task` yields the :py:class:`~corelay.pipeline.base.TaskPlug` associated with the
+        :py:class:`~corelay.pipeline.base.Task`.
+        """
+
+        task = Task(proc_type=Processor, default=FunctionProcessor())
+        assert task is task().slot
+
+    @staticmethod
+    def test_class_call_obj() -> None:
+        """Tests that calling a :py:class:`~corelay.pipeline.base.Task` with an ``obj`` argument yields a :py:class:`~corelay.pipeline.base.TaskPlug`
+        with the :py:attr:`~corelay.plugboard.Plug.obj` property set to that value.
+        """
+
+        default_function_processor = FunctionProcessor()
+        task = Task(proc_type=FunctionProcessor, default=default_function_processor)
+
+        first_function_processor = FunctionProcessor(processing_function=lambda x: x + 10)
+        task_plug = task(obj=first_function_processor)
+        assert task_plug.obj == first_function_processor
+
+        second_function_processor = FunctionProcessor(processing_function=lambda x: x + 20)
+        task_plug.obj = second_function_processor
+        assert task_plug.obj == second_function_processor
+
+        del task_plug.obj
+        assert task_plug.obj == default_function_processor
+
+        lambda_expression = lambda x: x + 30
+        task_plug.obj = lambda_expression
+        assert isinstance(task_plug.obj, FunctionProcessor)
+        assert task_plug.obj.processing_function == lambda_expression
+
+        task_plug.obj = None
+        assert task_plug.obj == default_function_processor
+
+        class CustomProcessor(Processor):
+            """A custom :py:class:`~corelay.processor.base.Processor` type."""
+
+            def function(self, data: typing.Any) -> typing.Any:
+                """Processes the input data by returning it unchanged.
+
+                Args:
+                    data (typing.Any): The input data that is to be processed.
+
+                Returns:
+                    typing.Any: Returns the processed data.
+                """
+
+                return data
+
+        with pytest.raises(TypeError):
+            task_plug.obj = CustomProcessor()
+
+    @staticmethod
+    def test_class_call_default() -> None:
+        """Tests that calling a :py:class:`~corelay.pipeline.base.Task` with ``default`` argument yields a :py:class:`~corelay.pipeline.base.TaskPlug`
+        with the :py:attr:`~corelay.pipeline.base.TaskPlug.default` property set.
+        """
+
+        default_function_processor = FunctionProcessor()
+        task = Task(proc_type=FunctionProcessor, default=default_function_processor)
+
+        first_function_processor = FunctionProcessor(processing_function=lambda x: x + 10)
+        task_plug = task(default=first_function_processor)
+        assert task_plug.default == first_function_processor
+
+        second_function_processor = FunctionProcessor(processing_function=lambda x: x + 20)
+        task_plug.default = second_function_processor
+        assert task_plug.default == second_function_processor
+
+        del task_plug.default
+        assert task_plug.default == default_function_processor
+
+        lambda_expression = lambda x: x + 30
+        task_plug.default = lambda_expression
+        assert isinstance(task_plug.default, FunctionProcessor)
+        assert task_plug.default.processing_function == lambda_expression  # pylint: disable=no-member
+
+        task_plug.default = None
+        assert task_plug.default == default_function_processor
+
+        class CustomProcessor(Processor):
+            """A custom :py:class:`~corelay.processor.base.Processor` type."""
+
+            def function(self, data: typing.Any) -> typing.Any:
+                """Processes the input data by returning it unchanged.
+
+                Args:
+                    data (typing.Any): The input data that is to be processed.
+
+                Returns:
+                    typing.Any: Returns the processed data.
+                """
+
+                return data
+
+        with pytest.raises(TypeError):
+            task_plug.default = CustomProcessor()
+
+    def test_updating_default(self) -> None:
+        """Tests that updating the default value of a :py:class:`~corelay.pipeline.base.Task` works as expected."""
+
+        default_function_processor = FunctionProcessor()
+        task = Task(proc_type=FunctionProcessor, default=default_function_processor)
+        assert task.default == default_function_processor
+
+        updated_function_processor = FunctionProcessor(processing_function=lambda x: x + 10)
+        task.default = updated_function_processor
+        assert task.default == updated_function_processor
+
+        del task.default
+        assert task.default is None
+
+        lambda_expression = lambda x: x + 30
+        task.default = lambda_expression
+        assert isinstance(task.default, FunctionProcessor)
+        assert task.default.processing_function == lambda_expression  # pylint: disable=no-member
+
+        task.default = None
+        assert task.default is None
+
+        with pytest.raises(TypeError):
+            task.default = 'not a processor'
+
+        class CustomProcessor(Processor):
+            """A custom :py:class:`~corelay.processor.base.Processor` type."""
+
+            def function(self, data: typing.Any) -> typing.Any:
+                """Processes the input data by returning it unchanged.
+
+                Args:
+                    data (typing.Any): The input data that is to be processed.
+
+                Returns:
+                    typing.Any: Returns the processed data.
+                """
+
+                return data
+
+        with pytest.raises(TypeError):
+            task.default = CustomProcessor()
+
+    @staticmethod
+    def test_string_representation_of_task() -> None:
+        """Tests that the string representation of a :py:class:`~corelay.pipeline.base.Task` instance is correct. Sphinx AutoDoc uses :py:func:`repr`
+        when it encounters :py:class:`typing.Annotated`, which in turn uses :py:func:`repr` to get a string representation of its metadata. This is a
+        reasonable thing to do, but then Intersphinx tries to resolve the resulting string as types for cross-referencing, which is not possible with
+        the default implementation of :py:meth:`object.__repr__`. To be able to get proper documentation, the fully-qualified name of the class needs
+        to be returned, because this enable Sphinx AutoDoc to reference the class in the documentation. The tilde in front is interpreted by AutoDoc
+        to mean that only the last part of the fully-qualified name should be displayed in the documentation.
+        """
+
+        param = Task()
+        assert repr(param) == '~corelay.pipeline.base.Task'
 
 
 class TestPipeline:
@@ -250,7 +412,7 @@ class TestPipeline:
 
     @staticmethod
     def test_checkpoint_processes(pipeline_type: type[Pipeline], processor_type: type[Processor]) -> None:
-        """Tests that collecting all processors relevant to a checkpoint succeeds.
+        """Tests that collecting all checkpoint processors succeeds.
 
         Args:
             pipeline_type (type[Pipeline]): The custom :py:class:`~corelay.pipeline.base.Pipeline` type that is to be used in the test.
@@ -262,6 +424,27 @@ class TestPipeline:
         pipeline = pipeline_type(task_1=first_processor, task_2=second_processor)
 
         assert pipeline.checkpoint_processes() == collections.OrderedDict(task_2=second_processor)
+
+    @staticmethod
+    def test_checkpoint_processes_empty() -> None:
+        """Tests that collecting all checkpoint processors returns an empty dictionary if the pipeline contains no tasks."""
+
+        pipeline = Pipeline()
+        assert pipeline.checkpoint_processes() == collections.OrderedDict()
+
+    @staticmethod
+    def test_checkpoint_processes_no_checkpoints() -> None:
+        """Tests that collecting all checkpoint processors fails if no checkpoint processors are present."""
+
+        class MyPipeline(Pipeline):
+            """A custom :py:class:`~corelay.pipeline.base.Pipeline` type."""
+
+            task_1: Annotated[Processor, Task()]
+            task_2: Annotated[Processor, Task()]
+
+        with pytest.raises(RuntimeError):
+            pipeline = MyPipeline()
+            pipeline.checkpoint_processes()
 
     @staticmethod
     def test_checkpoint_data(pipeline_type: type[Pipeline], processor_type: type[Processor]) -> None:
@@ -291,7 +474,29 @@ class TestPipeline:
         first_processor = FunctionProcessor(processing_function=lambda x: x + 5, is_checkpoint=True)
         second_processor = processor_type(is_checkpoint=False)
         pipeline = pipeline_type(task_1=first_processor, task_2=second_processor)
+
+        with pytest.raises(RuntimeError):
+            pipeline.from_checkpoint()
+
         first_processor.checkpoint_data = 1
         output = pipeline.from_checkpoint()
 
         assert output == 2
+
+    @staticmethod
+    def test_pipeline_string_representation(pipeline_type: type[Pipeline]) -> None:
+        """Tests that the string representation of a :py:class:`~corelay.pipeline.base.Pipeline` instance is correct.
+
+        Args:
+            pipeline_type (type[Pipeline]): The custom :py:class:`~corelay.pipeline.base.Pipeline` type that is to be used in the test.
+        """
+
+        pipeline = pipeline_type()
+        expected_string_representation = (
+            "MyPipeline(\n"
+            "    FunctionProcessor(processing_function=lambda self, x: x + 3, bind_method=True) -> numpy.ndarray\n"
+            "    MyProcessor(is_output=True, param_1='default_value', param_2=42) -> numpy.ndarray\n"
+            ")"
+        )
+
+        assert repr(pipeline) == expected_string_representation

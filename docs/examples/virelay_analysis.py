@@ -22,6 +22,7 @@ from corelay.processor.clustering import KMeans, DBSCAN, HDBSCAN, AgglomerativeC
 from corelay.processor.distance import SciPyPDist
 from corelay.processor.embedding import TSNEEmbedding, UMAPEmbedding, EigenDecomposition
 from corelay.processor.flow import Sequential, Parallel
+from corelay.processor.preprocessing import Histogram
 
 
 class Flatten(Processor):
@@ -92,33 +93,6 @@ class Normalize(Processor):
 
         input_data: numpy.ndarray[typing.Any, typing.Any] = data
         return input_data / input_data.sum(self.axes, keepdims=True)
-
-
-class Histogram(Processor):
-    """Represents a :py:class:`~corelay.processor.base.Processor`, which computes a histogram over its input data."""
-
-    bins: Annotated[int, Param(int, 256)]
-    """A parameter of the processor, which determines the number of bins that are used to compute the histogram."""
-
-    def function(self, data: typing.Any) -> typing.Any:
-        """Computes histograms over the specified input data. One histogram is computed for each channel and each sample in a batch of input data.
-
-        Args:
-            data (typing.Any): The input data over which the histograms are to be computed.
-
-        Returns:
-            typing.Any: Returns the histograms that were computed over the input data.
-        """
-
-        input_data: numpy.ndarray[typing.Any, typing.Any] = data
-        return numpy.stack([
-            numpy.stack([
-                numpy.histogram(
-                    sample.reshape(sample.shape[0], numpy.prod(sample.shape[1:3])),
-                    bins=self.bins,
-                    density=True
-                ) for sample in channel
-            ]) for channel in input_data.transpose(3, 0, 1, 2)])
 
 
 class SSIM(Processor):

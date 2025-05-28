@@ -1,5 +1,6 @@
 """A module that contains unit tests for the :py:mod:`corelay.processor.clustering` module."""
 
+from io import BytesIO
 import os
 import typing
 from importlib import import_module
@@ -90,6 +91,8 @@ def test_clustering(processor_type: type[clustering.Clustering], data: numpy.nda
 
 
 @pytest.mark.parametrize('processor_type', EXTRA_PROCESSORS + [clustering.DBSCAN])
+@pytest.mark.filterwarnings('ignore:using precomputed metric; inverse_transform will be unavailable')
+@pytest.mark.filterwarnings('ignore:invalid escape sequence')
 def test_embedding_on_distances(
     processor_type: type[clustering.Clustering],
     distances: numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]
@@ -157,3 +160,11 @@ def test_dendrogram_creation_with_file_object(tiny_data: numpy.ndarray[typing.An
         assert os.path.exists(output_path)
 
     os.remove(output_path)
+
+
+def test_dendrogram_invalid_linkage_method_fails() -> None:
+    """Tests the creation of a dendrogram for the specified data fails if the specified linkage method is not supported."""
+
+    dendrogram_processor = clustering.Dendrogram(output_file=BytesIO(), linkage='invalid_linkage_method')
+    with pytest.raises(ValueError):
+        dendrogram_processor(numpy.array([]))

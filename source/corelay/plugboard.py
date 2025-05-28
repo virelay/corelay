@@ -4,7 +4,17 @@ value.
 """
 
 import typing
-from types import BuiltinFunctionType, BuiltinMethodType, FunctionType, LambdaType, MethodType
+from types import (
+    BuiltinFunctionType,
+    BuiltinMethodType,
+    ClassMethodDescriptorType,
+    FunctionType,
+    LambdaType,
+    MethodDescriptorType,
+    MethodType,
+    MethodWrapperType,
+    WrapperDescriptorType
+)
 
 import numpy
 
@@ -81,10 +91,14 @@ class Slot(EmptyInit):
         self._consistent()
 
     _function_types = (
-        LambdaType,
-        MethodType,
         BuiltinFunctionType,
         BuiltinMethodType,
+        ClassMethodDescriptorType,
+        LambdaType,
+        MethodDescriptorType,
+        MethodType,
+        MethodWrapperType,
+        WrapperDescriptorType,
         numpy.ufunc,
         type(numpy.max)
     )
@@ -204,10 +218,11 @@ class Slot(EmptyInit):
             str: Returns a :py:class:`str` representation of the :py:class:`Slot` instance.
         """
 
-        # Sphinx AutoDoc uses __repr__ when it encounters the metadata of typing.Annotated; this is a reasonable thing to do, but then it tries to
-        # resolve the resulting string as types for cross-referencing, which is not possible with the default implementation of __repr__; to be able
-        # to get proper documentation, the fully-qualified name of the class is returned, because this enable Sphinx AutoDoc to reference the class in
-        # the documentation
+        # Sphinx AutoDoc uses repr when it encounters typing.Annotated, which in turn uses repr to get a string representation of its metadata; this
+        # is a reasonable thing to do, but then Intersphinx tries to resolve the resulting string as types for cross-referencing, which is not
+        # possible with the default implementation of __repr__; to be able to get proper documentation, the fully-qualified name of the class is
+        # returned, because this enable Sphinx AutoDoc to reference the class in the documentation; the tilde in front is interpreted by AutoDoc to
+        # mean that only the last part of the fully-qualified name should be displayed in the documentation
         return f'~{get_fully_qualified_name(self)}'
 
     @property
@@ -337,10 +352,14 @@ class Plug(EmptyInit):
         self._consistent()
 
     _function_types = (
-        LambdaType,
-        MethodType,
         BuiltinFunctionType,
         BuiltinMethodType,
+        ClassMethodDescriptorType,
+        LambdaType,
+        MethodDescriptorType,
+        MethodType,
+        MethodWrapperType,
+        WrapperDescriptorType,
         numpy.ufunc,
         type(numpy.max)
     )
@@ -363,7 +382,8 @@ class Plug(EmptyInit):
         """
 
         if self.obj is None:
-            raise TypeError(f'"{type(self.slot).__name__}" object "{self.slot.__name__}" is mandatory, yet it has been accessed without being set.')
+            raise TypeError(
+                f'"{type(self.slot).__name__}" object "{self.slot.__name__}" has been accessed without being set and no default value is available.')
 
         # If the user sets the dtype to FunctionType, then we should add some more types to check against, because many functions are not of type
         # FunctionType, e.g., expressions, methods, built-in functions, built-in methods, NumPy universal functions, and NumPy array functions
@@ -552,11 +572,13 @@ class SlotDefaultAccess:
         return slot.get_plug(self._instance, default=default)
 
     def __get__(self, instance: typing.Any, owner: typing.Any) -> 'SlotDefaultAccess':  # pylint: disable=unused-argument
-        """Gets a new instance of :py:class:`SlotDefaultAccess`, initialized with the provided instance value.
+        """Is invoked when the property, the :py:class:`~corelay.plugboard.SlotDefaultAccess` is stored in, is retrieved. Returns a new
+        :py:class:`~corelay.plugboard.SlotDefaultAccess` instance initialized with the provided instance value, which is the instance of the class
+        that is the owner of the :py:class:`SlotDefaultAccess`.
 
         Args:
             instance (typing.Any): The instance of the class the :py:class:`SlotDefaultAccess` is associated with.
-            owner (typing.Any): The owner class of the :py:class:`SlotDefaultAccess`.
+            owner (typing.Any): The class of the ``instance`` that owns the :py:class:`SlotDefaultAccess`.
 
         Returns:
             SlotDefaultAccess: Returns a new instance of :py:class:`SlotDefaultAccess` initialized with the provided instance value.
@@ -565,8 +587,8 @@ class SlotDefaultAccess:
         return type(self)(instance)
 
     def __set__(self, instance: typing.Any, value: dict[str, typing.Any]) -> None:
-        """Sets the default values of the associated owner class instance's slots by assigning a the values of the :py:class:`dict` specified in
-        ``value``.
+        """Is invoked when the property, the :py:class:`~corelay.plugboard.SlotDefaultAccess` is stored in, is set. Sets the default values of the
+        associated owner class instance's slots by assigning a the values of the :py:class:`dict` specified in ``value``.
 
         Args:
             instance (typing.Any): The instance of the class the :py:class:`SlotDefaultAccess` is associated with.
@@ -619,11 +641,6 @@ class SlotDefaultAccess:
         except AttributeError as exception:
             raise AttributeError(f'"{type(self._instance)}" object has no attribute "{name}" of type "{Slot}".') from exception
         except TypeError as exception:
-            slot: Slot | None = getattr(type(self._instance), name, None)
-            if slot is not None:
-                raise TypeError(
-                    f'The data type of the default value of the "{type(self._instance)}" object is not of type "{slot.dtype}".'
-                ) from exception
             raise TypeError(f'The data type of the default value of the "{type(self._instance)}" object is invalid.') from exception
 
     def __delattr__(self, name: str) -> None:

@@ -45,6 +45,9 @@ class Histogram(PreProcessor):
         bins (int): The number of bins for the histogram. Defaults to 32.
     """
 
+    channels_first: Annotated[bool, Param(bool, True)]
+    """A value indicating whether the input data is in channels-first format or not. Defaults to :py:obj:`True`."""
+
     bins: Annotated[int, Param(int, 32)]
     """Number of bins for the histogram. Defaults to 32."""
 
@@ -52,28 +55,38 @@ class Histogram(PreProcessor):
         """Computes channel-wise histograms from the input data.
 
         Args:
-            data (typing.Any): The input data to compute histograms for, which is should be an image as a NumPy array of shape
-                `(number_of_samples, number_of_channels, height, width)`.
+            data (typing.Any): The input data to compute histograms for, which is should be a NumPy array of images. The images can be in one of the
+                following formats:
+
+                1. `(number_of_samples, number_of_channels, height, width)`, if :py:attr:`~Histogram.channels_first` is set to :py:obj:`True`.
+                2. `(number_of_samples, height, width, number_of_channels)`, if :py:attr:`~Histogram.channels_first` is set to :py:obj:`False`.
+                3. `(number_of_samples, height, width)`.
 
         Returns:
-            typing.Any: Returns a NumPy array, which contains the channel-wise histograms of the input data of shape
-            `(number_of_samples, number_of_channels, bins)`.
+            typing.Any: Returns a NumPy array, which contains the channel-wise histograms of the input data as a NumPy array be of shape
+            `(number_of_samples, number_of_channels, bins)`. If the input data is grayscale, then the number of channels will be 1.
         """
 
         input_data: numpy.ndarray[typing.Any, typing.Any] = data
-        number_of_samples, number_of_channels, height, width = input_data.shape
 
-        channel_minima: numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]] = input_data.min((0, 2, 3))
-        channel_maxima: numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]] = input_data.max((0, 2, 3))
-        channel_range = list(zip(channel_minima, channel_maxima))
+        is_grayscale = len(input_data.shape) == 3
+        if is_grayscale:
+            input_data = input_data[:, numpy.newaxis, :, :]
 
-        histogram, _ = numpy.histogramdd(
-            input_data.reshape(number_of_samples * number_of_channels, height * width),
-            bins=self.bins,
-            range=channel_range,
-            density=True
+        if not self.channels_first:
+            input_data = numpy.moveaxis(input_data, -1, 1)
+
+        return (
+            numpy.stack([
+                numpy.stack([
+                    numpy.histogram(
+                        channel.reshape(numpy.prod(channel.shape)),
+                        bins=self.bins,
+                        density=True
+                    )[0] for channel in sample
+                ]) for sample in input_data
+            ])
         )
-        return histogram.reshape(number_of_samples, number_of_channels, self.bins)
 
 
 class ImagePreProcessor(PreProcessor):
@@ -140,9 +153,10 @@ class Resize(ImagePreProcessor):
             data (typing.Any): The input data, which contains the images that are to be resized. The input data should be a NumPy array in one of the
                 following formats:
 
-                1. `(batch_size, number_of_channels, height, width)`, if :py:attr:`~ImagePreProcessor.channels_first` is set to :py:obj:`True`.
-                2. `(batch_size, height, width, number_of_channels)`, if :py:attr:`~ImagePreProcessor.channels_first` is set to :py:obj:`False`.
-                3. `(batch_size, height, width)`, if :py:attr:`~ImagePreProcessor.channels_first` is set to :py:obj:`False`.
+                1. `(number_of_samples, number_of_channels, height, width)`, if :py:attr:`~ImagePreProcessor.channels_first` is set to :py:obj:`True`.
+                2. `(number_of_samples, height, width, number_of_channels)`, if :py:attr:`~ImagePreProcessor.channels_first` is set to
+                   :py:obj:`False`.
+                3. `(number_of_samples, height, width)`.
 
         Returns:
             typing.Any: Returns a NumPy array containing the resized images, with a shape that matches the input data format.
@@ -150,7 +164,8 @@ class Resize(ImagePreProcessor):
 
         input_images: numpy.ndarray[typing.Any, typing.Any] = data
 
-        if self.channels_first:
+        is_grayscale = len(input_images.shape) == 3
+        if not is_grayscale and self.channels_first:
             input_images = numpy.moveaxis(data, 1, -1)
 
         resized_images = numpy.stack([
@@ -162,7 +177,7 @@ class Resize(ImagePreProcessor):
             ) for image in input_images
         ])
 
-        if self.channels_first:
+        if not is_grayscale and self.channels_first:
             resized_images = numpy.moveaxis(resized_images, -1, 1)
         return resized_images
 
@@ -194,9 +209,10 @@ class Rescale(ImagePreProcessor):
             data (typing.Any): The input data, which contains the images that are to be rescaled. The input data should be a NumPy array in one of the
                 following formats:
 
-                1. `(batch_size, number_of_channels, height, width)`, if :py:attr:`~ImagePreProcessor.channels_first` is set to :py:obj:`True`.
-                2. `(batch_size, height, width, number_of_channels)`, if :py:attr:`~ImagePreProcessor.channels_first` is set to :py:obj:`False`.
-                3. `(batch_size, height, width) `, if :py:attr:`~ImagePreProcessor.channels_first` is set to :py:obj:`False`.
+                1. `(number_of_samples, number_of_channels, height, width)`, if :py:attr:`~ImagePreProcessor.channels_first` is set to :py:obj:`True`.
+                2. `(number_of_samples, height, width, number_of_channels)`, if :py:attr:`~ImagePreProcessor.channels_first` is set to
+                    :py:obj:`False`.
+                3. `(number_of_samples, height, width)`.
 
         Returns:
             typing.Any: Returns a NumPy array containing the rescaled images, with a shape that matches the input data format.
@@ -205,7 +221,8 @@ class Rescale(ImagePreProcessor):
         input_data: numpy.ndarray[typing.Any, typing.Any] = data
         images_are_multi_channel = len(input_data.shape) > 3
 
-        if self.channels_first:
+        is_grayscale = len(input_data.shape) == 3
+        if not is_grayscale and self.channels_first:
             input_data = numpy.moveaxis(input_data, 1, -1)
 
         rescaled_images = numpy.stack([
@@ -218,7 +235,7 @@ class Rescale(ImagePreProcessor):
             ) for image in input_data
         ])
 
-        if self.channels_first:
+        if not is_grayscale and self.channels_first:
             rescaled_images = numpy.moveaxis(rescaled_images, -1, 1)
         return rescaled_images
 
@@ -237,13 +254,13 @@ class Pooling(PreProcessor):
         kwargs (dict): Additional keyword arguments to pass to the image pre-processing function. Defaults to an empty :py:class:`dict`.
         filter (int): The order of interpolation. The order has to be in the range 0-5. Defaults to 1 (bi-linear).
         channels_first (bool): A value indicating whether the input data is in channels-first format or not. Defaults to :py:obj:`True`.
-        stride (tuple[int]): The pooling stride, which should be of shape `(batch_size, number_of_channels, height, width)`. Defaults to
+        stride (tuple[int]): The pooling stride, which should be of shape `(number_of_samples, number_of_channels, height, width)`. Defaults to
             `(1, 1, 2, 2)`.
         pooling_function (FunctionType): The pooling function to use to reduce the selected blocks. Defaults to :py:func:`numpy.sum`.
     """
 
     stride: Annotated[tuple[int], Param(tuple, (1, 1, 2, 2))]
-    """The pooling stride, which should be of shape `(batch_size, number_of_channels, height, width)`. Defaults to `(1, 1, 2, 2)`."""
+    """The pooling stride, which should be of shape `(number_of_samples, number_of_channels, height, width)`. Defaults to `(1, 1, 2, 2)`."""
 
     pooling_function: Annotated[FunctionType, Param(FunctionType, numpy.sum)]
     """The pooling function to use to reduce the selected blocks. Defaults to :py:func:`numpy.sum`."""

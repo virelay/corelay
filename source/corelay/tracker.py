@@ -128,10 +128,9 @@ class MetaTracker(ABCMeta):
                     return True
                 classes_checked.append(current_class)
 
-                if hasattr(current_class, '__bases__'):
-                    for base_class in current_class.__bases__:
-                        if base_class not in classes_checked and base_class not in classes_to_check:
-                            classes_to_check.append(base_class)
+                for base_class in current_class.__bases__:
+                    if base_class not in classes_checked and base_class not in classes_to_check:
+                        classes_to_check.append(base_class)
 
             return False
 
@@ -143,7 +142,8 @@ class MetaTracker(ABCMeta):
                     'deprecated. This syntax is currently still supported, but it will be removed in a future version of CoRelAy. Please refer to '
                     'the migration guide to find out why this syntax was deprecated and how to update your code: '
                     'https://corelay.readthedocs.io/en/latest/migration-guide/migrating-from-v0.2-to-v0.3.html.',
-                    DeprecationWarning
+                    DeprecationWarning,
+                    stacklevel=2
                 )
 
         # Retrieves the declared class attributes, which were declared using Annotated and are are not special "dunder" attributes, like __class__,
@@ -154,8 +154,6 @@ class MetaTracker(ABCMeta):
                 if (attribute_name[:2] + attribute_name[-2:]) == '____':
                     continue
                 if not hasattr(attribute_value, '__metadata__'):
-                    continue
-                if not isinstance(attribute_value.__metadata__, tuple) or len(attribute_value.__metadata__) == 0:
                     continue
                 tracked_declared_class_attributes[attribute_name] = attribute_value.__metadata__[0]
 

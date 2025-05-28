@@ -84,13 +84,31 @@ def test_eigen_decomposition(distances: numpy.ndarray[typing.Any, numpy.dtype[nu
     """
 
     eigen_decomposition = embedding.EigenDecomposition(n_eigval=32)
-    eigenvalues, eigenvector = eigen_decomposition(distances)
+    eigenvalues, eigenvectors = eigen_decomposition(distances)
 
     assert eigenvalues.shape == (32, )
-    assert eigenvector.shape == (360, 32)
+    assert eigenvectors.shape == (360, 32)
+    numpy.testing.assert_array_almost_equal(numpy.linalg.norm(eigenvectors, axis=1, keepdims=True), numpy.ones((360, 1)))
+
+    eigen_decomposition = embedding.EigenDecomposition(n_eigval=32, normalize=False)
+    eigenvalues, eigenvectors = eigen_decomposition(distances)
+
+    assert eigenvalues.shape == (32, )
+    assert eigenvectors.shape == (360, 32)
+    assert numpy.sum(numpy.abs(numpy.linalg.norm(eigenvectors, axis=1, keepdims=True) - numpy.ones((360, 1)))).item() != 0.0
+
+
+def test_eigen_decomposition_invalid_metric() -> None:
+    """Tests the eigen-decomposition processor with an invalid metric."""
+
+    eigen_decomposition = embedding.EigenDecomposition(which='invalid_metric')
+
+    with pytest.raises(ValueError):
+        eigen_decomposition(numpy.random.rand(360, 360))
 
 
 @pytest.mark.parametrize('processor_type', EXTRA_PROCESSORS + [embedding.TSNEEmbedding])
+@pytest.mark.filterwarnings('ignore:using precomputed metric; inverse_transform will be unavailable')
 def test_embedding_on_distances(processor_type: type[Processor], distances: numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]) -> None:
     """Tests the embedding processors on pre-computed distances and checks the dimensions.
 
@@ -104,3 +122,9 @@ def test_embedding_on_distances(processor_type: type[Processor], distances: nump
     output_embedding = processor(distances)
 
     assert output_embedding.shape == (360, 2)
+
+def test_eigen_decomposition_output_representation() -> None:
+    """Tests the output representation of the eigen-decomposition processor."""
+
+    eigen_decomposition = embedding.EigenDecomposition()
+    assert repr(eigen_decomposition).endswith('(eigval: numpy.ndarray, eigvec: numpy.ndarray)')

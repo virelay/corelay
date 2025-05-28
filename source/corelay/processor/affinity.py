@@ -109,5 +109,5 @@ class RadialBasisFunction(Affinity):
             typing.Any: Returns a NumPy array :py:class:`~numpy.ndarray` containing the RBF affinity matrix.
         """
 
-        affinity = numpy.exp(-data / (2 * self.sigma ** 2))
+        affinity = numpy.exp(-data**2 / (2 * self.sigma**2))
         return affinity
