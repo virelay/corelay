@@ -48,10 +48,6 @@ jobs:
           version: 0.6.13
       - name: Install Python
         run: uv python install 3.13.2
-      - name: Install Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22.14.0'
       - name: Install CoRelAy and its Dependencies
         run: uv --directory source/backend sync
       - name: Build the CoRelAy Project
