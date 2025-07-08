@@ -115,7 +115,7 @@ class EigenDecomposition(Embedding):
         # This is necessary to ensure that MyPy does not complain that the "which" argument is not valid; ideally, we would use literals ourselves,
         # but unfortunately, Sphinx AutoDoc cannot handle type aliases correctly unless we use Postponed Evaluation of Annotations (PEP 563), which in
         # turn breaks our usage of typing.Annotated for slots
-        EigenvalueAndEigenvectorType: TypeAlias = Literal['LM', 'SM', 'LR', 'SR', 'LI', 'SI']
+        EigenvalueAndEigenvectorType: TypeAlias = Literal['LM', 'SM', 'LA', 'SA', 'BE']
         eigenvalue_and_eigenvector_types = list(get_args(EigenvalueAndEigenvectorType))
 
         def check_if_eigenvalue_and_eigenvector_type_is_valid(eigenvalue_and_eigenvector_type: str) -> TypeGuard[EigenvalueAndEigenvectorType]:

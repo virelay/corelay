@@ -47,9 +47,9 @@ jobs:
       - name: Install Python
         run: uv python install ${{ matrix.python-version }}
       - name: Install CoRelAy and its Dependencies
-        run: uv --directory source sync --dev
+        run: uv sync --dev
       - name: Run Unit Tests
-        run: uv --directory source run tox run -e ${{ matrix.tox-environment }}
+        run: uv run tox run -e ${{ matrix.tox-environment }}
 
   # Runs the PyLint linter
   pylint:
@@ -71,9 +71,9 @@ jobs:
       - name: Install Python
         run: uv python install 3.13.3
       - name: Install CoRelAy and its Dependencies
-        run: uv --directory source sync --dev
+        run: uv sync --dev
       - name: Run PyLint Linter
-        run: uv --directory source run tox run -e pylint
+        run: uv run tox run -e pylint
 
   # Runs the PyCodeStyle linter
   pycodestyle:
@@ -95,9 +95,9 @@ jobs:
       - name: Install Python
         run: uv python install 3.13.3
       - name: Install CoRelAy and its Dependencies
-        run: uv --directory source sync --dev
-      - name: Run PyLint Linter
-        run: uv --directory source run tox run -e pycodestyle
+        run: uv sync --dev
+      - name: Run PyCodeStyle
+        run: uv run tox run -e pycodestyle
 
   # Runs the PyDocLint docstring linter
   pydoclint:
@@ -119,9 +119,9 @@ jobs:
       - name: Install Python
         run: uv python install 3.13.3
       - name: Install CoRelAy and its Dependencies
-        run: uv --directory source sync --dev
-      - name: Run PyLint Linter
-        run: uv --directory source run tox run -e pydoclint
+        run: uv sync --dev
+      - name: Run PyDocLint
+        run: uv run tox run -e pydoclint
 
   # Runs the MyPy static type checker
   mypy:
@@ -143,9 +143,9 @@ jobs:
       - name: Install Python
         run: uv python install 3.13.3
       - name: Install CoRelAy and its Dependencies
-        run: uv --directory source sync --dev
-      - name: Run PyLint Linter
-        run: uv --directory source run tox run -e mypy
+        run: uv sync --dev
+      - name: Run MyPy
+        run: uv run tox run -e mypy
 
   # Runs the Markdownlint linter
   markdownlint:
@@ -220,4 +220,4 @@ jobs:
       - name: Install TeX Live for Pybtex
         run: sudo apt-get update -y && sudo apt-get install -y texlive texlive-latex-extra dvipng
       - name: Build Documentation
-        run: uv --directory source run tox run --notest -e docs
+        run: uv run tox run --notest -e docs
