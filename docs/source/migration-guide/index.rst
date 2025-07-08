@@ -7,4 +7,4 @@ This migration guide provides information on how to transition from older versio
 .. toctree::
     :maxdepth: 2
 
-    migrating-from-v0.2-to-v0.3
+    migrating-from-v0.2-to-v1.0

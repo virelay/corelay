@@ -1,10 +1,10 @@
 # Changelog
 
-## v0.3.0
+## v1.0.0
 
 *Release date to be determined.*
 
-### General Updates in v0.3.0
+### General Updates in v1.0.0
 
 - Renamed the `master` branch to `main` in order to avoid any links to sensitive topics. All references to the `master` branch in the repository were updated to `main`.
 - Added this changelog, as well as a contributors list, which contains a list of all people that made contributions to the project.
@@ -20,11 +20,10 @@
 - The project is dual-licensed under the GNU General Public License Version 3 (GPL-3.0) or later, and the GNU Lesser General Public License Version 3 (LGPL-3.0) or later. The GPL-3.0 license is in the `COPYING` file and the LGPL-3.0 license is in the `COPYING.LESSER` file. Additionally, there used to be a `LICENSE` file, which contained a note about the dual-licensing. This was, however, confusing, as GitHub does not recognize that the file is only a note about the dual-licensing and not the actual license. The `LICENSE` file was removed and the note about the dual-licensing was added to the read me.
 - Added a `CITATION.cff` file, which contains the necessary information to cite this repository. This file is based on the [Citation File Format (CFF)](https://citation-file-format.github.io) standard. This file is supported by GitHub and results in a "Cite this repository" button on the website, which allows users to directly generate a proper citation for the repository in multiple different formats.
 
-### CoRelAy Updates in v0.3.0
+### CoRelAy Updates in v1.0.0
 
 - Converted the CoRelAy project from a `setup.py` project to a uv project:
   - A `pyproject.toml` file was created, which is configured to do the same as the `setup.py` file.
-  - The source code was moved from `src/corelay` to `source/corelay`.
   - The tox configuration was updated and now uses tox-uv to run all commands via uv instead of directly creating environments. This means, that all Python environments can now be run without having to install multiple Python versions.
   - The tox configuration was also cleaned up.
   - Support for Python 3.7, 3.8, and 3.9 were removed. Python 3.7 and 3.8 have already reached their end-of-life, and Python 3.9 is about to reach its end-of-life and already only receives security updates. Besides their support status, some of the dependencies (especially tox-uv) do not support them anymore. Even Python 3.10 is already unsupported by some of the dependencies. For this reason, only Python 3.11, 3.12, and 3.13 are supported now. They are recorded in the `.python-versions` file, which makes it trivial to install them using uv.
@@ -52,9 +51,8 @@
   - Variables were renamed to be more descriptive. Previously, most variable names were heavily abbreviated and some of them were not very intuitive.
   - Most of the inline PyLint disables were removed and either the offending rule was directly disabled or the code was changed to not trigger the rule anymore. This was done to make the code cleaner and easier to read. For all remaining inline PyLint disables, the reason for the disable was better explained.
   - Relative imports were replaced by absolute imports, because they make it easier to understand where the module is located. Especially because the project has multiple modules that are named the same in different sub-packages.
-  - Type hints were added to all functions, methods, class attributes, and variables where necessary. Also, parameters and attributes of type string that had a specific set of possible values are now typed using the `Literal` type. This makes possible for MyPy to check if specified values are valid.
+  - Type hints were added to all functions, methods, class attributes, and variables where necessary. Also, parameters and attributes of type string that had a specific set of possible values are now typed using the `Literal` type. This makes it possible for MyPy to check if specified values are valid.
   - In the unit tests, the fixture parameters were masking the fixture function names. This was fixed by renaming the fixture function names `get_<fixture_name>_fixture` and specifying an explicit fixture name. The fixtures are now also explicitly scoped to the module level, although this did not cause any problems previously.
-- The tox configuration was moved from the root directory to the `source` directory, which is more appropriate, as tox is mostly used for building, testing, and linting the project and should therefore be in the same directory as the rest of the project files. Also, since tox now uses uv, it needs to be in the same directory as the `pyproject.toml` file in order to be able to install dependencies.
 - The `corelay/version.py` file was deleted as it is automatically generated during the build process and should not be checked into source control.
 - In general, the code was cleaned up to make it easier to read, understand, and maintain. Some instances of dead code were eliminated. The goal was to make the code more Pythonic and to follow the PEP 8 style guide as closely as possible, while still maintaining backwards compatibility. This was, however, not possible in all cases and some backwards compatibility was sacrificed for the sake of improved static typing. This includes:
   - Some meta classes were removed and replaced by protocols (which are implicit interfaces).
@@ -72,7 +70,7 @@
 - Fixed a bug in the `Histogram` processor: The processor was using the `numpy.histogramdd` function, which computes a multivariate histogram, but the processor was meant to compute a histogram over the channels of the input data, for which the `numpy.histogramdd` function is not suitable. Instead, the `numpy.histogram` function is now used in conjunction with the `numpy.stack` function to compute the histogram over the channels of the input data. Also, the `Histogram` processor was not able to deal with channel-last data, which is now supported. The `Histogram` processor created in the `virelay_analysis.py` example script was also not working as expected: Although it was using the `numpy.histogram` function, it did not account for its return type, which is a tuple containing the histogram and the bin edges. Since we now have a working implementation of the `Histogram` processor, the example script was updated to use it.
 - The `Shaper` flow processor was extended to support dictionaries and string indices. It seems like, these features were already expected to be present, but they were prevented by some minor mistakes: Dictionaries were not supported, because the `Shaper` processor tested for the type of the input data by testing if they implemented the `Sequence` protocol, which is not the case for dictionaries. Instead, dictionaries implement the `Mapping` protocol, which is now also tested for. String indices were not supported, because the indices were tested for implementing the `Sequence` protocol, which is also the case for strings. This meant, that each character of a string was treated as a separate index, which is not the intended behavior. Now, it is also checked if the indices are not strings.
 
-### CI/CD Updates in v0.3.0
+### CI/CD Updates in v1.0.0
 
 - The GitHub Actions workflow was updated to point to the new locations of the source code, unit tests, and configuration files.
 - Converted the GitHub Actions workflow to use uv to run the tests, linters, and build the documentation.
@@ -85,7 +83,7 @@
 - Added a new GitHub Actions workflow, which builds the project and publishes it to PyPI. This workflow is triggered when GitHub release for a new version is created.
 - The configuration for the GitLab CI, which was stored in the `.gitlab-ci.yml` file, was removed. The project is no longer being hosted on GitLab, and the CI configuration is no longer needed.
 
-### Documentation Updates in v0.3.0
+### Documentation Updates in v1.0.0
 
 - The documentation was largely extended and a bit reorganized:
   - The API reference documentation was moved from the `reference` directory to the `api-reference` directory. This was done to better reflect the purpose of the documentation, since there are also bibliographical references in the documentation.
@@ -93,7 +91,7 @@
     - The installation and basic usage sections were moved from the original "Getting Started" section.
     - The "Example Project" section contains a more elaborate example of how to use CoRelAy to analyze a dataset generated by Zennit using the SpRAy workflow that can be visualized using ViRelAy.
   - A new "Contributor's Guide" section was added with sub-sections on how to report issues and feature requests, and how to contribute code or documentation.
-  - A new "Migration Guide" section was added to help users migrate from CoRelAy v0.2 to CoRelAy v0.3. This was done, because the changes made in CoRelAy v0.3 are quite extensive and it is not easy to find out what has changed and how to adapt existing code to the new version.
+  - A new "Migration Guide" section was added to help users migrate from CoRelAy v0.2 to CoRelAy v1.0. This was done, because the changes made in CoRelAy v1.0 are quite extensive and it is not easy to find out what has changed and how to adapt existing code to the new version.
   - More citations were added to the documentation to relevant literature.
 - The configuration for Read the Docs was updated to use the latest available versions of Ubuntu (24.04) and Python (3.12). It was also documented.
 - The configuration for Sphinx was updated:
@@ -104,7 +102,7 @@
   - The `docs` environment in the tox configuration now uses Python 3.13.3, which causes an error during the building of the documentation, because the `pkg_resources` module was deprecated and removed in Python 3.12. This module was used to get the source code file paths and line numbers of functions, classes, methods, etc. for the `linkcode` extension. This was replaced by the `inspect` module.
   - The invocation of Sphinx in tox to build the documentation was updated to include the `--fresh-env` option, so that the documentation is always built in a fresh environment. This solves some issues with the documentation build, where the documentation was not updated correctly after changes were made to the source code or the documentation itself.
   - The correct capitalization of the project name is now specified in the Sphinx configuration and the year in the copyright is now always set to the current year instead of hard-coding it.
-- The example scripts were updated to reflect the coding style and docstring conventions used in the CoRelAy library. They were moved from the `example` directory to the `docs/examples` directory. This was done because the examples are part part of the documentation and to keep the root directory clean and free of unnecessary clutter.
+- The example scripts were updated to reflect the coding style and docstring conventions used in the CoRelAy library. They were moved from the `example` directory to the `docs/examples` directory. This was done because the examples are part of the documentation and to keep the root directory clean and free of unnecessary clutter.
 - A custom CSS file was added to the documentation to change the alignment of the documentation text to be justified and to automatically break long words. This was done to improve the readability of the documentation and to align it with usual scientific documents.
 - The width of the labels in the bibliography was set to a fixed size, so that the labels all have the same width. This was done, because they looked inconsistent and messy before.
 - The logo was added to the documentation, which previously contained a copy of the logo in the `docs/images` directory, but did not include it. The version contained in the `docs/images` directory was removed and the index page now directly references the logo in the `design` directory.

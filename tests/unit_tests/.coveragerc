@@ -27,8 +27,8 @@ exclude_also = raise NotImplementedError
 
 
 # Since the coverage data can be collected from multiple different installations of CoRelAy, the Coverage tool needs to know which files are
-# equivalent; this configuration section contains named lists (in our case only a single list called "source"), where two file paths are considered
+# equivalent; this configuration section contains named lists (in our case only a single list called "src"), where two file paths are considered
 # equivalent and combined when running the "coverage combine" command when they are in the same list; here we specify that the files in directories
-# called */source/corelay and */.tox/*/lib/python*/site-packages/corelay are equivalent
+# called */src/corelay and */.tox/*/lib/python*/site-packages/corelay are equivalent
 [paths]
-source = */source/corelay,*/.tox/*/lib/python*/site-packages/corelay
+source = */src/corelay,*/.tox/*/lib/python*/site-packages/corelay

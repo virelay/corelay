@@ -24,7 +24,7 @@ keywords = [
     "Artificial Intelligence"
 ]
 license = "GPL-3.0-or-later AND LGPL-3.0-or-later"
-requires-python = ">=3.11.12"
+requires-python = ">=3.11.0"
 dynamic = [
     "readme",
     "version"
@@ -151,6 +151,12 @@ requires = [
 ]
 build-backend = "hatchling.build"
 
+[tool.hatch.build]
+include = ["src"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/corelay"]
+
 # Allows Hatch to install packages from Git repositories
 [tool.hatch.metadata]
 allow-direct-references = true
@@ -159,15 +165,14 @@ allow-direct-references = true
 [tool.hatch.version]
 source = "vcs"
 fallback-version = "0.0.0"
-raw-options = { root = ".." }
 
 # Configures the Hatch-VCS build hook, which is used to write the version of the project to the version file
 [tool.hatch.build.hooks.vcs]
-version-file = "corelay/version.py"
+version-file = "src/corelay/version.py"
 
 # Configures the Hatch Fancy PyPI Readme plugin to compose the content of the read me file from the project's read me file, which is located in the
 # root directory of the repository
 [tool.hatch.metadata.hooks.fancy-pypi-readme]
 content-type = "text/markdown"
 [[tool.hatch.metadata.hooks.fancy-pypi-readme.fragments]]
-path = "../README.md"
+path = "README.md"

@@ -1,8 +1,8 @@
 ===============================
-Migrating from v0.2.* to v0.3.*
+Migrating from v0.2.* to v1.0.*
 ===============================
 
-Between v0.2.* and v0.3.*, CoRelAy has made some significant changes, including, but not limited to, the following:
+Between v0.2.* and v1.0.*, CoRelAy has made some significant changes, including, but not limited to, the following:
 
 * The project was converted from a ``setup.py`` project to a ``uv`` project.
 * The Python dependencies were updated to the latest versions.

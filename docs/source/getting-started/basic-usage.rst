@@ -19,7 +19,7 @@ In CoRelAy, a **Processor** is defined by sub-classing :py:class:`~corelay.proce
 
 .. note::
 
-    If you come from a version of CoRelAy before 0.3.0, you may be used to the old syntax of registering parameters by assigning an instance of :py:class:`~corelay.base.Param` to a class attribute. For more information on this change and how to migrate, please refer to the :doc:`migration guide <../migration-guide/migrating-from-v0.2-to-v0.3>`.
+    If you come from a version of CoRelAy before 1.0.0, you may be used to the old syntax of registering parameters by assigning an instance of :py:class:`~corelay.base.Param` to a class attribute. For more information on this change and how to migrate, please refer to the :doc:`migration guide <../migration-guide/migrating-from-v0.2-to-v1.0>`.
 
 The processor will automatically track the parameters and allows users to set them in the constructor using the attribute's name as a keyword argument. Parameters can, however, also be made into positional arguments by setting the ``is_positional`` argument of :py:meth:`Param.__init__ <corelay.base.Param.__init__>` to :py:obj:`True`. This allows for a more flexible and user-friendly interface when creating custom processors. The parameters can be accessed as attributes of the processor instance. Invoking a processor  to perform the associated operation is as easy as calling it like a function.
 

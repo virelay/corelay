@@ -34,7 +34,7 @@ jobs:
     # Specifies that we want to deploy to PyPI
     environment:
       name: pypi
-      url: https://pypi.org/p/virelay
+      url: https://pypi.org/p/corelay
 
     # The job contains several steps: 1) checking out the repository, 2) installing the Python project management tool uv, 3) installing Python, 4)
     # installing the dependencies of CoRelAy, 5) building the CoRelAy project, and 6) publishing the CoRelAy project
@@ -49,8 +49,8 @@ jobs:
       - name: Install Python
         run: uv python install 3.13.2
       - name: Install CoRelAy and its Dependencies
-        run: uv --directory source/backend sync
+        run: uv sync
       - name: Build the CoRelAy Project
-        run: uv --directory source/backend build
+        run: uv build
       - name: Publish the CoRelAy Project to PyPI
-        run: uv --directory source/backend publish
+        run: uv publish
