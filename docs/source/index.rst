@@ -13,7 +13,7 @@ Tasks in CoRelAy are highly flexible and can be tailored to meet the needs of yo
 
 .. note::
 
-    If you come from a previous version of CoRelAy before the 0.3.0 release, please refer to the :doc:`migration guide <migration-guide/migrating-from-v0.2-to-v0.3>` for information on how to transition to the latest version. Some breaking changes have been introduced, and the migration guide will help you adapt your existing code to the new version.
+    If you come from a previous version of CoRelAy before the 1.0.0 release, please refer to the :doc:`migration guide <migration-guide/migrating-from-v0.2-to-v1.0>` for information on how to transition to the latest version. Some breaking changes have been introduced, and the migration guide will help you adapt your existing code to the new version.
 
 Contents
 ========

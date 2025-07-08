@@ -72,7 +72,7 @@ class SparseKNN(Affinity):
 
         # Denotes the existing edges with ones
         values = numpy.ones((number_of_samples, number_of_neighbors), dtype=data.dtype)
-        affinity = scipy.sparse.csr_matrix((values.flat, (rows.flat, columns.flat)), shape=(number_of_samples, number_of_samples))
+        affinity: typing.Any = scipy.sparse.csr_matrix((values.flat, (rows.flat, columns.flat)), shape=(number_of_samples, number_of_samples))
 
         # Makes the affinity matrix symmetric
         if self.symmetric:
