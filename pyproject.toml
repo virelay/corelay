@@ -78,11 +78,9 @@ Changelog = "https://github.com/virelay/corelay/blob/main/CHANGELOG.md"
 # them provides additional functionality, but is not required to use the package
 [project.optional-dependencies]
 
-# Dependencies required for using the Uniform Manifold Approximation and Projection (UMAP) dimensionality reduction algorithm (the UMAP-Learn package
-# version 0.5.8 has already been released, but it is not yet available on PyPI; therefore, the package is installed directly from the Git repository;
-# when version 0.5.8 becomes available on PyPI, this dependency can be replaced with "umap-learn>=0.5.8,<0.6.0")
+# Dependencies required for using the Uniform Manifold Approximation and Projection (UMAP) dimensionality reduction algorithm
 umap = [
-    "umap-learn@git+https://github.com/lmcinnes/umap@release-0.5.8"
+    "umap-learn>=0.5.8,<0.6.0"
 ]
 
 # Dependencies required for using the Hierarchical Density-Based Spatial Clustering of Applications with Noise (HDBSCAN) clustering algorithm
@@ -105,7 +103,7 @@ dev = [
 # reasoning of installing the UMAP-Learn package directly from the Git repository, see the comment above in the "umap" optional dependency)
 optional-dependencies = [
     "hdbscan>=0.8.40,<1.0.0",
-    "umap-learn@git+https://github.com/lmcinnes/umap@release-0.5.8"
+    "umap-learn>=0.5.8,<0.6.0"
 ]
 
 # Dependencies required for testing
@@ -134,7 +132,7 @@ linting = [
 # loading plugins; the problem has already been fixed in the development version, but it is not yet released; therefore, the development version is
 # installed directly from the Git repository; if and when a successor to 0.24.0 is released, this dependency can be removed)
 docs = [
-    "pybtex@git+https://bitbucket.org/pybtex-devs/pybtex@9b97822f5517fc7893456b9827589a003ea7076a",
+    "pybtex>=0.25.0,<0.26.0",
     "sphinx-copybutton>=0.5.2,<1.0.0",
     "sphinx-rtd-theme>=3.0.2,<4.0.0",
     "sphinx>=8.2.3,<9.0.0",
