@@ -47,6 +47,7 @@ jobs:
         uses: astral-sh/setup-uv@v5
         with:
           version: 0.6.13
+          enable-cache: false
       - name: Install Python
         run: uv python install
       - name: Install CoRelAy and its Dependencies
