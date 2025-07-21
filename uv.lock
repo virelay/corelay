@@ -268,7 +268,7 @@ requires-dist = [
     { name = "scikit-image", specifier = ">=0.25.2,<1.0.0" },
     { name = "scikit-learn", specifier = ">=1.6.1,<2.0.0" },
     { name = "scipy", specifier = ">=1.15.3,<2.0.0" },
-    { name = "umap-learn", marker = "extra == 'umap'", git = "https://github.com/lmcinnes/umap?rev=release-0.5.8" },
+    { name = "umap-learn", marker = "extra == 'umap'", specifier = ">=0.5.8,<0.6.0" },
 ]
 provides-extras = ["hdbscan", "umap"]
 
@@ -277,7 +277,7 @@ dev = [
     { name = "coverage", specifier = ">=7.8.2,<8.0.0" },
     { name = "hdbscan", specifier = ">=0.8.40,<1.0.0" },
     { name = "mypy", specifier = ">=1.16.0,<2.0.0" },
-    { name = "pybtex", git = "https://bitbucket.org/pybtex-devs/pybtex?rev=9b97822f5517fc7893456b9827589a003ea7076a" },
+    { name = "pybtex", specifier = ">=0.25.0,<0.26.0" },
     { name = "pycodestyle", specifier = ">=2.13.0,<3.0.0" },
     { name = "pydoclint", specifier = ">=0.6.6,<1.0.0" },
     { name = "pylint", specifier = ">=3.3.7,<4.0.0" },
@@ -292,10 +292,10 @@ dev = [
     { name = "sphinxcontrib-datatemplates", specifier = ">=0.11.0,<1.0.0" },
     { name = "tox", specifier = ">=4.26.0,<5.0.0" },
     { name = "tox-uv", specifier = ">=1.26.0,<2.0.0" },
-    { name = "umap-learn", git = "https://github.com/lmcinnes/umap?rev=release-0.5.8" },
+    { name = "umap-learn", specifier = ">=0.5.8,<0.6.0" },
 ]
 docs = [
-    { name = "pybtex", git = "https://bitbucket.org/pybtex-devs/pybtex?rev=9b97822f5517fc7893456b9827589a003ea7076a" },
+    { name = "pybtex", specifier = ">=0.25.0,<0.26.0" },
     { name = "sphinx", specifier = ">=8.2.3,<9.0.0" },
     { name = "sphinx-copybutton", specifier = ">=0.5.2,<1.0.0" },
     { name = "sphinx-rtd-theme", specifier = ">=3.0.2,<4.0.0" },
@@ -310,11 +310,11 @@ linting = [
     { name = "pylint", specifier = ">=3.3.7,<4.0.0" },
     { name = "pytest-mypy", specifier = ">=1.0.1,<2.0.0" },
     { name = "scipy-stubs", specifier = ">=1.15.3.0,<2.0.0" },
-    { name = "umap-learn", git = "https://github.com/lmcinnes/umap?rev=release-0.5.8" },
+    { name = "umap-learn", specifier = ">=0.5.8,<0.6.0" },
 ]
 optional-dependencies = [
     { name = "hdbscan", specifier = ">=0.8.40,<1.0.0" },
-    { name = "umap-learn", git = "https://github.com/lmcinnes/umap?rev=release-0.5.8" },
+    { name = "umap-learn", specifier = ">=0.5.8,<0.6.0" },
 ]
 testing = [
     { name = "coverage", specifier = ">=7.8.2,<8.0.0" },
@@ -323,7 +323,7 @@ testing = [
     { name = "pytest-cov", specifier = ">=6.1.1,<7.0.0" },
     { name = "tox", specifier = ">=4.26.0,<5.0.0" },
     { name = "tox-uv", specifier = ">=1.26.0,<2.0.0" },
-    { name = "umap-learn", git = "https://github.com/lmcinnes/umap?rev=release-0.5.8" },
+    { name = "umap-learn", specifier = ">=0.5.8,<0.6.0" },
 ]
 
 [[package]]
@@ -1046,11 +1046,15 @@ wheels = [
 
 [[package]]
 name = "pybtex"
-version = "0.24.0"
-source = { git = "https://bitbucket.org/pybtex-devs/pybtex?rev=9b97822f5517fc7893456b9827589a003ea7076a#9b97822f5517fc7893456b9827589a003ea7076a" }
+version = "0.25.1"
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "latexcodec" },
     { name = "pyyaml" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/5f/bc/c2be05ca72f8c103670e983df8be26d1e288bc6556f487fa8cccaa27779f/pybtex-0.25.1.tar.gz", hash = "sha256:9eaf90267c7e83e225af89fea65c370afbf65f458220d3946a9e3049e1eca491", size = 406157, upload-time = "2025-06-26T13:27:41.903Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/25/68/ceb5d6679baa326261f5d3e5113d9cfed6efef2810afd9f18bffb8ed312b/pybtex-0.25.1-py2.py3-none-any.whl", hash = "sha256:9053b0d619409a0a83f38abad5d9921de5f7b3ede00742beafcd9f10ad0d8c5c", size = 127437, upload-time = "2025-06-26T13:27:43.585Z" },
 ]
 
 [[package]]
@@ -1709,7 +1713,7 @@ wheels = [
 [[package]]
 name = "umap-learn"
 version = "0.5.8"
-source = { git = "https://github.com/lmcinnes/umap?rev=release-0.5.8#63903695b996e2b68c67e00fdda6eedb7a233189" }
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "numba" },
     { name = "numpy" },
@@ -1717,6 +1721,10 @@ dependencies = [
     { name = "scikit-learn" },
     { name = "scipy" },
     { name = "tqdm" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/10/2c/58f4f76d6b494c6af233331b981e4b22c94cb7983e067b377366037a2fab/umap-learn-0.5.8.tar.gz", hash = "sha256:aecce4088c4e033cff1b5384016060a1b202a7b2bbd2dd14d596e8e80c29a885", size = 93463, upload-time = "2025-06-30T16:35:45.454Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/68/5a/3fe95746301fe6d8a8cd59af06fa74599b24dc8077575ca5d3ef12988f61/umap_learn-0.5.8-py3-none-any.whl", hash = "sha256:59664a69f7817b0adcd71da1c548ec5b113d562f608ef08560a08daad37c27c4", size = 89154, upload-time = "2025-06-30T16:35:44.022Z" },
 ]
 
 [[package]]
