@@ -2,7 +2,7 @@
 
 ## v1.0.0
 
-*Release date to be determined.*
+*Released on July 21, 2025.*
 
 ### General Updates in v1.0.0
 
