@@ -29,16 +29,19 @@ For more information about CoRelAy, getting started guides, in-depth tutorials, 
 If you find CoRelAy useful for your research, why not cite our related [paper](https://arxiv.org/abs/2106.13200):
 
 ```bibtex
-@article{anders2021software,
-  author  = {Anders, Christopher J. and
+@article{bibliography:software-for-dataset-wide-xai,
+  author  = {Anders, {Christopher J.} and
              Neumann, David and
              Samek, Wojciech and
-             Müller, Klaus-Robert and
+             Müller, {Klaus-Robert} and
              Lapuschkin, Sebastian},
-  title   = {Software for Dataset-wide XAI: From Local Explanations to Global Insights with {Zennit}, {CoRelAy}, and {ViRelAy}},
-  year    = {2021},
-  volume  = {abs/2106.13200},
-  journal = {CoRR}
+  title   = {Software for {dataset-wide} {XAI}: From local explanations to global insights with Zennit, {CoRelAy}, and {ViRelAy}},
+  year    = {2026},
+  month   = jan,
+  journal = {{PLOS} One},
+  volume  = {21},
+  number  = {1},
+  pages   = {1--38}
 }
 ```
 
