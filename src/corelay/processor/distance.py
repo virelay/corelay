@@ -56,12 +56,10 @@ class SciPyPDist(Distance):
     * "pnorm"
     * "jaccard", "jacc", "ja", "j"
     * "jensenshannon", "js"
-    * "kulczynski1"
     * "mahalanobis", "mahal", "mah"
     * "rogerstanimoto"
     * "russellrao"
     * "seuclidean", "se", "s"
-    * "sokalmichener"
     * "sokalsneath"
     * "sqeuclidean", "sqe", "sqeuclid"
     * "yule"
@@ -124,7 +122,6 @@ class SciPyPDist(Distance):
             'j',
             'jensenshannon',
             'js',
-            'kulczynski1',
             'mahalanobis',
             'mahal',
             'mah',
@@ -133,7 +130,6 @@ class SciPyPDist(Distance):
             'seuclidean',
             'se',
             's',
-            'sokalmichener',
             'sokalsneath',
             'sqeuclidean',
             'sqe',
